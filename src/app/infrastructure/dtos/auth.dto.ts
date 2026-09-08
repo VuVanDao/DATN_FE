@@ -4,3 +4,13 @@ export interface ApiResponse<T> {
   data: T;
   errors?: string[] | Record<string, string[]> | null;
 }
+export interface AuthResponseDto {
+  id: string;
+  email: string;
+  username: string;
+  avatarUrl?: string | null;
+  token: string;
+  roles: string[];
+  refreshToken: string;
+  refreshTokenExpiresAt: string;
+}
