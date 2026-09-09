@@ -18,7 +18,7 @@ import { AuthMapper } from '../mappers/auth.mapper';
   providedIn: 'root',
 })
 export class AuthHttpRepository implements AuthRepository {
-  private readonly API_URL = 'http://localhost:5000/api/auth';
+  private readonly API_URL = 'http://localhost:5025/api/auth';
   private readonly http = inject(HttpClient);
   private readonly storageService: StorageService;
   //   constructor(
