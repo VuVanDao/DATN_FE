@@ -13,12 +13,13 @@ import { HttpClient } from '@angular/common/http';
 import { StorageService } from '../storage/storage.service';
 import { ApiResponse, AuthResponseDto } from '../dtos/auth.dto';
 import { AuthMapper } from '../mappers/auth.mapper';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthHttpRepository implements AuthRepository {
-  private readonly API_URL = 'http://localhost:5025/api/auth';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
   private readonly http = inject(HttpClient);
   private readonly storageService: StorageService;
   //   constructor(
