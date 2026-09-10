@@ -1,0 +1,50 @@
+<div class="min-h-screen bg-slate-50 flex flex-col">
+  <!-- top-navbar -->
+  <header
+    class="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-50"
+  >
+    <div class="flex items-center gap-3">
+      <div
+        class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm"
+      >
+        T
+      </div>
+      <span class="font-bold text-slate-800 text-lg tracking-tight">TrelloClone</span>
+      <span
+        class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium border border-blue-200"
+      >
+        Workspace
+      </span>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div
+          class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-200"
+        >
+          {{ authStore.currentUser()?.UserName.slice(0, 3) || 'U' }}
+        </div>
+        <div class="text-xs hidden sm:block">
+          <p class="font-semibold text-slate-700">{{ authStore.currentUser()?.UserName }}</p>
+          <p class="text-slate-400">{{ authStore.currentUser()?.Email }}</p>
+        </div>
+      </div>
+      <button
+        (click)="onLogOut()"
+        class="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg border border-red-200 transition cursor-pointer flex items-center gap-1.5"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+        <span>Đăng xuất</span>
+      </button>
+    </div>
+  </header>
+  <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
+    <router-outlet></router-outlet>
+  </main>
+</div>
