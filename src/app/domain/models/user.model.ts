@@ -7,3 +7,8 @@ export interface User {
   IsActive?: boolean;
   Roles: string[];
 }
+export interface ChangePasswordRequest {
+  CurrentPassword: string;
+  NewPassword: string;
+  ConfirmNewPassword: string;
+}
