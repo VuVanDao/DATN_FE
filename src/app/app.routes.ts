@@ -5,6 +5,7 @@ import { RegisterPage } from './presentation/pages/auth/register';
 import { MainLayout } from './presentation/layouts/main-layout/main-layout';
 import { HomePage } from './presentation/pages/home/home';
 import { authGuard } from './presentation/guards/auth.guards';
+import { SettingsPage } from './presentation/pages/settings/settings';
 
 export const routes: Routes = [
   {
@@ -20,6 +21,10 @@ export const routes: Routes = [
       {
         path: 'home-page',
         component: HomePage,
+      },
+      {
+        path: 'settings',
+        component: SettingsPage,
       },
     ],
   },

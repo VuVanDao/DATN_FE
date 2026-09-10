@@ -6,6 +6,8 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { AuthRepository } from './domain/repositories/auth.repository';
 import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repository';
 import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
+import { UserRepository } from './domain/repositories/user.repository';
+import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,6 +18,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: AuthRepository,
       useClass: AuthHttpRepository,
+    },
+    {
+      provide: UserRepository,
+      useClass: UserHttpRepository,
     },
   ],
 };
