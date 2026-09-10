@@ -8,7 +8,9 @@ import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repo
 import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
 import { UserRepository } from './domain/repositories/user.repository';
 import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
-
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -23,5 +25,14 @@ export const appConfig: ApplicationConfig = {
       provide: UserRepository,
       useClass: UserHttpRepository,
     },
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: false, // Bật/tắt theo class dark nếu thích
+        },
+      },
+    }),
+    provideAnimationsAsync(),
   ],
 };

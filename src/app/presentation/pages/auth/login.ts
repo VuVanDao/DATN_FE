@@ -2,10 +2,11 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthStore } from '../../state/auth.store';
+import { ButtonModule } from 'primeng/button';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ButtonModule],
   templateUrl: './login.html',
 })
 export class LoginPage {
