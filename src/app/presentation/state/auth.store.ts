@@ -69,6 +69,7 @@ export class AuthStore {
     this._logoutUseCase.execute().subscribe({
       next: () => {
         this._currentUser.set(null);
+        this._isLoading.set(false);
         this.router.navigate(['/login']);
       },
       error: () => {
