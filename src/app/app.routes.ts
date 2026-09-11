@@ -6,6 +6,7 @@ import { MainLayout } from './presentation/layouts/main-layout/main-layout';
 import { HomePage } from './presentation/pages/home/home';
 import { authGuard } from './presentation/guards/auth.guards';
 import { SettingsPage } from './presentation/pages/settings/settings';
+import { MainSecurityPage } from './presentation/pages/security/main-security-page';
 
 export const routes: Routes = [
   {
@@ -15,7 +16,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'home-page',
+        redirectTo: 'security',
         pathMatch: 'full',
       },
       {
@@ -25,6 +26,14 @@ export const routes: Routes = [
       {
         path: 'settings',
         component: SettingsPage,
+      },
+      {
+        path: 'security',
+        component: MainSecurityPage,
+      },
+      {
+        path: 'workspaces',
+        component: HomePage, // Trang danh sách tất cả workspace sẽ bổ sung sau
       },
     ],
   },

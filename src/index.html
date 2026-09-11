@@ -2,6 +2,37 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <!-- Chặn nhấp nháy giao diện khi tải trang (Anti-FOUC Theme Script) -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var isDark = saved !== 'light';
+          var el = document.documentElement;
+          if (isDark) {
+            el.classList.add('dark');
+            el.classList.remove('light');
+            el.style.colorScheme = 'dark';
+          } else {
+            el.classList.add('light');
+            el.classList.remove('dark');
+            el.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      html.dark,
+      html.dark body {
+        background-color: #020617 !important;
+        color: #f8fafc;
+      }
+      html.light,
+      html.light body {
+        background-color: #f8fafc !important;
+        color: #0f172a;
+      }
+    </style>
     <title>DATNFE</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
