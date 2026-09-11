@@ -7,6 +7,7 @@ import { HomePage } from './presentation/pages/home/home';
 import { authGuard } from './presentation/guards/auth.guards';
 import { SettingsPage } from './presentation/pages/settings/settings';
 import { MainSecurityPage } from './presentation/pages/security/main-security-page';
+import { ProfilePage } from './presentation/pages/profile/profile';
 
 export const routes: Routes = [
   {
@@ -22,6 +23,10 @@ export const routes: Routes = [
       {
         path: 'home-page',
         component: HomePage,
+      },
+      {
+        path: 'profile',
+        component: ProfilePage,
       },
       {
         path: 'settings',

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { UserStore } from '../../state/user.store';
+import { LayoutService } from '../../../application/layout/layout.service';
 export const passwordMatchValidator: ValidatorFn = (
   control: AbstractControl,
 ): ValidationErrors | null => {
@@ -32,12 +33,17 @@ export const passwordMatchValidator: ValidatorFn = (
   imports: [ReactiveFormsModule],
   templateUrl: './settings.html',
 })
-export class SettingsPage {
+export class SettingsPage implements OnInit {
   readonly _userStore = inject(UserStore);
+  readonly layoutService = inject(LayoutService);
 
   readonly showCurrent = signal<boolean>(false);
   readonly showNew = signal<boolean>(false);
   readonly showConfirm = signal<boolean>(false);
+
+  ngOnInit(): void {
+    this.layoutService.setSidebar('settings');
+  }
 
   readonly form = new FormGroup(
     {

@@ -19,13 +19,7 @@ export interface NotificationItem {
 @Component({
   selector: 'app-main-header',
   standalone: true,
-  imports: [
-    RouterLink,
-    FormsModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatIconModule,
-  ],
+  imports: [RouterLink, FormsModule, MatCardModule, MatTooltipModule, MatIconModule],
   templateUrl: './main-header.component.html',
 })
 export class MainHeaderComponent implements OnInit {
@@ -38,7 +32,7 @@ export class MainHeaderComponent implements OnInit {
   readonly searchQuery = signal<string>('');
 
   readonly isDarkMode = signal<boolean>(
-    typeof window !== 'undefined' ? localStorage.getItem('theme') !== 'light' : true
+    typeof window !== 'undefined' ? localStorage.getItem('theme') !== 'light' : true,
   );
 
   // Phân quyền Quản trị: chỉ tài khoản SystemAdmin hoặc Admin mới thấy tab Quản trị
@@ -138,8 +132,15 @@ export class MainHeaderComponent implements OnInit {
     this.notifData.update((list) => list.map((item) => ({ ...item, unread: false })));
   }
 
+  navigateToProfile(): void {
+    this.closeDropdown();
+    this.layoutService.setSidebar('settings');
+    this.router.navigate(['/profile']);
+  }
+
   navigateToSettings(): void {
     this.closeDropdown();
+    this.layoutService.setSidebar('settings');
     this.router.navigate(['/settings']);
   }
 

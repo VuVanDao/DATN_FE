@@ -25,6 +25,7 @@ export class LayoutService {
 
   setSidebar(type: SidebarType): void {
     this.activeSidebar.set(type);
+    this.isSidebarCollapsed.set(false);
   }
 
   toggleAiDrawer(): void {

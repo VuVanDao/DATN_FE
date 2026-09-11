@@ -12,5 +12,6 @@ export interface AuthResponseDto {
   token: string;
   roles: string[];
   refreshToken: string;
+  isActive: boolean;
   refreshTokenExpiresAt: string;
 }

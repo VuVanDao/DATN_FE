@@ -3,7 +3,7 @@
 
 <!-- Drawer Side Panel -->
 <aside
-  class="w-full sm:w-[400px] h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-40 shadow-2xl transition-all duration-200 animate-in slide-in-from-right-full"
+  class="w-full sm:w-[400px] h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-40 shadow-2xl transition-all duration-200 animate-in slide-in-from-right-full"
 >
   <!-- Drawer Header -->
   <div
@@ -11,7 +11,7 @@
   >
     <div class="flex items-center gap-3">
       <div
-        class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0"
+        class="w-9 h-9 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -23,12 +23,8 @@
         </svg>
       </div>
       <div>
-        <h3 class="font-bold text-sm text-slate-900 dark:text-white">
-          Trợ lý AI TrelloClone
-        </h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400">
-          Hỏi về task, sprint, tiến độ dự án
-        </p>
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Trợ lý AI TrelloClone</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Hỏi về task, sprint, tiến độ dự án</p>
       </div>
     </div>
     <button
@@ -63,9 +59,7 @@
             class="flex-1 max-w-[85%] bg-slate-100 dark:bg-slate-800/80 rounded-2xl rounded-tl-xs px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed shadow-xs"
           >
             <div [innerHTML]="msg.content"></div>
-            <span
-              class="block text-[10px] text-slate-400 dark:text-slate-500 mt-1 text-right"
-            >
+            <span class="block text-[10px] text-slate-400 dark:text-slate-500 mt-1 text-right">
               {{ msg.timestamp }}
             </span>
           </div>
