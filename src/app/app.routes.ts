@@ -16,7 +16,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'security',
+        redirectTo: 'home-page',
         pathMatch: 'full',
       },
       {

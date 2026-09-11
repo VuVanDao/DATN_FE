@@ -1,0 +1,420 @@
+<!-- ===== LEFT SIDEBAR NAVIGATION ===== -->
+<aside
+  class="h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-all duration-200 z-30 select-none overflow-hidden"
+  [class.w-60]="!layoutService.isSidebarCollapsed()"
+  [class.w-18]="layoutService.isSidebarCollapsed()"
+>
+  <!-- Top Section: Menu Navigation & Workspaces -->
+  <div class="p-3 space-y-4 overflow-y-auto overflow-x-hidden flex-1 slim-scrollbar pr-1.5">
+    <!-- 1. Primary Navigation Links (Trang chủ, Boards, Sprints) -->
+    <nav class="space-y-1">
+      <!-- Trang chủ -->
+      <a
+        routerLink="/home-page"
+        routerLinkActive="bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        [matTooltip]="layoutService.isSidebarCollapsed() ? 'Trang chủ' : ''"
+        matTooltipPosition="right"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
+        [class.justify-center]="layoutService.isSidebarCollapsed()"
+      >
+        <mat-icon fontIcon="dashboard"></mat-icon>
+        @if (!layoutService.isSidebarCollapsed()) {
+          <span class="text-sm truncate">Trang chủ</span>
+        }
+      </a>
+
+      <!-- Bảng Kanban (Boards) -->
+      <a
+        routerLink="/home-page"
+        [matTooltip]="layoutService.isSidebarCollapsed() ? 'Bảng Kanban' : ''"
+        matTooltipPosition="right"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
+        [class.justify-center]="layoutService.isSidebarCollapsed()"
+      >
+        <mat-icon fontIcon="view_kanban"></mat-icon>
+        @if (!layoutService.isSidebarCollapsed()) {
+          <span class="text-sm truncate">Bảng Kanban</span>
+        }
+      </a>
+
+      <!-- Sprint -->
+      <a
+        routerLink="/home-page"
+        [matTooltip]="layoutService.isSidebarCollapsed() ? 'Sprint' : ''"
+        matTooltipPosition="right"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
+        [class.justify-center]="layoutService.isSidebarCollapsed()"
+      >
+        <mat-icon fontIcon="rocket_launch"></mat-icon>
+        @if (!layoutService.isSidebarCollapsed()) {
+          <span class="text-sm truncate">Sprint</span>
+        }
+      </a>
+
+      <!-- 4. Gần đây (Recent Dropdown với Board & Workspace: Gần đây / Đã ghim) -->
+      <div>
+        <button
+          type="button"
+          (click)="toggleRecent()"
+          [matTooltip]="layoutService.isSidebarCollapsed() ? 'Gần đây' : ''"
+          matTooltipPosition="right"
+          class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
+          [class.justify-center]="layoutService.isSidebarCollapsed()"
+          [class.bg-slate-100]="isRecentOpen() && !layoutService.isSidebarCollapsed()"
+          [class.dark:bg-slate-800/60]="isRecentOpen() && !layoutService.isSidebarCollapsed()"
+        >
+          <div class="flex items-center gap-3">
+            <mat-icon fontIcon="schedule"></mat-icon>
+            @if (!layoutService.isSidebarCollapsed()) {
+              <span class="text-sm truncate font-medium">Gần đây</span>
+            }
+          </div>
+
+          @if (!layoutService.isSidebarCollapsed()) {
+            <svg
+              class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"
+              [class.rotate-180]="isRecentOpen()"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          }
+        </button>
+
+        <!-- Submenu Gần đây khi mở rộng -->
+        @if (isRecentOpen() && !layoutService.isSidebarCollapsed()) {
+          <div
+            class="mt-1 ml-3 pl-2.5 border-l-2 border-slate-200 dark:border-slate-800 space-y-3 py-1 animate-in fade-in zoom-in-95 duration-150"
+          >
+            <!-- Mục 1: Bảng (Boards) -->
+            <div>
+              <button
+                type="button"
+                (click)="toggleRecentBoards()"
+                class="w-full flex items-center justify-between text-[13.5px] font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white py-1.5 transition cursor-pointer select-none"
+              >
+                <span class="flex items-center gap-1.5">
+                  <span>Bảng (Boards)</span>
+                </span>
+                <svg
+                  class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"
+                  [class.rotate-180]="isRecentBoardsOpen()"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              @if (isRecentBoardsOpen()) {
+                <div class="space-y-2 mt-1 pl-1">
+                  <!-- a. Bảng gần đây -->
+                  <div>
+                    <span
+                      class="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider block px-1"
+                    >
+                      Bảng gần đây
+                    </span>
+                    <div class="space-y-0.5 mt-0.5">
+                      @for (board of recentBoardsList(); track board.id) {
+                        <a
+                          routerLink="/home-page"
+                          class="flex items-center gap-2 px-2 py-1 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+                        >
+                          <span
+                            class="w-2 h-2 rounded-xs shrink-0"
+                            [class]="board.color"
+                          ></span>
+                          <span class="truncate">{{ board.name }}</span>
+                        </a>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- b. Bảng đã ghim -->
+                  <div>
+                    <span
+                      class="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider block px-1"
+                    >
+                      Bảng đã ghim
+                    </span>
+                    <div class="space-y-0.5 mt-0.5">
+                      @for (board of pinnedBoardsList(); track board.id) {
+                        <a
+                          routerLink="/home-page"
+                          class="flex items-center gap-2 px-2 py-1 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+                        >
+                          <svg
+                            class="w-3 h-3 text-amber-500 shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                          </svg>
+                          <span class="truncate">{{ board.name }}</span>
+                        </a>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Mục 2: Không gian làm việc (Workspaces) -->
+            <div>
+              <button
+                type="button"
+                (click)="toggleRecentWorkspaces()"
+                class="w-full flex items-center justify-between text-[13.5px] font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white py-1.5 transition cursor-pointer select-none"
+              >
+                <span class="flex items-center gap-1.5">
+                  <span>Không gian làm việc</span>
+                </span>
+                <svg
+                  class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"
+                  [class.rotate-180]="isRecentWorkspacesOpen()"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              @if (isRecentWorkspacesOpen()) {
+                <div class="space-y-2 mt-1 pl-1">
+                  <!-- a. Workspace gần đây -->
+                  <div>
+                    <span
+                      class="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider block px-1"
+                    >
+                      Không gian gần đây
+                    </span>
+                    <div class="space-y-0.5 mt-0.5">
+                      @for (ws of recentWorkspacesList(); track ws.id) {
+                        <a
+                          routerLink="/home-page"
+                          class="flex items-center gap-2 px-2 py-1 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+                        >
+                          <span
+                            class="w-4 h-4 rounded-xs text-[9px] font-bold flex items-center justify-center text-white shrink-0"
+                            [class]="ws.color"
+                          >
+                            {{ ws.initial }}
+                          </span>
+                          <span class="truncate">{{ ws.name }}</span>
+                        </a>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- b. Workspace đã ghim -->
+                  <div>
+                    <span
+                      class="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider block px-1"
+                    >
+                      Không gian đã ghim
+                    </span>
+                    <div class="space-y-0.5 mt-0.5">
+                      @for (ws of pinnedWorkspacesList(); track ws.id) {
+                        <a
+                          routerLink="/home-page"
+                          class="flex items-center gap-2 px-2 py-1 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+                        >
+                          <svg
+                            class="w-3 h-3 text-amber-500 shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+                          </svg>
+                          <span
+                            class="w-4 h-4 rounded-xs text-[9px] font-bold flex items-center justify-center text-white shrink-0"
+                            [class]="ws.color"
+                          >
+                            {{ ws.initial }}
+                          </span>
+                          <span class="truncate">{{ ws.name }}</span>
+                        </a>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </nav>
+
+    <!-- Divider -->
+    <div class="border-t border-slate-200 dark:border-slate-800 my-2"></div>
+
+    <!-- 2. Workspaces Section (Không gian làm việc) -->
+    <div>
+      @if (!layoutService.isSidebarCollapsed()) {
+        <!-- Header section với nút tạo nhanh + -->
+        <div class="flex items-center justify-between px-2 mb-1.5">
+          <span
+            class="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase"
+          >
+            Không gian làm việc
+          </span>
+          <button
+            type="button"
+            matTooltip="Tạo không gian mới"
+            class="w-5 h-5 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Workspace List (Tối đa 3 cái) -->
+        <div class="space-y-1">
+          @for (ws of displayedWorkspaces(); track ws.id) {
+            <a
+              routerLink="/home-page"
+              class="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
+            >
+              <div
+                class="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs"
+                [class]="ws.color"
+              >
+                {{ ws.initial }}
+              </div>
+              <span class="text-sm truncate flex-1">{{ ws.name }}</span>
+            </a>
+          }
+
+          <!-- Nút Xem tất cả kèm tổng số workspace, bấm vào chuyển tới trang /workspaces -->
+          <a
+            routerLink="/workspaces"
+            class="w-full flex items-center justify-between px-2.5 py-1.5 mt-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50/60 dark:hover:bg-blue-900/20 rounded-lg transition cursor-pointer font-medium group"
+          >
+            <span>Xem tất cả ({{ totalWorkspacesCount() }})</span>
+            <svg
+              class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </a>
+        </div>
+      } @else {
+        <!-- Collapsed view: Only icon avatars with tooltips -->
+        <div class="space-y-2 py-1">
+          @for (ws of displayedWorkspaces(); track ws.id) {
+            <button
+              type="button"
+              [matTooltip]="ws.name"
+              matTooltipPosition="right"
+              class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 mx-auto transition cursor-pointer"
+            >
+              <div
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-xs"
+                [class]="ws.color"
+              >
+                {{ ws.initial }}
+              </div>
+            </button>
+          }
+
+          <!-- Icon xem tất cả khi thu gọn -->
+          <a
+            routerLink="/workspaces"
+            [matTooltip]="'Xem tất cả (' + totalWorkspacesCount() + ')'"
+            matTooltipPosition="right"
+            class="w-9 h-9 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 mx-auto transition cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
+            </svg>
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Bottom Section: Nút Trợ lý AI (Đã bỏ nhãn PRO) -->
+  <div class="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
+    @if (!layoutService.isSidebarCollapsed()) {
+      <!-- Nút Trợ lý AI mở rộng (Không còn nhãn PRO) -->
+      <button
+        type="button"
+        (click)="layoutService.toggleAiDrawer()"
+        class="w-full flex items-center justify-center gap-2.5 px-3.5 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.01] active:scale-[0.98] transition cursor-pointer"
+      >
+        <svg
+          class="w-5 h-5 text-white animate-pulse shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z"
+          />
+        </svg>
+        <span class="text-sm font-semibold tracking-tight">Trợ lý AI</span>
+      </button>
+    } @else {
+      <!-- Nút Trợ lý AI khi sidebar thu gọn -->
+      <button
+        type="button"
+        (click)="layoutService.toggleAiDrawer()"
+        matTooltip="Trợ lý AI TrelloClone"
+        matTooltipPosition="right"
+        class="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-500/25 hover:scale-105 active:scale-95 transition cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z"
+          />
+        </svg>
+      </button>
+    }
+  </div>
+</aside>

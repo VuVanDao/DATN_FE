@@ -1,0 +1,160 @@
+<!-- Mobile Backdrop Overlay -->
+<div (click)="close()" class="fixed inset-0 bg-black/40 z-40 lg:hidden"></div>
+
+<!-- Drawer Side Panel -->
+<aside
+  class="w-full sm:w-[400px] h-[calc(100vh-4rem)] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-40 shadow-2xl transition-all duration-200 animate-in slide-in-from-right-full"
+>
+  <!-- Drawer Header -->
+  <div
+    class="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50"
+  >
+    <div class="flex items-center gap-3">
+      <div
+        class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z"
+          />
+        </svg>
+      </div>
+      <div>
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white">
+          Trợ lý AI TrelloClone
+        </h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">
+          Hỏi về task, sprint, tiến độ dự án
+        </p>
+      </div>
+    </div>
+    <button
+      type="button"
+      (click)="close()"
+      matTooltip="Đóng trợ lý AI"
+      class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center cursor-pointer"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Chat Messages Body (Scrollable) -->
+  <div class="flex-1 overflow-y-auto p-4 space-y-4 slim-scrollbar">
+    @for (msg of aiMessages(); track msg.id) {
+      @if (msg.role === 'assistant') {
+        <!-- AI Message Bubble -->
+        <div class="flex items-start gap-2.5">
+          <div
+            class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 mt-0.5 shadow-xs"
+          >
+            AI
+          </div>
+          <div
+            class="flex-1 max-w-[85%] bg-slate-100 dark:bg-slate-800/80 rounded-2xl rounded-tl-xs px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed shadow-xs"
+          >
+            <div [innerHTML]="msg.content"></div>
+            <span
+              class="block text-[10px] text-slate-400 dark:text-slate-500 mt-1 text-right"
+            >
+              {{ msg.timestamp }}
+            </span>
+          </div>
+        </div>
+      } @else {
+        <!-- User Message Bubble -->
+        <div class="flex items-start justify-end gap-2.5">
+          <div
+            class="max-w-[85%] bg-blue-600 text-white rounded-2xl rounded-tr-xs px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed shadow-xs"
+          >
+            <p>{{ msg.content }}</p>
+            <span class="block text-[10px] text-blue-200 mt-1 text-right">
+              {{ msg.timestamp }}
+            </span>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- AI Thinking Indicator -->
+    @if (isAiThinking()) {
+      <div class="flex items-start gap-2.5">
+        <div
+          class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[11px] font-bold shrink-0 mt-0.5 shadow-xs"
+        >
+          AI
+        </div>
+        <div
+          class="bg-slate-100 dark:bg-slate-800/80 rounded-2xl rounded-tl-xs px-3.5 py-2.5 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 shadow-xs"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce"></span>
+          <span
+            class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.2s]"
+          ></span>
+          <span
+            class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:0.4s]"
+          ></span>
+          <span class="text-xs ml-1 font-medium">Trợ lý AI đang xử lý...</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Prompt Chips & Input Bar Footer -->
+  <div
+    class="p-4 border-t border-slate-200 dark:border-slate-800 shrink-0 bg-slate-50/80 dark:bg-slate-900/80"
+  >
+    <!-- Suggested Prompt Chips -->
+    <div class="flex flex-wrap gap-1.5 mb-3">
+      @for (chip of suggestedPrompts(); track chip) {
+        <button
+          type="button"
+          (click)="sendAiMessage(chip)"
+          [disabled]="isAiThinking()"
+          class="text-xs px-2.5 py-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer disabled:opacity-50"
+        >
+          {{ chip }}
+        </button>
+      }
+    </div>
+
+    <!-- Input Bar Form -->
+    <form (ngSubmit)="sendAiMessage()" class="relative flex items-center">
+      <input
+        type="text"
+        [value]="currentAiInput()"
+        (input)="currentAiInput.set($any($event.target).value)"
+        placeholder="Nhắn cho trợ lý AI..."
+        [disabled]="isAiThinking()"
+        class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-3.5 pr-11 py-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+      />
+      <button
+        type="submit"
+        [disabled]="!currentAiInput().trim() || isAiThinking()"
+        class="absolute right-1.5 w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white flex items-center justify-center transition cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+          />
+        </svg>
+      </button>
+    </form>
+
+    <p class="text-[10px] text-slate-400 dark:text-slate-500 text-center mt-2">
+      AI có thể mắc lỗi. Hãy kiểm tra lại thông tin quan trọng.
+    </p>
+  </div>
+</aside>
