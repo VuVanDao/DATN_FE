@@ -1,16 +1,26 @@
 <div>
   <!-- Header -->
   <div class="mb-6">
-    <h2 class="text-xl font-semibold" style="color:#f1f5f9;">Tạo tài khoản mới</h2>
-    <p class="text-sm mt-1" style="color:#94a3b8;">Bắt đầu quản lý dự án Agile trong vài phút.</p>
+    <h2 class="text-xl font-semibold" style="color: #f1f5f9">Tạo tài khoản mới</h2>
+    <p class="text-sm mt-1" style="color: #94a3b8">Bắt đầu quản lý dự án Agile trong vài phút.</p>
   </div>
 
   <!-- Error message -->
   @if (authStore.errorMessage()) {
-    <div class="mb-4 p-3 rounded-lg text-sm flex items-center gap-2"
-         style="background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#fca5a5;">
+    <div
+      class="mb-4 p-3 rounded-lg text-sm flex items-center gap-2"
+      style="
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+      "
+    >
       <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        />
       </svg>
       <span>{{ authStore.errorMessage() }}</span>
     </div>
@@ -19,76 +29,128 @@
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
     <!-- Username -->
     <div>
-      <label class="block text-xs font-medium mb-1.5" style="color:#94a3b8;">Tên hiển thị / Username</label>
+      <label class="block text-xs font-medium mb-1.5" style="color: #94a3b8"
+        >Tên hiển thị / Username</label
+      >
       <input
         type="text"
         formControlName="username"
         placeholder="Ví dụ: nguyenvana"
         class="w-full px-3.5 py-2.5 rounded-lg text-sm transition"
-        style="background:#1e293b; border:1px solid #334155; color:#f1f5f9;"
-        [style.borderColor]="usernameControl.invalid && usernameControl.touched ? 'rgba(239,68,68,.7)' : ''"
+        style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9"
+        [style.borderColor]="
+          usernameControl.invalid && usernameControl.touched ? 'rgba(239,68,68,.7)' : ''
+        "
       />
       @if (usernameControl.invalid && usernameControl.touched) {
-        <p class="text-xs mt-1" style="color:#f87171;">
-          @if (usernameControl.hasError('required')) { Tên người dùng không được để trống. }
-          @else if (usernameControl.hasError('minlength')) { Tên người dùng phải từ 3 ký tự trở lên. }
+        <p class="text-xs mt-1" style="color: #f87171">
+          @if (usernameControl.hasError('required')) {
+            Tên người dùng không được để trống.
+          } @else if (usernameControl.hasError('minlength')) {
+            Tên người dùng phải từ 3 ký tự trở lên.
+          }
         </p>
       }
     </div>
 
     <!-- Email -->
     <div>
-      <label class="block text-xs font-medium mb-1.5" style="color:#94a3b8;">Email</label>
+      <label class="block text-xs font-medium mb-1.5" style="color: #94a3b8">Email</label>
       <input
         type="email"
         formControlName="email"
         placeholder="tenban@example.com"
         class="w-full px-3.5 py-2.5 rounded-lg text-sm transition"
-        style="background:#1e293b; border:1px solid #334155; color:#f1f5f9;"
-        [style.borderColor]="emailControl.invalid && emailControl.touched ? 'rgba(239,68,68,.7)' : ''"
+        style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9"
+        [style.borderColor]="
+          emailControl.invalid && emailControl.touched ? 'rgba(239,68,68,.7)' : ''
+        "
       />
       @if (emailControl.invalid && emailControl.touched) {
-        <p class="text-xs mt-1" style="color:#f87171;">
-          @if (emailControl.hasError('required')) { Email không được để trống. }
-          @else if (emailControl.hasError('email')) { Định dạng email không hợp lệ. }
+        <p class="text-xs mt-1" style="color: #f87171">
+          @if (emailControl.hasError('required')) {
+            Email không được để trống.
+          } @else if (emailControl.hasError('email')) {
+            Định dạng email không hợp lệ.
+          }
         </p>
       }
     </div>
 
     <!-- Password -->
     <div>
-      <label class="block text-xs font-medium mb-1.5" style="color:#94a3b8;">Mật khẩu</label>
-      <input
-        type="password"
-        formControlName="password"
-        placeholder="Tối thiểu 6 ký tự"
-        class="w-full px-3.5 py-2.5 rounded-lg text-sm transition"
-        style="background:#1e293b; border:1px solid #334155; color:#f1f5f9;"
-        [style.borderColor]="passwordControl.invalid && passwordControl.touched ? 'rgba(239,68,68,.7)' : ''"
-      />
+      <label class="block text-xs font-medium mb-1.5" style="color: #94a3b8">Mật khẩu</label>
+      <div class="relative">
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          placeholder="Tối thiểu 6 ký tự"
+          class="w-full px-3.5 py-2.5 pr-10 rounded-lg text-sm transition"
+          style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9"
+          [style.borderColor]="
+            passwordControl.invalid && passwordControl.touched ? 'rgba(239,68,68,.7)' : ''
+          "
+        />
+        <button
+          type="button"
+          (click)="toggleShowPassword()"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-200 transition cursor-pointer"
+        >
+          @if (showPassword()) {
+            <mat-icon class="icon-xs" fontIcon="visibility_off"></mat-icon>
+          } @else {
+            <mat-icon class="icon-xs" fontIcon="visibility"></mat-icon>
+          }
+        </button>
+      </div>
       @if (passwordControl.invalid && passwordControl.touched) {
-        <p class="text-xs mt-1" style="color:#f87171;">
-          @if (passwordControl.hasError('required')) { Mật khẩu không được để trống. }
-          @else if (passwordControl.hasError('minlength')) { Mật khẩu phải từ 6 ký tự trở lên. }
+        <p class="text-xs mt-1" style="color: #f87171">
+          @if (passwordControl.hasError('required')) {
+            Mật khẩu không được để trống.
+          } @else if (passwordControl.hasError('minlength')) {
+            Mật khẩu phải từ 6 ký tự trở lên.
+          }
         </p>
       }
     </div>
 
     <!-- Confirm Password -->
     <div>
-      <label class="block text-xs font-medium mb-1.5" style="color:#94a3b8;">Xác nhận mật khẩu</label>
-      <input
-        type="password"
-        formControlName="confirmPassword"
-        placeholder="••••••••"
-        class="w-full px-3.5 py-2.5 rounded-lg text-sm transition"
-        style="background:#1e293b; border:1px solid #334155; color:#f1f5f9;"
-        [style.borderColor]="confirmPasswordControl.invalid && confirmPasswordControl.touched ? 'rgba(239,68,68,.7)' : ''"
-      />
+      <label class="block text-xs font-medium mb-1.5" style="color: #94a3b8"
+        >Xác nhận mật khẩu</label
+      >
+      <div class="relative">
+        <input
+          [type]="showConfirmPassword() ? 'text' : 'password'"
+          formControlName="confirmPassword"
+          placeholder="••••••••"
+          class="w-full px-3.5 py-2.5 pr-10 rounded-lg text-sm transition"
+          style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9"
+          [style.borderColor]="
+            confirmPasswordControl.invalid && confirmPasswordControl.touched
+              ? 'rgba(239,68,68,.7)'
+              : ''
+          "
+        />
+        <button
+          type="button"
+          (click)="toggleShowConfirmPassword()"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-200 transition cursor-pointer"
+        >
+          @if (showConfirmPassword()) {
+            <mat-icon class="icon-xs" fontIcon="visibility_off"></mat-icon>
+          } @else {
+            <mat-icon class="icon-xs" fontIcon="visibility"></mat-icon>
+          }
+        </button>
+      </div>
       @if (confirmPasswordControl.invalid && confirmPasswordControl.touched) {
-        <p class="text-xs mt-1" style="color:#f87171;">
-          @if (confirmPasswordControl.hasError('required')) { Vui lòng nhập lại mật khẩu. }
-          @else if (confirmPasswordControl.hasError('passwordMismatch')) { Mật khẩu xác nhận không khớp! }
+        <p class="text-xs mt-1" style="color: #f87171">
+          @if (confirmPasswordControl.hasError('required')) {
+            Vui lòng nhập lại mật khẩu.
+          } @else if (confirmPasswordControl.hasError('passwordMismatch')) {
+            Mật khẩu xác nhận không khớp!
+          }
         </p>
       }
     </div>
@@ -98,13 +160,20 @@
       type="submit"
       [disabled]="registerForm.invalid || authStore.isLoading()"
       class="w-full mt-1 py-2.5 px-4 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-      style="background:#6366f1; box-shadow:0 4px 14px rgba(99,102,241,.3);"
-      onmouseover="if(!this.disabled) this.style.background='#818cf8'"
-      onmouseout="if(!this.disabled) this.style.background='#6366f1'"
+      style="background: #6366f1; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3)"
+      onmouseover="if (!this.disabled) this.style.background = '#818cf8';"
+      onmouseout="if (!this.disabled) this.style.background = '#6366f1';"
     >
       @if (authStore.isLoading()) {
         <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
         <span>Đang tạo tài khoản...</span>
@@ -115,8 +184,10 @@
   </form>
 
   <!-- Link to login -->
-  <p class="text-center text-sm mt-8" style="color:#64748b;">
+  <p class="text-center text-sm mt-8" style="color: #64748b">
     Đã có tài khoản?
-    <a routerLink="/login" class="font-medium hover:opacity-80 transition" style="color:#818cf8;">Đăng nhập ngay</a>
+    <a routerLink="/login" class="font-medium hover:opacity-80 transition" style="color: #818cf8"
+      >Đăng nhập ngay</a
+    >
   </p>
 </div>

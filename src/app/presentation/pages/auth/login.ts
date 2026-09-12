@@ -1,16 +1,18 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthStore } from '../../state/auth.store';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatIcon],
   templateUrl: './login.html',
 })
 export class LoginPage {
   readonly authStore = inject(AuthStore);
+  readonly showPassword = signal<boolean>(false);
   readonly loginForm = new FormGroup({
     email: new FormControl('', {
       nonNullable: true,
@@ -26,6 +28,9 @@ export class LoginPage {
   }
   get PasswordControl() {
     return this.loginForm.controls.password;
+  }
+  toggleShowPassword(): void {
+    this.showPassword.update((v) => !v);
   }
   onSubmit(): void {
     if (this.loginForm.invalid) {

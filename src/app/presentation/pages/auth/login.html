@@ -59,16 +59,29 @@
           >Quên mật khẩu?</a
         >
       </div>
-      <input
-        type="password"
-        formControlName="password"
-        placeholder="••••••••"
-        class="w-full px-3.5 py-2.5 rounded-lg text-sm transition"
-        style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9"
-        [style.borderColor]="
-          PasswordControl.invalid && PasswordControl.touched ? 'rgba(239,68,68,.7)' : ''
-        "
-      />
+      <div class="relative">
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          placeholder="••••••••"
+          class="w-full px-3.5 py-2.5 pr-10 rounded-lg text-sm transition"
+          style="background: #1e293b; border: 1px solid #334155; color: #f1f5f9"
+          [style.borderColor]="
+            PasswordControl.invalid && PasswordControl.touched ? 'rgba(239,68,68,.7)' : ''
+          "
+        />
+        <button
+          type="button"
+          (click)="toggleShowPassword()"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-200 transition cursor-pointer"
+        >
+          @if (showPassword()) {
+            <mat-icon class="icon-xs" fontIcon="visibility_off"></mat-icon>
+          } @else {
+            <mat-icon class="icon-xs" fontIcon="visibility"></mat-icon>
+          }
+        </button>
+      </div>
       @if (PasswordControl.invalid && PasswordControl.touched) {
         <p class="text-xs mt-1" style="color: #f87171">
           @if (PasswordControl.hasError('required')) {

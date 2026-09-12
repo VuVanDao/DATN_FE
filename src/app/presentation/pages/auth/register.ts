@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthStore } from '../../state/auth.store';
-import e from 'express';
+import { MatIcon } from '@angular/material/icon';
 
 export const passwordMatchValidator: ValidatorFn = (
   control: AbstractControl,
@@ -34,11 +34,13 @@ export const passwordMatchValidator: ValidatorFn = (
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MatIcon],
   templateUrl: './register.html',
 })
 export class RegisterPage {
   readonly authStore = inject(AuthStore);
+  readonly showPassword = signal<boolean>(false);
+  readonly showConfirmPassword = signal<boolean>(false);
   readonly registerForm = new FormGroup(
     {
       username: new FormControl('', {
@@ -71,6 +73,12 @@ export class RegisterPage {
   }
   get confirmPasswordControl() {
     return this.registerForm.controls.confirmPassword;
+  }
+  toggleShowPassword(): void {
+    this.showPassword.update((v) => !v);
+  }
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword.update((v) => !v);
   }
   onSubmit(): void {
     if (this.registerForm.invalid) {

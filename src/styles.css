@@ -215,4 +215,26 @@ html.dark .custom-user-menu .admin-item mat-icon {
   color: #818cf8 !important;
 }
 
+/* ===== TIỆN ÍCH CUSTOM KÍCH THƯỚC MAT-ICON TOÀN DỰ ÁN ===== */
+mat-icon.icon-xs {
+  width: 1rem !important;      /* 16px */
+  height: 1rem !important;
+  font-size: 1rem !important;
+  line-height: 1rem !important;
+}
+
+mat-icon.icon-sm {
+  width: 1.125rem !important;  /* 18px */
+  height: 1.125rem !important;
+  font-size: 1.125rem !important;
+  line-height: 1.125rem !important;
+}
+
+mat-icon.icon-md {
+  width: 1.25rem !important;   /* 20px */
+  height: 1.25rem !important;
+  font-size: 1.25rem !important;
+  line-height: 1.25rem !important;
+}
+
 
