@@ -11,22 +11,7 @@
     </div>
   </div>
 
-  <!-- Alert: Thông báo cập nhật thành công -->
-  @if (showSuccessAlert()) {
-    <div
-      class="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-sm transition"
-    >
-      <svg
-        class="w-5 h-5 text-emerald-500 shrink-0"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-      </svg>
-      <span class="font-medium">Cập nhật thông tin hồ sơ thành công!</span>
-    </div>
-  }
+
 
   @if (userStore.isLoading() || !userStore.currentUserData()) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch animate-pulse">
@@ -121,7 +106,7 @@
       <app-profile-overview class="lg:col-span-4 h-full block" />
 
       <!-- Cột Phải -->
-      <app-profile-details class="lg:col-span-8 h-full block" (saved)="onProfileUpdated()" />
+      <app-profile-details class="lg:col-span-8 h-full block" />
     </div>
   }
 </div>

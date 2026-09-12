@@ -7,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { UserStore } from '../../../../state/user.store';
+import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'app-profile-details',
@@ -73,6 +74,7 @@ export class ProfileDetailsComponent {
       this.isSaving.set(false);
       this.isEditMode.set(false);
       this.saved.emit();
+      toast.success('Cập nhật thông tin hồ sơ thành công!');
     }, 600);
   }
 }

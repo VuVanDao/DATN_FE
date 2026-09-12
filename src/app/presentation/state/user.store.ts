@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { ChangePasswordUseCase } from '../../application/user/change-password.use-case';
 import { ChangePasswordRequest, User } from '../../domain/models/user.model';
 import { GetCurrentUserUseCase } from '../../application/user/get-current-user.use-case';
+import { toast } from 'ngx-sonner';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,7 @@ export class UserStore {
           this.isLoading.set(false);
           this.errorMessage.set(null);
           this.successMessage.set('Đổi mật khẩu thành công!');
+          toast.success('Đổi mật khẩu thành công!');
           if (onSuccess) {
             onSuccess();
           }
@@ -49,6 +51,7 @@ export class UserStore {
           // Nếu không có mảng errors thì mới lấy message chung
           const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại.';
           this.errorMessage.set(msg);
+          toast.error(msg);
         },
       });
   };

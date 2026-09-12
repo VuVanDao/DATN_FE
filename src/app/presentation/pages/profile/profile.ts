@@ -14,17 +14,8 @@ export class ProfilePage implements OnInit {
   readonly userStore = inject(UserStore);
   readonly layoutService = inject(LayoutService);
 
-  readonly showSuccessAlert = signal<boolean>(false);
-
   ngOnInit(): void {
     this.layoutService.setSidebar('settings');
     this.userStore.getCurrentUser();
-  }
-
-  onProfileUpdated(): void {
-    this.showSuccessAlert.set(true);
-    setTimeout(() => {
-      this.showSuccessAlert.set(false);
-    }, 3000);
   }
 }
