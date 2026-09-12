@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { AuthStore } from '../../../../state/auth.store';
 import { LayoutService } from '../../../../../application/layout/layout.service';
 
@@ -19,7 +20,7 @@ export interface NotificationItem {
 @Component({
   selector: 'app-main-header',
   standalone: true,
-  imports: [RouterLink, FormsModule, MatCardModule, MatTooltipModule, MatIconModule],
+  imports: [RouterLink, FormsModule, MatCardModule, MatTooltipModule, MatIconModule, MatMenuModule],
   templateUrl: './main-header.component.html',
 })
 export class MainHeaderComponent implements OnInit {
@@ -27,7 +28,6 @@ export class MainHeaderComponent implements OnInit {
   readonly layoutService = inject(LayoutService);
   private readonly router = inject(Router);
 
-  readonly isDropdownOpen = signal<boolean>(false);
   readonly isNotifOpen = signal<boolean>(false);
   readonly searchQuery = signal<string>('');
 
@@ -106,22 +106,8 @@ export class MainHeaderComponent implements OnInit {
     }
   }
 
-  toggleDropdown(): void {
-    this.isDropdownOpen.update((open) => !open);
-    if (this.isDropdownOpen()) {
-      this.isNotifOpen.set(false);
-    }
-  }
-
-  closeDropdown(): void {
-    this.isDropdownOpen.set(false);
-  }
-
   toggleNotif(): void {
     this.isNotifOpen.update((open) => !open);
-    if (this.isNotifOpen()) {
-      this.isDropdownOpen.set(false);
-    }
   }
 
   closeNotif(): void {
@@ -133,19 +119,16 @@ export class MainHeaderComponent implements OnInit {
   }
 
   navigateToProfile(): void {
-    this.closeDropdown();
     this.layoutService.setSidebar('settings');
     this.router.navigate(['/profile']);
   }
 
   navigateToSettings(): void {
-    this.closeDropdown();
     this.layoutService.setSidebar('settings');
     this.router.navigate(['/settings']);
   }
 
   navigateToAdmin(): void {
-    this.closeDropdown();
     this.router.navigate(['/security']);
   }
 

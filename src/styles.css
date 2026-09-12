@@ -81,3 +81,138 @@ html.light body {
 .slim-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.45);
 }
+
+/* ===== CUSTOM MATERIAL USER MENU ===== */
+.custom-user-menu.mat-mdc-menu-panel {
+  border-radius: 1rem !important; /* rounded-2xl */
+  padding: 0.375rem !important; /* 6px padding quanh panel */
+  min-width: 14.5rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Loại bỏ padding-top/bottom mặc định (8px) của Material để cân đối padding X và Y */
+.custom-user-menu .mat-mdc-menu-content {
+  padding: 0 !important;
+}
+
+html.dark .custom-user-menu.mat-mdc-menu-panel {
+  background-color: #0f172a !important; /* bg-slate-900 */
+  border-color: #1e293b !important; /* border-slate-800 */
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5) !important;
+}
+
+.custom-user-menu .mat-mdc-menu-item {
+  min-height: 36px !important;
+  height: 36px !important;
+  border-radius: 0.625rem !important; /* rounded-lg */
+  padding: 0 0.625rem !important;
+  font-size: 0.8125rem !important; /* text-[13px] tinh tế */
+  display: flex !important;
+  align-items: center !important;
+  color: #334155 !important; /* text-slate-700 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item {
+  color: #cbd5e1 !important; /* dark:text-slate-300 */
+}
+
+.custom-user-menu .mat-mdc-menu-item:hover {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* text-slate-900 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item:hover {
+  background-color: rgba(30, 41, 59, 0.7) !important; /* dark:bg-slate-800/70 */
+  color: #ffffff !important;
+}
+
+.custom-user-menu .mat-mdc-menu-item.logout-item {
+  color: #dc2626 !important; /* text-red-600 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.logout-item {
+  color: #f87171 !important; /* dark:text-red-400 */
+}
+
+.custom-user-menu .mat-mdc-menu-item.logout-item:hover {
+  background-color: #fef2f2 !important; /* bg-red-50 */
+  color: #b91c1c !important;
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.logout-item:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important; /* dark:bg-red-500/10 */
+  color: #fca5a5 !important;
+}
+
+.custom-user-menu .mat-mdc-menu-item.admin-item {
+  color: #4f46e5 !important; /* text-indigo-600 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.admin-item {
+  color: #818cf8 !important; /* dark:text-indigo-400 */
+}
+
+.custom-user-menu .mat-mdc-menu-item.admin-item:hover {
+  background-color: #eef2ff !important;
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.admin-item:hover {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* ===== ICON SIZE & COLOR FOR USER MENU ===== */
+.custom-user-menu mat-icon {
+  font-size: 1.125rem !important; /* 18px nhỏ gọn tinh tế */
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  line-height: 1.125rem !important;
+  color: #94a3b8 !important; /* text-slate-400 */
+  margin-right: 0.625rem !important; /* khoảng cách với chữ */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  transition: color 0.15s ease;
+}
+
+html.dark .custom-user-menu mat-icon {
+  color: #64748b !important; /* dark:text-slate-500 */
+}
+
+.custom-user-menu .mat-mdc-menu-item:hover mat-icon {
+  color: #475569 !important; /* slate-600 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item:hover mat-icon {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+/* Icon Đăng xuất (màu đỏ) */
+.custom-user-menu .logout-item mat-icon {
+  color: #dc2626 !important; /* red-600 */
+}
+
+html.dark .custom-user-menu .logout-item mat-icon {
+  color: #f87171 !important; /* dark:text-red-400 */
+}
+
+.custom-user-menu .logout-item:hover mat-icon {
+  color: #b91c1c !important; /* red-700 */
+}
+
+html.dark .custom-user-menu .logout-item:hover mat-icon {
+  color: #fca5a5 !important;
+}
+
+/* Icon Quản trị (màu tím) */
+.custom-user-menu .admin-item mat-icon {
+  color: #6366f1 !important;
+}
+
+html.dark .custom-user-menu .admin-item mat-icon {
+  color: #818cf8 !important;
+}
+
+
