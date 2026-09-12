@@ -2,7 +2,9 @@
   <!-- Page Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Hồ sơ cá nhân</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+        Hồ sơ cá nhân
+      </h1>
       <p class="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
         Quản lý thông tin tài khoản và tùy chỉnh hồ sơ cá nhân của bạn.
       </p>
@@ -14,301 +16,112 @@
     <div
       class="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-sm transition"
     >
-      <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        class="w-5 h-5 text-emerald-500 shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
       </svg>
       <span class="font-medium">Cập nhật thông tin hồ sơ thành công!</span>
     </div>
   }
 
-  <!-- Bố cục 2 cột bằng chiều cao nhau (items-stretch + h-full) -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-    <!-- CỘT TRÁI (4/12): Tổng quan tài khoản - h-full flex flex-col justify-between -->
-    <div
-      class="lg:col-span-4 h-full flex flex-col justify-between bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm"
-    >
-      <!-- Cụm trên: Avatar + Tên + Email + Badges -->
-      <div class="flex flex-col items-center text-center">
-        <!-- Avatar + Nút camera -->
-        <div class="relative group mb-3">
-          @if (authStore.currentUser()?.AvatarUrl) {
-            <img
-              [src]="authStore.currentUser()!.AvatarUrl"
-              [alt]="authStore.currentUser()!.UserName"
-              class="w-20 h-20 rounded-2xl object-cover ring-4 ring-slate-100 dark:ring-slate-800 shadow-md"
-            />
-          } @else {
-            <div
-              class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-2xl shadow-md ring-4 ring-slate-100 dark:ring-slate-800"
-            >
-              {{ (authStore.currentUser()?.UserName || 'U').charAt(0).toUpperCase() }}
-            </div>
-          }
-          <button
-            type="button"
-            matTooltip="Thay đổi ảnh đại diện"
-            class="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-md transition cursor-pointer"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Tên & Email -->
-        <h2 class="text-base font-bold text-slate-900 dark:text-white truncate max-w-full px-1">
-          {{ authStore.currentUser()?.UserName || 'Chưa có tên' }}
-        </h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate max-w-full px-1">
-          {{ authStore.currentUser()?.Email || '' }}
-        </p>
-
-        <!-- Badges: Role & Trạng thái -->
-        <div class="flex flex-wrap items-center justify-center gap-1.5 mt-3">
-          @for (role of authStore.currentUser()?.Roles ?? []; track role) {
-            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full" [class]="roleBadgeClass">
-              {{ role }}
-            </span>
-          }
-          @if (authStore.currentUser()?.IsActive) {
-            <span
-              class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25"
-            >
-              Đang hoạt động
-            </span>
-          }
-        </div>
-      </div>
-
-      <!-- Cụm dưới: ID tài khoản (luôn bám sát đáy card) -->
-      <div class="w-full pt-3.5 mt-3.5 border-t border-slate-100 dark:border-slate-800/80">
-        <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
-          ID tài khoản
-        </p>
-        <div
-          class="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-xl px-3 py-2"
-        >
-          <code class="text-xs font-mono text-slate-600 dark:text-slate-400 truncate">
-            {{ authStore.currentUser()?.Id || '—' }}
-          </code>
-          <button
-            type="button"
-            (click)="copyId(authStore.currentUser()?.Id)"
-            [matTooltip]="isCopied() ? 'Đã sao chép!' : 'Sao chép ID'"
-            class="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-white transition cursor-pointer p-0.5"
-          >
-            @if (isCopied()) {
-              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            } @else {
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- CỘT PHẢI (8/12): Thông tin chi tiết HOẶC Form Chỉnh sửa - h-full flex flex-col justify-between -->
-    <div
-      class="lg:col-span-8 h-full flex flex-col justify-between bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
-    >
-      <!-- Card Header -->
+  @if (userStore.isLoading() || !userStore.currentUserData()) {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch animate-pulse">
+      <!-- CỘT TRÁI SKELETON (4/12 - Căn giữa, không còn chân ID) -->
       <div
-        class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0"
+        class="lg:col-span-4 h-full min-h-[380px] flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm"
       >
-        <div>
-          <h2 class="text-base font-semibold text-slate-900 dark:text-white">
-            {{ isEditMode() ? 'Chỉnh sửa hồ sơ' : 'Thông tin chi tiết' }}
-          </h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {{ isEditMode() ? 'Cập nhật tên hiển thị và giới thiệu của bạn' : 'Thông tin tài khoản đã đăng ký trong hệ thống' }}
-          </p>
-        </div>
+        <!-- Avatar Skeleton (To hơn & Bo góc) -->
+        <div
+          class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-slate-200 dark:bg-slate-800 mb-4 shadow-inner"
+        ></div>
 
-        @if (!isEditMode()) {
-          <button
-            type="button"
-            (click)="enterEditMode()"
-            class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-blue-500/30 bg-blue-50/60 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-600/20 text-xs font-semibold transition cursor-pointer"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
-            <span>Chỉnh sửa</span>
-          </button>
-        } @else {
-          <span
-            class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-500/20"
-          >
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-            Đang chỉnh sửa
-          </span>
-        }
+        <!-- Tên Skeleton -->
+        <div class="h-6 w-44 bg-slate-200 dark:bg-slate-800 rounded-lg mb-2"></div>
+
+        <!-- Email Skeleton -->
+        <div class="h-4 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-lg mb-4"></div>
+
+        <!-- Badges Skeleton -->
+        <div class="flex items-center justify-center gap-2">
+          <div class="h-6 w-24 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+          <div class="h-6 w-24 rounded-full bg-slate-100 dark:bg-slate-800/60"></div>
+        </div>
       </div>
 
-      <!-- ===== 1. VIEW MODE (Chế độ xem gọn gàng, chữ rõ nét) ===== -->
-      @if (!isEditMode()) {
+      <!-- CỘT PHẢI SKELETON (8/12) -->
+      <div
+        class="lg:col-span-8 h-full min-h-[380px] flex flex-col justify-between bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+      >
+        <!-- Card Header Skeleton -->
+        <div
+          class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0"
+        >
+          <div class="space-y-1.5">
+            <div class="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
+            <div class="h-3.5 w-60 bg-slate-100 dark:bg-slate-800/60 rounded-lg"></div>
+          </div>
+          <!-- Button Chỉnh sửa Skeleton -->
+          <div class="h-8 w-24 bg-slate-100 dark:bg-slate-800/70 rounded-xl"></div>
+        </div>
+
+        <!-- Content Body Skeleton -->
         <div class="p-5 flex-1 flex flex-col justify-between space-y-3.5">
+          <!-- Grid 4 ô chi tiết -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <!-- Tên hiển thị -->
-            <div class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3">
-              <span class="text-xs font-medium text-slate-400 dark:text-slate-500 block">Tên hiển thị</span>
-              <p class="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">
-                {{ authStore.currentUser()?.UserName || '—' }}
-              </p>
+            <div
+              class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-2"
+            >
+              <div class="h-3 w-16 bg-slate-200 dark:bg-slate-700/60 rounded"></div>
+              <div class="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
             </div>
 
-            <!-- Email -->
-            <div class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3">
-              <span class="text-xs font-medium text-slate-400 dark:text-slate-500 block">Địa chỉ Email</span>
-              <p class="text-sm font-semibold text-slate-900 dark:text-white mt-0.5 truncate">
-                {{ authStore.currentUser()?.Email || '—' }}
-              </p>
+            <div
+              class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-2"
+            >
+              <div class="h-3 w-20 bg-slate-200 dark:bg-slate-700/60 rounded"></div>
+              <div class="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div>
             </div>
 
-            <!-- Quyền hạn -->
-            <div class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3">
-              <span class="text-xs font-medium text-slate-400 dark:text-slate-500 block">Quyền hạn hệ thống</span>
-              <div class="flex flex-wrap gap-1.5 mt-0.5">
-                @for (role of authStore.currentUser()?.Roles ?? []; track role) {
-                  <span class="text-xs font-medium px-2 py-0.5 rounded-md" [class]="roleBadgeClass">
-                    {{ role }}
-                  </span>
-                }
-                @if ((authStore.currentUser()?.Roles?.length ?? 0) === 0) {
-                  <span class="text-sm text-slate-500 dark:text-slate-400">—</span>
-                }
-              </div>
+            <div
+              class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-2"
+            >
+              <div class="h-3 w-28 bg-slate-200 dark:bg-slate-700/60 rounded"></div>
+              <div class="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
             </div>
 
-            <!-- Trạng thái -->
-            <div class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3">
-              <span class="text-xs font-medium text-slate-400 dark:text-slate-500 block">Trạng thái tài khoản</span>
-              <div class="flex items-center gap-2 mt-0.5">
-                <span
-                  class="w-2 h-2 rounded-full shrink-0"
-                  [class]="authStore.currentUser()?.IsActive ? 'bg-emerald-500' : 'bg-slate-400'"
-                ></span>
-                <span class="text-sm font-medium text-slate-800 dark:text-slate-200">
-                  {{ authStore.currentUser()?.IsActive ? 'Tài khoản hoạt động bình thường' : 'Không xác định' }}
-                </span>
+            <div
+              class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-2"
+            >
+              <div class="h-3 w-24 bg-slate-200 dark:bg-slate-700/60 rounded"></div>
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                <div class="h-4 w-36 bg-slate-200 dark:bg-slate-700 rounded"></div>
               </div>
             </div>
           </div>
 
-          <!-- Giới thiệu (Bio) -->
-          <div class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3.5 flex-1 flex flex-col justify-center">
-            <span class="text-xs font-medium text-slate-400 dark:text-slate-500 block mb-1">Giới thiệu bản thân</span>
-            <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-              {{ authStore.currentUser()?.Bio || 'Chưa có lời giới thiệu nào. Hãy bấm "Chỉnh sửa" để cập nhật phần giới thiệu về bạn.' }}
-            </p>
+          <!-- Ô Giới thiệu bản thân Skeleton -->
+          <div
+            class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3.5 flex-1 flex flex-col justify-center space-y-2"
+          >
+            <div class="h-3 w-28 bg-slate-200 dark:bg-slate-700/60 rounded mb-1"></div>
+            <div class="h-3.5 w-full bg-slate-200 dark:bg-slate-700 rounded"></div>
+            <div class="h-3.5 w-4/5 bg-slate-100 dark:bg-slate-800/60 rounded"></div>
           </div>
         </div>
-      }
-
-      <!-- ===== 2. EDIT MODE (Form chỉnh sửa chữ to rõ, gọn gàng, bằng chiều cao card trái) ===== -->
-      @if (isEditMode()) {
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-5 flex-1 flex flex-col justify-between space-y-3.5">
-          <div class="space-y-3">
-            <!-- Tên hiển thị input -->
-            <div>
-              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                Tên hiển thị <span class="text-red-500">*</span>
-              </label>
-              <input
-                formControlName="username"
-                type="text"
-                placeholder="Nhập tên hiển thị..."
-                class="w-full bg-slate-50 dark:bg-slate-800/90 border rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                [class.border-red-400]="usernameControl.invalid && usernameControl.touched"
-                [class.border-slate-300]="!(usernameControl.invalid && usernameControl.touched)"
-                [class.dark:border-slate-700]="!(usernameControl.invalid && usernameControl.touched)"
-              />
-              @if (usernameControl.invalid && usernameControl.touched) {
-                <p class="text-xs text-red-500 mt-1">Tên hiển thị phải có ít nhất 3 ký tự.</p>
-              }
-            </div>
-
-            <!-- Giới thiệu textarea -->
-            <div>
-              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
-                Giới thiệu bản thân
-              </label>
-              <textarea
-                formControlName="bio"
-                placeholder="Mô tả ngắn gọn về bản thân..."
-                rows="2"
-                class="w-full bg-slate-50 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
-              ></textarea>
-            </div>
-
-            <!-- Thông tin chỉ đọc (Email & Role) -->
-            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-800">
-              <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <span class="truncate">Email & Quyền hạn là cố định do hệ thống quản lý.</span>
-            </div>
-          </div>
-
-          <!-- Form Action Bar -->
-          <div class="flex items-center justify-end gap-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
-            <button
-              type="button"
-              (click)="cancelEdit()"
-              class="px-4 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-            >
-              Huỷ bỏ
-            </button>
-            <button
-              type="submit"
-              [disabled]="form.invalid || isSaving()"
-              class="px-5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold shadow-sm transition cursor-pointer flex items-center gap-2"
-            >
-              @if (isSaving()) {
-                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                <span>Đang lưu...</span>
-              } @else {
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Lưu thay đổi</span>
-              }
-            </button>
-          </div>
-        </form>
-      }
+      </div>
     </div>
-  </div>
+  } @else {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+      <!-- Cột Trái -->
+      <app-profile-overview class="lg:col-span-4 h-full block" />
+
+      <!-- Cột Phải -->
+      <app-profile-details class="lg:col-span-8 h-full block" (saved)="onProfileUpdated()" />
+    </div>
+  }
 </div>

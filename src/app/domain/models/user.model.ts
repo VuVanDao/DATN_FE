@@ -7,6 +7,15 @@ export interface User {
   IsActive?: boolean;
   Roles: string[];
 }
+export interface UserResponse {
+  id: string;
+  email: string;
+  username: string;
+  avatarUrl?: string;
+  bio?: string;
+  isActive?: boolean;
+  roles: string[];
+}
 export interface ChangePasswordRequest {
   CurrentPassword: string;
   NewPassword: string;

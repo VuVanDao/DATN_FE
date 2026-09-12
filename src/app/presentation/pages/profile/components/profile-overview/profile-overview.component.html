@@ -1,0 +1,65 @@
+<!-- CỘT TRÁI: Tổng quan tài khoản (Căn giữa, không còn phần chân ID) -->
+<div
+  class="h-full flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm"
+>
+  <!-- Avatar + Nút camera (To hơn & Bo góc hiện đại) -->
+  <div class="relative group mb-4">
+    @if (userStore.currentUserData()?.AvatarUrl) {
+      <img
+        [src]="userStore.currentUserData()!.AvatarUrl"
+        [alt]="userStore.currentUserData()!.UserName"
+        class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover ring-4 ring-slate-100 dark:ring-slate-800 shadow-lg"
+      />
+    } @else {
+      <div
+        class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-3xl sm:text-4xl shadow-lg ring-4 ring-slate-100 dark:ring-slate-800"
+      >
+        {{ (userStore.currentUserData()?.UserName || 'U').charAt(0).toUpperCase() }}
+      </div>
+    }
+    <button
+      type="button"
+      matTooltip="Thay đổi ảnh đại diện"
+      class="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-md transition cursor-pointer"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+        />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Tên & Email -->
+  <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate max-w-full px-2">
+    {{ userStore.currentUserData()?.UserName || 'Chưa có tên' }}
+  </h2>
+  <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate max-w-full px-2">
+    {{ userStore.currentUserData()?.Email || '' }}
+  </p>
+
+  <!-- Badges: Role & Trạng thái -->
+  <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
+    @for (role of userStore.currentUserData()?.Roles ?? []; track role) {
+      <span class="text-xs font-medium px-3 py-1 rounded-full" [class]="roleBadgeClass">
+        {{ role }}
+      </span>
+    }
+    @if (userStore.currentUserData()?.IsActive) {
+      <span
+        class="text-xs font-medium px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25"
+      >
+        Đang hoạt động
+      </span>
+    }
+  </div>
+</div>
