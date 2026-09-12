@@ -75,6 +75,7 @@ export class AuthStore {
       error: () => {
         // Kể cả BE lỗi mạng thì FE vẫn xóa sạch phiên để user thoát ra an toàn
         this._currentUser.set(null);
+        this._isLoading.set(false);
         this._storageService.clear();
         this.router.navigate(['/login']);
       },
