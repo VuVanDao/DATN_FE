@@ -8,6 +8,7 @@ import { authGuard } from './presentation/guards/auth.guards';
 import { SettingsPage } from './presentation/pages/settings/settings';
 import { MainSecurityPage } from './presentation/pages/security/main-security-page';
 import { ProfilePage } from './presentation/pages/profile/profile';
+import { guestGuard } from './presentation/guards/guest.guards';
 
 export const routes: Routes = [
   {
@@ -45,6 +46,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Authlayout,
+    canActivate: [guestGuard],
     children: [
       {
         path: '',
