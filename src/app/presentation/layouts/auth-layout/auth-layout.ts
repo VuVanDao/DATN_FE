@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { LoginPage } from '../../pages/auth/login';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 
 @Component({
   imports: [RouterOutlet],
@@ -8,4 +8,22 @@ import { LoginPage } from '../../pages/auth/login';
   standalone: true,
   templateUrl: './auth-layout.html',
 })
-export class Authlayout {}
+export class Authlayout implements OnInit {
+  private readonly router = inject(Router);
+  readonly isRecoveryMode = signal<boolean>(false);
+
+  ngOnInit(): void {
+    this.checkRecoveryMode(this.router.url);
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        this.checkRecoveryMode(e.urlAfterRedirects);
+      });
+  }
+
+  private checkRecoveryMode(url: string): void {
+    this.isRecoveryMode.set(
+      url.includes('forgot-password') || url.includes('reset-password'),
+    );
+  }
+}

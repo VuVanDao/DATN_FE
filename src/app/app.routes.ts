@@ -10,6 +10,9 @@ import { MainSecurityPage } from './presentation/pages/security/main-security-pa
 import { ProfilePage } from './presentation/pages/profile/profile';
 import { guestGuard } from './presentation/guards/guest.guards';
 
+import { ForgotPasswordPage } from './presentation/pages/auth/forgot-password';
+import { ResetPasswordPage } from './presentation/pages/auth/reset-password';
+
 export const routes: Routes = [
   {
     path: '',
@@ -60,6 +63,14 @@ export const routes: Routes = [
       {
         path: 'register',
         component: RegisterPage,
+      },
+      {
+        path: 'forgot-password',
+        component: ForgotPasswordPage,
+      },
+      {
+        path: 'reset-password',
+        component: ResetPasswordPage,
       },
     ],
   },
