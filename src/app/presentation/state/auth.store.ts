@@ -99,6 +99,16 @@ export class AuthStore {
     });
   }
 
+  clearSession(): void {
+    this._currentUser.set(null);
+    this._isLoading.set(false);
+    this._isProfileLoading.set(false);
+    this._isPasswordChanging.set(false);
+    this._errorMessage.set(null);
+    this._storageService.clear();
+    this.router.navigate(['/login']);
+  }
+
   getCurrentUser(onSuccess?: () => void, onError?: () => void): void {
     this._isProfileLoading.set(true);
     this._getCurrentUserUseCase.execute().subscribe({
