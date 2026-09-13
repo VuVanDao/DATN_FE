@@ -7,6 +7,7 @@ import {
   RegisterRequest,
   RegisterResponse,
   AuthTokens,
+  ForgotPasswordRequest,
 } from '../../domain/models/auth.model';
 import { User } from '../../domain/models/user.model';
 import { HttpClient } from '@angular/common/http';
@@ -90,6 +91,14 @@ export class AuthHttpRepository implements AuthRepository {
     return this.http.post(`${this.API_URL}/revoke-token`, { refreshToken }).pipe(
       map((res) => {
         this.storageService.clear();
+      }),
+    );
+  }
+  ForgotPassword(request: ForgotPasswordRequest): Observable<string> {
+    const email = request.Email;
+    return this.http.post<ApiResponse<string>>(`${this.API_URL}/forgot-password`, { email }).pipe(
+      map((res) => {
+        return res.data;
       }),
     );
   }

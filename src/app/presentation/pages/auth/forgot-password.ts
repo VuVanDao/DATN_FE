@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { toast } from 'ngx-sonner';
+import { AuthStore } from '../../state/auth.store';
 
 @Component({
   selector: 'app-forgot-password',
@@ -12,6 +13,7 @@ import { toast } from 'ngx-sonner';
 })
 export class ForgotPasswordPage {
   private readonly router = inject(Router);
+  readonly authStore = inject(AuthStore);
 
   readonly isSubmitting = signal<boolean>(false);
 
@@ -34,14 +36,17 @@ export class ForgotPasswordPage {
 
     const { email } = this.forgotForm.getRawValue();
     this.isSubmitting.set(true);
-
-    // Giao diện mẫu trước khi ghép API thật từ Backend
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      toast.success('Mã xác nhận bảo mật đã được gửi đến email của bạn!');
-      this.router.navigate(['/reset-password'], {
-        queryParams: { email },
-      });
-    }, 800);
+    this.authStore.forgotPassword(
+      { Email: email },
+      () => {
+        this.isSubmitting.set(false);
+        this.router.navigate(['/reset-password'], {
+          queryParams: { email },
+        });
+      },
+      () => {
+        this.isSubmitting.set(false);
+      },
+    );
   }
 }

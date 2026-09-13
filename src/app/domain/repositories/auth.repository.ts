@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 import {
   AuthTokens,
+  ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
   RegisterRequest,
@@ -14,4 +15,5 @@ export abstract class AuthRepository {
   abstract GetCurrentUser(): Observable<User>;
   abstract RefreshToken(): Observable<AuthTokens>;
   abstract Logout(): Observable<void>;
+  abstract ForgotPassword(request: ForgotPasswordRequest): Observable<string>;
 }

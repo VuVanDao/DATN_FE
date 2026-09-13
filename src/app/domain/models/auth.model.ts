@@ -19,3 +19,6 @@ export interface RegisterRequest {
   Username: string;
 }
 export interface RegisterResponse extends LoginResponse {}
+export interface ForgotPasswordRequest {
+  Email: string;
+}
