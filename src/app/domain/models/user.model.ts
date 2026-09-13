@@ -21,3 +21,7 @@ export interface ChangePasswordRequest {
   NewPassword: string;
   ConfirmNewPassword: string;
 }
+export interface UpdateProfileRequest {
+  Username: string;
+  Bio?: string;
+}

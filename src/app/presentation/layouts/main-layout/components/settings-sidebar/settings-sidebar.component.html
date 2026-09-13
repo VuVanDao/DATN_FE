@@ -25,25 +25,25 @@
 
     <!-- User mini info -->
     <div class="flex items-center gap-3">
-      @if (authStore.currentUser()?.AvatarUrl) {
+      @if (userStore.currentUserData()?.AvatarUrl) {
         <img
-          [src]="authStore.currentUser()!.AvatarUrl"
-          [alt]="authStore.currentUser()!.UserName"
+          [src]="userStore.currentUserData()!.AvatarUrl"
+          [alt]="userStore.currentUserData()!.UserName"
           class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0"
         />
       } @else {
         <div
           class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0"
         >
-          {{ (authStore.currentUser()?.UserName || 'U').charAt(0).toUpperCase() }}
+          {{ (userStore.currentUserData()?.UserName || 'U').charAt(0).toUpperCase() }}
         </div>
       }
       <div class="min-w-0">
         <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-          {{ authStore.currentUser()?.UserName || 'Người dùng' }}
+          {{ userStore.currentUserData()?.UserName || 'Người dùng' }}
         </p>
         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-          {{ authStore.currentUser()?.Email || '' }}
+          {{ userStore.currentUserData()?.Email || '' }}
         </p>
       </div>
     </div>

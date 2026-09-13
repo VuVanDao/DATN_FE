@@ -1,11 +1,17 @@
 import { inject, Injectable } from '@angular/core';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { map, Observable } from 'rxjs';
-import { ChangePasswordRequest, User, UserResponse } from '../../domain/models/user.model';
+import {
+  ChangePasswordRequest,
+  UpdateProfileRequest,
+  User,
+  UserResponse,
+} from '../../domain/models/user.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../dtos/auth.dto';
 import { UserMapper } from '../mappers/user.mapper';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +19,7 @@ import { UserMapper } from '../mappers/user.mapper';
 export class UserHttpRepository implements UserRepository {
   private readonly API_URL = `${environment.apiUrl}/users`;
   private readonly http = inject(HttpClient);
+  private readonly _storageService = inject(StorageService);
   ChangePassword(request: ChangePasswordRequest): Observable<boolean> {
     return this.http
       .post<ApiResponse<boolean>>(`${this.API_URL}/change-password`, {
@@ -29,6 +36,15 @@ export class UserHttpRepository implements UserRepository {
       map((res) => {
         const data = res.data;
         return UserMapper.toUser(data);
+      }),
+    );
+  }
+  UpdateProfile(request: UpdateProfileRequest): Observable<User> {
+    return this.http.put<ApiResponse<UserResponse>>(`${this.API_URL}/me`, { ...request }).pipe(
+      map((res) => {
+        const user: User = UserMapper.toUser(res.data);
+        this._storageService.saveUserData(user);
+        return user;
       }),
     );
   }

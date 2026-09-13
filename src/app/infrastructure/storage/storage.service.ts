@@ -16,6 +16,11 @@ export class StorageService {
       localStorage.setItem(this.USER_DATA_KEY, JSON.stringify(user));
     }
   }
+  saveUserData(user: User): void {
+    if (this.IsBrowser()) {
+      localStorage.setItem(this.USER_DATA_KEY, JSON.stringify(user));
+    }
+  }
   getAccessToken(): string | null {
     return this.IsBrowser() ? localStorage.getItem(this.ACCESS_TOKEN_KEY) : null;
   }

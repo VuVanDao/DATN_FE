@@ -18,8 +18,6 @@ import { toast } from 'ngx-sonner';
 export class ProfileDetailsComponent {
   readonly userStore = inject(UserStore);
 
-  @Output() saved = new EventEmitter<void>();
-
   readonly isEditMode = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
 
@@ -68,13 +66,18 @@ export class ProfileDetailsComponent {
       return;
     }
     this.isSaving.set(true);
-
-    // Giả lập lưu (sau này tích hợp API update profile)
-    setTimeout(() => {
-      this.isSaving.set(false);
-      this.isEditMode.set(false);
-      this.saved.emit();
-      toast.success('Cập nhật thông tin hồ sơ thành công!');
-    }, 600);
+    const { username, bio } = this.form.getRawValue();
+    this.userStore.updateProfile(
+      { Username: username, Bio: bio },
+      () => {
+        this.isEditMode.set(false);
+        this.isSaving.set(false);
+        this.form.markAsPristine();
+        toast.success('Cập nhật thông tin hồ sơ thành công!');
+      },
+      () => {
+        this.isSaving.set(false);
+      },
+    );
   }
 }
