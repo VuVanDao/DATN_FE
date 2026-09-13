@@ -14,4 +14,5 @@ export interface AuthResponseDto {
   refreshToken: string;
   isActive: boolean;
   refreshTokenExpiresAt: string;
+  createdAt?: string;
 }

@@ -11,6 +11,7 @@ export class AuthMapper {
       AvatarUrl: dto.avatarUrl ?? undefined,
       Roles: dto.roles,
       IsActive: dto.isActive,
+      CreatedAt: dto.createdAt,
     };
     const tokens: AuthTokens = {
       AccessToken: dto.token,

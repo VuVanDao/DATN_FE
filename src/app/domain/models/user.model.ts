@@ -5,6 +5,7 @@ export interface User {
   AvatarUrl?: string;
   Bio?: string;
   IsActive?: boolean;
+  CreatedAt?: string;
   Roles: string[];
 }
 export interface UserResponse {
@@ -14,6 +15,7 @@ export interface UserResponse {
   avatarUrl?: string;
   bio?: string;
   isActive?: boolean;
+  createdAt?: string;
   roles: string[];
 }
 export interface ChangePasswordRequest {

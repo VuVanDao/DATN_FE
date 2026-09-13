@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import {
   FormControl,
   FormGroup,
@@ -11,7 +12,7 @@ import { AuthStore } from '../../../../state/auth.store';
 @Component({
   selector: 'app-profile-details',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, DatePipe],
   templateUrl: './profile-details.component.html',
 })
 export class ProfileDetailsComponent {
@@ -34,9 +35,6 @@ export class ProfileDetailsComponent {
   get bioControl() {
     return this.form.controls.bio;
   }
-
-  readonly roleBadgeClass =
-    'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
 
   initFormData(): void {
     const user = this.authStore.currentUser();
