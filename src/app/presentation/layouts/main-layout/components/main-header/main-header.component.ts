@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthStore } from '../../../../state/auth.store';
 import { LayoutService } from '../../../../../application/layout/layout.service';
-import { UserStore } from '../../../../state/user.store';
 
 export interface NotificationItem {
   id: number;
@@ -26,7 +25,6 @@ export interface NotificationItem {
 })
 export class MainHeaderComponent implements OnInit {
   readonly authStore = inject(AuthStore);
-  readonly userStore = inject(UserStore);
   readonly layoutService = inject(LayoutService);
   private readonly router = inject(Router);
 

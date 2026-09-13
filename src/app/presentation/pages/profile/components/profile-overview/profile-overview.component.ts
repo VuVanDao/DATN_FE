@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { UserStore } from '../../../../state/user.store';
+import { AuthStore } from '../../../../state/auth.store';
 
 @Component({
   selector: 'app-profile-overview',
@@ -9,7 +9,7 @@ import { UserStore } from '../../../../state/user.store';
   templateUrl: './profile-overview.component.html',
 })
 export class ProfileOverviewComponent {
-  readonly userStore = inject(UserStore);
+  readonly authStore = inject(AuthStore);
 
   /** Badge màu thống nhất cho role */
   readonly roleBadgeClass =

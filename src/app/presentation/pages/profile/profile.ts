@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { LayoutService } from '../../../application/layout/layout.service';
-import { UserStore } from '../../state/user.store';
+import { AuthStore } from '../../state/auth.store';
 import { ProfileOverviewComponent } from './components/profile-overview/profile-overview.component';
 import { ProfileDetailsComponent } from './components/profile-details/profile-details.component';
 
@@ -11,11 +11,11 @@ import { ProfileDetailsComponent } from './components/profile-details/profile-de
   templateUrl: './profile.html',
 })
 export class ProfilePage implements OnInit {
-  readonly userStore = inject(UserStore);
+  readonly authStore = inject(AuthStore);
   readonly layoutService = inject(LayoutService);
 
   ngOnInit(): void {
     this.layoutService.setSidebar('settings');
-    this.userStore.getCurrentUser();
+    this.authStore.getCurrentUser();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, effect, EventEmitter, inject, Output, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -6,8 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { UserStore } from '../../../../state/user.store';
-import { toast } from 'ngx-sonner';
+import { AuthStore } from '../../../../state/auth.store';
 
 @Component({
   selector: 'app-profile-details',
@@ -16,7 +15,7 @@ import { toast } from 'ngx-sonner';
   templateUrl: './profile-details.component.html',
 })
 export class ProfileDetailsComponent {
-  readonly userStore = inject(UserStore);
+  readonly authStore = inject(AuthStore);
 
   readonly isEditMode = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
@@ -40,7 +39,7 @@ export class ProfileDetailsComponent {
     'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
 
   initFormData(): void {
-    const user = this.userStore.currentUserData();
+    const user = this.authStore.currentUser();
     if (user) {
       this.form.patchValue({
         username: user.UserName,
@@ -67,13 +66,12 @@ export class ProfileDetailsComponent {
     }
     this.isSaving.set(true);
     const { username, bio } = this.form.getRawValue();
-    this.userStore.updateProfile(
+    this.authStore.updateProfile(
       { Username: username, Bio: bio },
       () => {
         this.isEditMode.set(false);
         this.isSaving.set(false);
         this.form.markAsPristine();
-        toast.success('Cập nhật thông tin hồ sơ thành công!');
       },
       () => {
         this.isSaving.set(false);

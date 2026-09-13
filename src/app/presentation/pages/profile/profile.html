@@ -13,7 +13,7 @@
 
 
 
-  @if (userStore.isLoading() || !userStore.currentUserData()) {
+  @if (authStore.isProfileLoading() || !authStore.currentUser()) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch animate-pulse">
       <!-- CỘT TRÁI SKELETON (4/12 - Căn giữa, không còn chân ID) -->
       <div

@@ -4,7 +4,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { LayoutService } from '../../../../../application/layout/layout.service';
 import { AuthStore } from '../../../../state/auth.store';
-import { UserStore } from '../../../../state/user.store';
 
 @Component({
   selector: 'app-settings-sidebar',
@@ -15,7 +14,6 @@ import { UserStore } from '../../../../state/user.store';
 export class SettingsSidebarComponent implements OnInit, OnDestroy {
   readonly layoutService = inject(LayoutService);
   readonly authStore = inject(AuthStore);
-  readonly userStore = inject(UserStore);
   private readonly router = inject(Router);
 
   ngOnInit(): void {

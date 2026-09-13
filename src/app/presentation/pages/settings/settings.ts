@@ -8,8 +8,9 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { UserStore } from '../../state/user.store';
+import { AuthStore } from '../../state/auth.store';
 import { LayoutService } from '../../../application/layout/layout.service';
+
 export const passwordMatchValidator: ValidatorFn = (
   control: AbstractControl,
 ): ValidationErrors | null => {
@@ -34,7 +35,7 @@ export const passwordMatchValidator: ValidatorFn = (
   templateUrl: './settings.html',
 })
 export class SettingsPage implements OnInit {
-  readonly _userStore = inject(UserStore);
+  readonly authStore = inject(AuthStore);
   readonly layoutService = inject(LayoutService);
 
   readonly showCurrent = signal<boolean>(false);
@@ -64,6 +65,7 @@ export class SettingsPage implements OnInit {
       validators: passwordMatchValidator,
     },
   );
+
   get currentPasswordControl() {
     return this.form.controls.currentPassword;
   }
@@ -73,6 +75,7 @@ export class SettingsPage implements OnInit {
   get confirmNewPasswordControl() {
     return this.form.controls.confirmNewPassword;
   }
+
   toggleShowCurrent(): void {
     this.showCurrent.update((v) => !v);
   }
@@ -82,13 +85,14 @@ export class SettingsPage implements OnInit {
   toggleShowConfirm(): void {
     this.showConfirm.update((v) => !v);
   }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     const { currentPassword, newPassword, confirmNewPassword } = this.form.getRawValue();
-    this._userStore.changePassword(
+    this.authStore.changePassword(
       {
         CurrentPassword: currentPassword,
         NewPassword: newPassword,
@@ -99,8 +103,8 @@ export class SettingsPage implements OnInit {
       },
     );
   }
+
   onCancel(): void {
-    this._userStore.onCancel();
     this.form.reset();
   }
 }
