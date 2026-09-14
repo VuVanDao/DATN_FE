@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -11,6 +11,8 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { toast } from 'ngx-sonner';
+import { AuthStore } from '../../state/auth.store';
+import { isPlatformBrowser } from '@angular/common';
 
 export const passwordMatchValidator: ValidatorFn = (
   control: AbstractControl,
@@ -30,8 +32,10 @@ export const passwordMatchValidator: ValidatorFn = (
 export class ResetPasswordPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  readonly authStore = inject(AuthStore);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  readonly targetEmail = signal<string>('dao@gmail.com');
+  readonly targetEmail = signal<string>('');
   readonly isSubmitting = signal<boolean>(false);
   readonly showNewPassword = signal<boolean>(false);
   readonly showConfirmPassword = signal<boolean>(false);
@@ -44,7 +48,11 @@ export class ResetPasswordPage implements OnInit {
       }),
       newPassword: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(8)],
+        validators: [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/),
+        ],
       }),
       confirmPassword: new FormControl('', {
         nonNullable: true,
@@ -65,9 +73,17 @@ export class ResetPasswordPage implements OnInit {
   }
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     const emailParam = this.route.snapshot.queryParamMap.get('email');
     if (emailParam) {
       this.targetEmail.set(emailParam);
+    } else {
+      this.router.navigate(['/forgot-password']).then(() => {
+        toast.warning('Vui lòng nhập email trước để nhận mã xác nhận');
+      });
+      return;
     }
     const tokenParam = this.route.snapshot.queryParamMap.get('token');
     if (tokenParam) {
@@ -103,14 +119,24 @@ export class ResetPasswordPage implements OnInit {
       return;
     }
 
-    const { token, newPassword } = this.resetForm.getRawValue();
+    const { token, newPassword, confirmPassword } = this.resetForm.getRawValue();
     this.isSubmitting.set(true);
 
-    // Giao diện mẫu trước khi ghép API thật từ Backend
-    setTimeout(() => {
-      this.isSubmitting.set(false);
-      toast.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.');
-      this.router.navigate(['/login']);
-    }, 1000);
+    this.authStore.resetPassword(
+      {
+        Email: this.targetEmail().toString(),
+        Token: token,
+        NewPassword: newPassword,
+        ConfirmNewPassword: confirmPassword,
+      },
+      () => {
+        this.isSubmitting.set(false);
+        toast.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.');
+        this.router.navigate(['/login']);
+      },
+      () => {
+        this.isSubmitting.set(false);
+      },
+    );
   }
 }

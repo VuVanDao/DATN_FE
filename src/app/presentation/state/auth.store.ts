@@ -9,12 +9,14 @@ import {
   ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
+  ResetPasswordRequest,
 } from '../../domain/models/auth.model';
 import { GetCurrentUserUseCase } from '../../application/user/get-current-user.use-case';
 import { UpdateProfileUseCase } from '../../application/user/update-profile.use-case';
 import { ChangePasswordUseCase } from '../../application/user/change-password.use-case';
 import { toast } from 'ngx-sonner';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
+import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +30,7 @@ export class AuthStore {
   private readonly _updateProfileUseCase = inject(UpdateProfileUseCase);
   private readonly _changePasswordUseCase = inject(ChangePasswordUseCase);
   private readonly _forgotPasswordUseCase = inject(ForgotPasswordUseCase);
+  private readonly _resetPasswordUseCase = inject(ResetPasswordUseCase);
   private readonly _storageService = inject(StorageService);
   private readonly router = inject(Router);
 
@@ -224,6 +227,34 @@ export class AuthStore {
       },
     });
   }
+  resetPassword = (
+    request: ResetPasswordRequest,
+    onSuccess?: () => void,
+    onError?: () => void,
+  ): void => {
+    this._resetPasswordUseCase.execute(request).subscribe({
+      next: () => {
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+      error: (err) => {
+        const errorsList = err?.error?.errors;
+        let detailedMsg: string | null = null;
+        if (Array.isArray(errorsList) && errorsList.length > 0) {
+          detailedMsg = errorsList[0];
+        } else if (typeof errorsList === 'object' && errorsList !== null) {
+          const firstKey = Object.keys(errorsList)[0];
+          detailedMsg = errorsList[firstKey]?.[0];
+        }
+        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
+        toast.error(msg);
+        if (onError) {
+          onError();
+        }
+      },
+    });
+  };
   clearError(): void {
     this._errorMessage.set(null);
   }

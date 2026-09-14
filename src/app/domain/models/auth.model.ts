@@ -22,3 +22,8 @@ export interface RegisterResponse extends LoginResponse {}
 export interface ForgotPasswordRequest {
   Email: string;
 }
+export interface ResetPasswordRequest extends ForgotPasswordRequest {
+  Token: string;
+  NewPassword: string;
+  ConfirmNewPassword: string;
+}
