@@ -8,6 +8,8 @@ import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repo
 import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
 import { UserRepository } from './domain/repositories/user.repository';
 import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
+import { SecurityRepository } from './domain/repositories/security.repository';
+import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,6 +24,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: UserRepository,
       useClass: UserHttpRepository,
+    },
+    {
+      provide: SecurityRepository,
+      useClass: SecurityHttpRepository,
     },
   ],
 };

@@ -27,3 +27,25 @@ export interface UpdateProfileRequest {
   Username: string;
   Bio?: string;
 }
+
+export interface LoginHistory {
+  Id: string;
+  UserId?: string | null;
+  EmailAttempted: string;
+  IpAddress?: string | null;
+  UserAgent?: string | null;
+  IsSuccess: boolean;
+  FailureReason?: string | null;
+  CreatedAt: string;
+}
+
+export interface LoginHistoryResponse {
+  id: string;
+  userId?: string | null;
+  emailAttempted: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  isSuccess: boolean;
+  failureReason?: string | null;
+  createdAt: string;
+}
