@@ -48,4 +48,14 @@ export class UserHttpRepository implements UserRepository {
       }),
     );
   }
+  UploadAvatar(file: File): Observable<string> {
+    const formData = new FormData();
+    // Command been BE ddang dder laf File
+    formData.append('File', file, file.name);
+    return this.http.post<ApiResponse<string>>(`${this.API_URL}/me/avatar`, formData).pipe(
+      map((res) => {
+        return res.data;
+      }),
+    );
+  }
 }

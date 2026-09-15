@@ -17,6 +17,7 @@ import { ChangePasswordUseCase } from '../../application/user/change-password.us
 import { toast } from 'ngx-sonner';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
+import { UploadAvatarUseCase } from '../../application/user/upload-avatar.use-case';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,7 @@ export class AuthStore {
   private readonly _changePasswordUseCase = inject(ChangePasswordUseCase);
   private readonly _forgotPasswordUseCase = inject(ForgotPasswordUseCase);
   private readonly _resetPasswordUseCase = inject(ResetPasswordUseCase);
+  private readonly _uploadAvatarUseCase = inject(UploadAvatarUseCase);
   private readonly _storageService = inject(StorageService);
   private readonly router = inject(Router);
 
@@ -40,6 +42,7 @@ export class AuthStore {
   private readonly _errorMessage = signal<string | null>(null);
   private readonly _isProfileLoading = signal<boolean>(false);
   private readonly _isPasswordChanging = signal<boolean>(false);
+  private readonly _isAvatarUploading = signal<boolean>(false);
 
   // Public readonly states
   readonly currentUser = this._currentUser.asReadonly();
@@ -47,6 +50,7 @@ export class AuthStore {
   readonly errorMessage = this._errorMessage.asReadonly();
   readonly isProfileLoading = this._isProfileLoading.asReadonly();
   readonly isPasswordChanging = this._isPasswordChanging.asReadonly();
+  readonly isAvatarUploading = this._isAvatarUploading.asReadonly();
 
   readonly isAuthenticated = computed(() => !!this._currentUser());
 
@@ -252,6 +256,36 @@ export class AuthStore {
         if (onError) {
           onError();
         }
+      },
+    });
+  };
+  uploadAvatar = (file: File): void => {
+    this._isAvatarUploading.set(true);
+    this._uploadAvatarUseCase.execute(file).subscribe({
+      next: (avatarUrl) => {
+        const currUser = this._currentUser();
+        if (currUser) {
+          const updatedUser: User = {
+            ...currUser,
+            AvatarUrl: avatarUrl,
+          };
+          this._currentUser.set(updatedUser);
+          this._storageService.saveUserData(updatedUser);
+        }
+        this._isAvatarUploading.set(false);
+        toast.success('Cập nhật ảnh đại diện thành công');
+      },
+      error: (err) => {
+        const errorsList = err?.error?.errors;
+        let detailedMsg: string | null = null;
+        if (Array.isArray(errorsList) && errorsList.length > 0) {
+          detailedMsg = errorsList[0];
+        } else if (typeof errorsList === 'object' && errorsList !== null) {
+          const firstKey = Object.keys(errorsList)[0];
+          detailedMsg = errorsList[firstKey]?.[0];
+        }
+        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
+        toast.error(msg);
       },
     });
   };
