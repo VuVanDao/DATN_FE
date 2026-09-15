@@ -1,0 +1,694 @@
+<div class="max-w-7xl mx-auto space-y-6 pb-10">
+  <!-- 1. HEADER SECTION -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Quản trị người dùng
+        </h1>
+        <span
+          class="px-2.5 py-0.5 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full border border-indigo-200 dark:border-indigo-800/60"
+        >
+          Root Admin
+        </span>
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Giám sát, phân quyền vai trò và quản lý trạng thái tài khoản trên toàn bộ hệ thống.
+      </p>
+    </div>
+
+    <!-- Quick Actions: Nút Làm mới -->
+    <div class="flex items-center gap-2.5">
+      <button
+        type="button"
+        (click)="store.loadUsers()"
+        [disabled]="store.isLoading()"
+        class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-xs transition cursor-pointer disabled:opacity-50"
+      >
+        <mat-icon
+          fontIcon="sync"
+          class="icon-sm"
+          [class.animate-spin]="store.isLoading()"
+        ></mat-icon>
+        <span>Làm mới</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. THỐNG KÊ (STAT CARDS) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Thẻ 1: Tổng người dùng -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="people" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Tổng người dùng</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
+          {{ store.stats().total }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Thẻ 2: Đang hoạt động -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="check_circle" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Đang hoạt động</p>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+          {{ store.stats().activeCount }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Thẻ 3: Tài khoản bị khóa -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="lock" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Tài khoản bị khóa</p>
+        <p class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+          {{ store.stats().inactiveCount }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Thẻ 4: Quản trị viên (Admins) -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="admin_panel_settings" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Quản trị viên</p>
+        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">
+          {{ store.stats().adminCount }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. TOOLBAR: TÌM KIẾM & BỘ LỌC -->
+  <div
+    class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3"
+  >
+    <!-- Ô Tìm kiếm -->
+    <div class="relative flex-1 max-w-md">
+      <mat-icon
+        fontIcon="search"
+        class="icon-sm text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+      ></mat-icon>
+      <input
+        type="text"
+        [value]="searchInput()"
+        (input)="onSearchChange($any($event.target).value)"
+        placeholder="Tìm kiếm theo email, username..."
+        class="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl pl-10 pr-9 py-2 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+      />
+      @if (searchInput()) {
+        <button
+          type="button"
+          (click)="clearSearch()"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+        >
+          <mat-icon fontIcon="close" class="icon-xs"></mat-icon>
+        </button>
+      }
+    </div>
+
+    <!-- Nhóm Lọc Trạng thái & Vai trò -->
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Lọc Trạng thái -->
+      <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <button
+          type="button"
+          (click)="onStatusFilterChange('all')"
+          [class.bg-white]="store.statusFilter() === 'all'"
+          [class.dark:bg-slate-900]="store.statusFilter() === 'all'"
+          [class.shadow-xs]="store.statusFilter() === 'all'"
+          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+        >
+          Tất cả
+        </button>
+        <button
+          type="button"
+          (click)="onStatusFilterChange('active')"
+          [class.bg-white]="store.statusFilter() === 'active'"
+          [class.dark:bg-slate-900]="store.statusFilter() === 'active'"
+          [class.text-emerald-600]="store.statusFilter() === 'active'"
+          [class.shadow-xs]="store.statusFilter() === 'active'"
+          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+        >
+          Hoạt động
+        </button>
+        <button
+          type="button"
+          (click)="onStatusFilterChange('inactive')"
+          [class.bg-white]="store.statusFilter() === 'inactive'"
+          [class.dark:bg-slate-900]="store.statusFilter() === 'inactive'"
+          [class.text-rose-600]="store.statusFilter() === 'inactive'"
+          [class.shadow-xs]="store.statusFilter() === 'inactive'"
+          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+        >
+          Đã khóa
+        </button>
+      </div>
+
+      <!-- Lọc Vai trò (Dropdown) -->
+      <select
+        [ngModel]="store.roleFilter()"
+        (ngModelChange)="onRoleFilterChange($event)"
+        class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-hidden focus:border-indigo-500 cursor-pointer"
+      >
+        <option value="all">Tất cả vai trò</option>
+        @for (role of store.roles(); track role.Id) {
+          <option [value]="role.Name">{{ role.Name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- 4. USER DATA TABLE -->
+  <div
+    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+        <!-- Table Header -->
+        <thead
+          class="text-xs uppercase bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800"
+        >
+          <tr>
+            <th class="px-5 py-3.5 font-semibold">Người dùng</th>
+            <th class="px-5 py-3.5 font-semibold">Vai trò (Roles)</th>
+            <th class="px-5 py-3.5 font-semibold">Trạng thái</th>
+            <th class="px-5 py-3.5 font-semibold">Ngày tham gia</th>
+            <th class="px-5 py-3.5 font-semibold text-right">Thao tác</th>
+          </tr>
+        </thead>
+
+        <!-- Table Body -->
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800/80">
+          @if (store.isLoading()) {
+            <!-- Skeleton Loading Rows -->
+            @for (item of [1, 2, 3, 4, 5]; track item) {
+              <tr class="animate-pulse">
+                <td class="px-5 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+                    <div class="space-y-1.5">
+                      <div class="w-28 h-4 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                      <div class="w-36 h-3 bg-slate-100 dark:bg-slate-800/60 rounded"></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="w-24 h-5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="w-20 h-5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="w-20 h-4 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                </td>
+                <td class="px-5 py-4 text-right">
+                  <div class="w-16 h-7 bg-slate-200 dark:bg-slate-800 rounded-xl ml-auto"></div>
+                </td>
+              </tr>
+            }
+          } @else if (store.users().length === 0) {
+            <!-- Empty State -->
+            <tr>
+              <td colspan="5" class="py-14 text-center">
+                <mat-icon
+                  fontIcon="person_search"
+                  class="text-slate-300 dark:text-slate-600 text-5xl mb-2"
+                ></mat-icon>
+                <p class="font-semibold text-slate-800 dark:text-slate-200 text-base">
+                  Không tìm thấy người dùng
+                </p>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  Hãy thử thay đổi từ khóa hoặc điều kiện bộ lọc của bạn.
+                </p>
+              </td>
+            </tr>
+          } @else {
+            @for (user of store.users(); track user.Id) {
+              <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                <!-- Cột Người dùng: Avatar, Tên, Email -->
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-3">
+                    @if (user.AvatarUrl) {
+                      <img
+                        [src]="user.AvatarUrl"
+                        [alt]="user.UserName"
+                        class="w-10 h-10 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
+                      />
+                    } @else {
+                      <div
+                        class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center shrink-0"
+                      >
+                        {{ user.UserName.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                    <div class="min-w-0">
+                      <p
+                        class="font-semibold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
+                      >
+                        {{ user.UserName }}
+                        @if (authStore.currentUser()?.Id === user.Id) {
+                          <span
+                            class="px-1.5 py-0.2 text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded"
+                            >Bạn</span
+                          >
+                        }
+                      </p>
+                      <p class="text-xs text-slate-400 truncate">{{ user.Email }}</p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Cột Vai trò (Roles) -->
+                <td class="px-5 py-3.5">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    @for (role of user.Roles; track role) {
+                      <span
+                        class="px-2 py-0.5 text-xs font-semibold rounded-md border"
+                        [class]="getRoleBadgeClass(role)"
+                      >
+                        {{ role }}
+                      </span>
+                    }
+                  </div>
+                </td>
+
+                <!-- Cột Trạng thái (Hoạt động / Khóa) -->
+                <td class="px-5 py-3.5">
+                  @if (user.IsActive) {
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Hoạt động
+                    </span>
+                  } @else {
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                      Đã khóa
+                    </span>
+                  }
+                </td>
+
+                <!-- Cột Ngày tạo -->
+                <td
+                  class="px-5 py-3.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap"
+                >
+                  {{ user.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
+                </td>
+
+                <!-- Cột Hành động -->
+                <td class="px-5 py-3.5 text-right whitespace-nowrap">
+                  <div class="inline-flex items-center gap-1">
+                    <!-- Nút Xem chi tiết -->
+                    <button
+                      type="button"
+                      (click)="openDetailModal(user)"
+                      matTooltip="Xem chi tiết"
+                      class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center cursor-pointer"
+                    >
+                      <mat-icon fontIcon="visibility" class="icon-sm"></mat-icon>
+                    </button>
+
+                    <!-- Nút Phân vai trò -->
+                    <button
+                      type="button"
+                      (click)="openRoleModal(user)"
+                      matTooltip="Phân quyền vai trò"
+                      class="w-8 h-8 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex items-center justify-center cursor-pointer"
+                    >
+                      <mat-icon fontIcon="verified_user" class="icon-sm"></mat-icon>
+                    </button>
+
+                    <!-- Nút Khóa / Mở khóa -->
+                    @if (user.IsActive) {
+                      <button
+                        type="button"
+                        (click)="openStatusModal(user, false)"
+                        [disabled]="authStore.currentUser()?.Id === user.Id"
+                        [matTooltip]="
+                          authStore.currentUser()?.Id === user.Id
+                            ? 'Không thể tự khóa tài khoản của chính mình'
+                            : 'Khóa tài khoản'
+                        "
+                        class="w-8 h-8 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition flex items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <mat-icon fontIcon="lock" class="icon-sm"></mat-icon>
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        (click)="openStatusModal(user, true)"
+                        matTooltip="Mở khóa tài khoản"
+                        class="w-8 h-8 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition flex items-center justify-center cursor-pointer"
+                      >
+                        <mat-icon fontIcon="lock_open" class="icon-sm"></mat-icon>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 5. PHÂN TRANG (PAGINATION) -->
+    <div
+      class="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400"
+    >
+      <div>
+        Hiển thị trang
+        <span class="font-semibold text-slate-800 dark:text-slate-200">{{
+          store.pageIndex()
+        }}</span>
+        /
+        <span class="font-semibold text-slate-800 dark:text-slate-200">{{
+          store.totalPages()
+        }}</span>
+        (Tổng cộng {{ store.totalCount() }} người dùng)
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Nút Trang trước -->
+        <button
+          type="button"
+          (click)="store.setPage(store.pageIndex() - 1)"
+          [disabled]="store.pageIndex() <= 1"
+          class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+        >
+          Trước
+        </button>
+
+        <!-- Nút Trang kế -->
+        <button
+          type="button"
+          (click)="store.setPage(store.pageIndex() + 1)"
+          [disabled]="store.pageIndex() >= store.totalPages()"
+          class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. MODAL PHÂN QUYỀN (ASSIGN ROLES) -->
+  @if (isRoleModalOpen() && selectedUserForRoles()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      >
+        <!-- Modal Header -->
+        <div
+          class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
+        >
+          <div class="flex items-center gap-2.5">
+            <div
+              class="w-8 h-8 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"
+            >
+              <mat-icon fontIcon="verified_user" class="icon-sm"></mat-icon>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 dark:text-white text-base">Phân quyền vai trò</h3>
+              <p class="text-xs text-slate-400">{{ selectedUserForRoles()?.Email }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            (click)="closeRoleModal()"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          >
+            <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body: Danh sách checkbox Role -->
+        <div class="p-5 space-y-3 max-h-80 overflow-y-auto">
+          @for (role of store.roles(); track role.Id) {
+            <label
+              (click)="toggleRoleSelection(role.Id)"
+              class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer"
+              [class.border-indigo-500]="selectedRoleIds().includes(role.Id)"
+              [class.bg-indigo-50/50]="selectedRoleIds().includes(role.Id)"
+              [class.dark:bg-indigo-900/10]="selectedRoleIds().includes(role.Id)"
+              [class.border-slate-200]="!selectedRoleIds().includes(role.Id)"
+              [class.dark:border-slate-800]="!selectedRoleIds().includes(role.Id)"
+            >
+              <input
+                type="checkbox"
+                [checked]="selectedRoleIds().includes(role.Id)"
+                class="mt-1 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ role.Name }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  {{ role.Description || 'Không có mô tả' }}
+                </p>
+              </div>
+            </label>
+          }
+        </div>
+
+        <!-- Modal Footer -->
+        <div
+          class="p-4 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5"
+        >
+          <button
+            type="button"
+            (click)="closeRoleModal()"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-xl transition cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            (click)="saveRoles()"
+            [disabled]="store.isSubmitting()"
+            class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+          >
+            {{ store.isSubmitting() ? 'Đang lưu...' : 'Lưu thay đổi' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 7. MODAL KHÓA / MỞ KHÓA TÀI KHOẢN -->
+  @if (isStatusModalOpen() && selectedUserForStatus()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      >
+        <div class="p-5 border-b border-slate-100 dark:border-slate-800">
+          <h3 class="font-bold text-slate-900 dark:text-white text-base">
+            {{ targetStatus() ? 'Xác nhận mở khóa tài khoản' : 'Xác nhận khóa tài khoản' }}
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">
+            Tài khoản:
+            <span class="font-semibold text-slate-700 dark:text-slate-200">{{
+              selectedUserForStatus()?.UserName
+            }}</span>
+            ({{ selectedUserForStatus()?.Email }})
+          </p>
+        </div>
+
+        <div class="p-5 space-y-4">
+          @if (!targetStatus()) {
+            <div
+              class="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/40 rounded-xl text-xs text-rose-700 dark:text-rose-300"
+            >
+              ⚠️ Lưu ý: Hành động này sẽ lập tức thu hồi toàn bộ phiên đăng nhập (Refresh Tokens)
+              của người dùng này. Họ sẽ bị đăng xuất khỏi tất cả các thiết bị.
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Lý do khóa tài khoản (Tùy chọn):
+              </label>
+              <textarea
+                [ngModel]="statusReason()"
+                (ngModelChange)="statusReason.set($event)"
+                placeholder="Nhập lý do (ví dụ: Vi phạm chính sách bảo mật...)"
+                rows="3"
+                class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden focus:border-rose-500"
+              ></textarea>
+            </div>
+          } @else {
+            <p class="text-xs text-slate-600 dark:text-slate-400">
+              Bạn có chắc chắn muốn mở khóa cho tài khoản này không? Sau khi mở khóa, người dùng có
+              thể đăng nhập lại bình thường vào hệ thống.
+            </p>
+          }
+        </div>
+
+        <div
+          class="p-4 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5"
+        >
+          <button
+            type="button"
+            (click)="closeStatusModal()"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-xl transition cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            (click)="confirmStatusChange()"
+            [disabled]="store.isSubmitting()"
+            [class.bg-rose-600]="!targetStatus()"
+            [class.hover:bg-rose-700]="!targetStatus()"
+            [class.bg-emerald-600]="targetStatus()"
+            [class.hover:bg-emerald-700]="targetStatus()"
+            class="px-4 py-2 text-xs font-semibold text-white rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+          >
+            {{
+              store.isSubmitting()
+                ? 'Đang xử lý...'
+                : targetStatus()
+                  ? 'Mở khóa ngay'
+                  : 'Khóa tài khoản'
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 8. MODAL XEM CHI TIẾT TÀI KHOẢN -->
+  @if (isDetailModalOpen() && selectedUserForDetail()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      >
+        <div
+          class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
+        >
+          <h3 class="font-bold text-slate-900 dark:text-white text-base">Chi tiết tài khoản</h3>
+          <button
+            type="button"
+            (click)="closeDetailModal()"
+            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          >
+            <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-4 text-xs">
+          <div class="flex items-center gap-4">
+            @if (selectedUserForDetail()?.AvatarUrl) {
+              <img
+                [src]="selectedUserForDetail()!.AvatarUrl"
+                class="w-14 h-14 rounded-2xl object-cover ring-2 ring-indigo-500/20"
+              />
+            } @else {
+              <div
+                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-xl flex items-center justify-center"
+              >
+                {{ selectedUserForDetail()?.UserName?.charAt(0)?.toUpperCase() }}
+              </div>
+            }
+            <div>
+              <p class="text-base font-bold text-slate-900 dark:text-white">
+                {{ selectedUserForDetail()?.UserName }}
+              </p>
+              <p class="text-slate-400">{{ selectedUserForDetail()?.Email }}</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <p class="text-slate-400 mb-1">User ID:</p>
+              <p class="font-mono text-[11px] text-slate-700 dark:text-slate-300 break-all">
+                {{ selectedUserForDetail()?.Id }}
+              </p>
+            </div>
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <p class="text-slate-400 mb-1">Trạng thái:</p>
+              <p
+                class="font-semibold"
+                [class.text-emerald-500]="selectedUserForDetail()?.IsActive"
+                [class.text-rose-500]="!selectedUserForDetail()?.IsActive"
+              >
+                {{ selectedUserForDetail()?.IsActive ? 'Đang hoạt động' : 'Đã bị khóa' }}
+              </p>
+            </div>
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <p class="text-slate-400 mb-1">Ngày tạo:</p>
+              <p class="font-medium text-slate-700 dark:text-slate-300">
+                {{ selectedUserForDetail()?.CreatedAt | date: 'dd/MM/yyyy HH:mm:ss' }}
+              </p>
+            </div>
+            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <p class="text-slate-400 mb-1">Vai trò:</p>
+              <div class="flex flex-wrap gap-1">
+                @for (role of selectedUserForDetail()?.Roles; track role) {
+                  <span
+                    class="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                    [class]="getRoleBadgeClass(role)"
+                    >{{ role }}</span
+                  >
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+            <p class="text-slate-400 mb-1">Giới thiệu (Bio):</p>
+            <p class="text-slate-700 dark:text-slate-300 italic">
+              {{ selectedUserForDetail()?.Bio || 'Chưa cập nhật tiểu sử' }}
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="p-4 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 text-right"
+        >
+          <button
+            type="button"
+            (click)="closeDetailModal()"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-xl transition cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

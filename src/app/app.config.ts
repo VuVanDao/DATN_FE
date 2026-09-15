@@ -10,6 +10,8 @@ import { UserRepository } from './domain/repositories/user.repository';
 import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
 import { SecurityRepository } from './domain/repositories/security.repository';
 import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
+import { AdminRepository } from './domain/repositories/admin.repository';
+import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -28,6 +30,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: SecurityRepository,
       useClass: SecurityHttpRepository,
+    },
+    {
+      provide: AdminRepository,
+      useClass: AdminHttpRepository,
     },
   ],
 };

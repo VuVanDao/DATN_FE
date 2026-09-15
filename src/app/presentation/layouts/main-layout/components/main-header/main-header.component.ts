@@ -129,7 +129,8 @@ export class MainHeaderComponent implements OnInit {
   }
 
   navigateToAdmin(): void {
-    this.router.navigate(['/security']);
+    this.layoutService.setSidebar('admin');
+    this.router.navigate(['/admin/users']);
   }
 
   onLogOut(): void {

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type SidebarType = 'main' | 'board' | 'workspace' | 'settings';
+export type SidebarType = 'main' | 'board' | 'workspace' | 'settings' | 'admin';
 
 @Injectable({
   providedIn: 'root',
