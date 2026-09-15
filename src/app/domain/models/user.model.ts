@@ -2,8 +2,8 @@ export interface User {
   Id: string;
   Email: string;
   UserName: string;
-  AvatarUrl?: string;
-  Bio?: string;
+  AvatarUrl?: string | null;
+  Bio?: string | null;
   IsActive?: boolean;
   CreatedAt?: string;
   Roles: string[];
