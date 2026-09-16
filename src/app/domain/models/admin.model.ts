@@ -1,7 +1,9 @@
 import { User } from './user.model';
 
-export interface AdminUser extends User {}
-export interface AdminUserResponse {
+export interface UserMangement extends User {
+  IsDeleted: boolean;
+}
+export interface UserMangementResponse {
   id: string;
   email: string;
   username: string;
@@ -10,6 +12,7 @@ export interface AdminUserResponse {
   isActive?: boolean;
   createdAt?: string;
   roles: string[];
+  isDeleted: boolean;
 }
 export interface PagedResult<T> {
   items: T[];
@@ -20,7 +23,7 @@ export interface PagedResult<T> {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
-export interface GetAdminUsersParams {
+export interface GetUserManagementParams {
   search?: string; // Từ khóa tìm kiếm (email hoặc username)
   isActive?: boolean; // Lọc theo trạng thái tài khoản: true (hoạt động), false (bị khóa), undefined (tất cả)
   pageIndex?: number; // Trang cần lấy

@@ -2,17 +2,17 @@ import { inject, Injectable } from '@angular/core';
 import { AdminRepository } from '../../domain/repositories/admin.repository';
 import { map, Observable } from 'rxjs';
 import {
-  GetAdminUsersParams,
+  GetUserManagementParams,
   PagedResult,
-  AdminUser,
+  UserMangement,
   UpdateUserStatusRequest,
   Role,
-  AdminUserResponse,
+  UserMangementResponse,
 } from '../../domain/models/admin.model';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ApiResponse } from '../dtos/auth.dto';
-import { AdminMapper } from '../mappers/Admin.mepper';
+import { AdminMapper } from '../mappers/Admin.mapper';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +20,7 @@ import { AdminMapper } from '../mappers/Admin.mepper';
 export class AdminHttpRepository extends AdminRepository {
   private readonly API_URL = `${environment.apiUrl}/admin`;
   private readonly http = inject(HttpClient);
-  GetUsers(params: GetAdminUsersParams): Observable<PagedResult<AdminUser>> {
+  GetUsers(params: GetUserManagementParams): Observable<PagedResult<UserMangement>> {
     let httpParams = new HttpParams();
     if (params.search) {
       httpParams = httpParams.set('Search', params.search);
@@ -35,7 +35,7 @@ export class AdminHttpRepository extends AdminRepository {
       httpParams = httpParams.set('PageSize', params.pageSize.toString());
     }
     return this.http
-      .get<ApiResponse<PagedResult<AdminUserResponse>>>(`${this.API_URL}/users`, {
+      .get<ApiResponse<PagedResult<UserMangementResponse>>>(`${this.API_URL}/users`, {
         params: httpParams,
       })
       .pipe(

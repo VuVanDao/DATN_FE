@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AdminRepository } from '../../domain/repositories/admin.repository';
-import { AdminUser, Role, UpdateUserStatusRequest } from '../../domain/models/admin.model';
+import { UserMangement, Role, UpdateUserStatusRequest } from '../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { toast } from 'ngx-sonner';
 export class AdminStore {
   private readonly _adminRepository = inject(AdminRepository);
 
-  private readonly _users = signal<AdminUser[]>([]); // Danh sách user trang hiện tại
+  private readonly _users = signal<UserMangement[]>([]); // Danh sách user trang hiện tại
   private readonly _roles = signal<Role[]>([]); // Danh sách tất cả vai trò
   private readonly _totalCount = signal<number>(0); // Tổng số user hệ thống
   private readonly _pageIndex = signal<number>(1); // Trang hiện tại

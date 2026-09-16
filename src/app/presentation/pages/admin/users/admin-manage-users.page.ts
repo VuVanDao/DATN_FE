@@ -6,7 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { AuthStore } from '../../../state/auth.store';
 import { AdminStore } from '../../../state/admin.store';
-import { AdminUser } from '../../../../domain/models/admin.model';
+import { UserMangement } from '../../../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
 
 @Component({
@@ -24,18 +24,18 @@ export class AdminManageUserPage implements OnInit {
 
   // State mở Modal Phân quyền
   readonly isRoleModalOpen = signal<boolean>(false);
-  readonly selectedUserForRoles = signal<AdminUser | null>(null);
+  readonly selectedUserForRoles = signal<UserMangement | null>(null);
   readonly selectedRoleIds = signal<string[]>([]);
 
   // State mở Modal status
   readonly isStatusModalOpen = signal<boolean>(false);
-  readonly selectedUserForStatus = signal<AdminUser | null>(null);
+  readonly selectedUserForStatus = signal<UserMangement | null>(null);
   readonly targetStatus = signal<boolean>(true); // true = mở khóa, false = khóa
   readonly statusReason = signal<string>('');
 
   // State mở Modal chi tiết
   readonly isDetailModalOpen = signal<boolean>(false);
-  readonly selectedUserForDetail = signal<AdminUser | null>(null);
+  readonly selectedUserForDetail = signal<UserMangement | null>(null);
 
   ngOnInit(): void {
     // Đảm bảo sidebar chuyển sang chế độ Admin
@@ -58,7 +58,7 @@ export class AdminManageUserPage implements OnInit {
   onRoleFilterChange(role: string): void {
     this.store.setRoleFilter(role);
   }
-  openRoleModal(user: AdminUser): void {
+  openRoleModal(user: UserMangement): void {
     this.selectedUserForRoles.set(user);
     // Lấy danh sách ID của các Role mà user này đang có
     const allRoles = this.store.roles();
@@ -88,7 +88,7 @@ export class AdminManageUserPage implements OnInit {
     });
   }
   // update user'status
-  openStatusModal(user: AdminUser, newStatus: boolean): void {
+  openStatusModal(user: UserMangement, newStatus: boolean): void {
     // Kiểm tra an toàn: Không cho Admin tự khóa chính mình
     if (this.authStore.currentUser()?.Id === user.Id && !newStatus) {
       toast.error('Bạn không thể tự khóa tài khoản Quản trị viên của chính mình!');
@@ -118,7 +118,7 @@ export class AdminManageUserPage implements OnInit {
       },
     );
   }
-  openDetailModal(user: AdminUser): void {
+  openDetailModal(user: UserMangement): void {
     this.selectedUserForDetail.set(user);
     this.isDetailModalOpen.set(true);
   }
