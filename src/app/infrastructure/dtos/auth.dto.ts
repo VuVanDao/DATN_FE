@@ -11,8 +11,8 @@ export interface AuthResponseDto {
   avatarUrl?: string | null;
   token: string;
   roles: string[];
-  refreshToken: string;
+  refreshToken?: string;
   isActive: boolean;
-  refreshTokenExpiresAt: string;
+  refreshTokenExpiresAt?: string;
   createdAt?: string;
 }

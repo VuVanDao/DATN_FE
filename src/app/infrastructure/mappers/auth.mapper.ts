@@ -16,7 +16,9 @@ export class AuthMapper {
     const tokens: AuthTokens = {
       AccessToken: dto.token,
       RefreshToken: dto.refreshToken,
-      RefreshTokenExpiresAt: new Date(dto.refreshTokenExpiresAt).getTime(),
+      RefreshTokenExpiresAt: dto.refreshTokenExpiresAt
+        ? new Date(dto.refreshTokenExpiresAt).getTime()
+        : undefined,
     };
     return {
       User: user,

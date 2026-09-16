@@ -10,7 +10,7 @@ export interface LoginResponse {
 }
 export interface AuthTokens {
   AccessToken: string;
-  RefreshToken: string;
+  RefreshToken?: string;
   RefreshTokenExpiresAt?: number;
 }
 export interface RegisterRequest {
