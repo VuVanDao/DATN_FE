@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { AuthStore } from '../../../state/auth.store';
@@ -12,7 +13,7 @@ import { toast } from 'ngx-sonner';
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule, MatMenuModule],
   templateUrl: './admin-manage-users.page.html',
 })
 export class AdminManageUserPage implements OnInit {

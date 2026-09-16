@@ -173,16 +173,44 @@
       </div>
 
       <!-- Lọc Vai trò (Dropdown) -->
-      <select
-        [ngModel]="store.roleFilter()"
-        (ngModelChange)="onRoleFilterChange($event)"
-        class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-hidden focus:border-indigo-500 cursor-pointer"
+      <button
+        type="button"
+        [matMenuTriggerFor]="roleFilterMenu"
+        class="inline-flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-xs min-w-[138px]"
       >
-        <option value="all">Tất cả vai trò</option>
+        <div class="flex items-center gap-1.5 truncate">
+          <mat-icon fontIcon="shield" class="icon-xs text-slate-400 dark:text-slate-500 shrink-0"></mat-icon>
+          <span class="truncate">
+            {{ store.roleFilter() === 'all' ? 'Tất cả vai trò' : store.roleFilter() }}
+          </span>
+        </div>
+        <mat-icon fontIcon="keyboard_arrow_down" class="icon-xs text-slate-400 dark:text-slate-500 shrink-0"></mat-icon>
+      </button>
+
+      <mat-menu #roleFilterMenu="matMenu" class="custom-dropdown-menu" xPosition="after">
+        <button
+          mat-menu-item
+          (click)="onRoleFilterChange('all')"
+          [class.active-item]="store.roleFilter() === 'all'"
+        >
+          <span>Tất cả vai trò</span>
+          @if (store.roleFilter() === 'all') {
+            <mat-icon fontIcon="check" class="check-icon text-indigo-600 dark:text-indigo-400"></mat-icon>
+          }
+        </button>
         @for (role of store.roles(); track role.Id) {
-          <option [value]="role.Name">{{ role.Name }}</option>
+          <button
+            mat-menu-item
+            (click)="onRoleFilterChange(role.Name)"
+            [class.active-item]="store.roleFilter() === role.Name"
+          >
+            <span>{{ role.Name }}</span>
+            @if (store.roleFilter() === role.Name) {
+              <mat-icon fontIcon="check" class="check-icon text-indigo-600 dark:text-indigo-400"></mat-icon>
+            }
+          </button>
         }
-      </select>
+      </mat-menu>
     </div>
   </div>
 
