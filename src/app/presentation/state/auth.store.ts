@@ -66,6 +66,14 @@ export class AuthStore {
       return Promise.resolve();
     }
 
+    // Nếu trong sessionStorage đã có sẵn Access Token (khi F5 tab hiện tại)
+    // và đã có thông tin User -> Dùng lại ngay, HOÀN TOÀN KHÔNG GỌI API /refresh-token
+    if (this._tokenService.hasToken() && this._currentUser()) {
+      return Promise.resolve();
+    }
+
+    // Nếu chưa có Access Token (khi mở Tab mới tinh hoặc mới truy cập)
+    // -> Dùng HttpOnly Cookie gọi /refresh-token để lấy Access Token cho tab này
     return new Promise<void>((resolve) => {
       this._authRepository.RefreshToken().subscribe({
         next: (response) => {
