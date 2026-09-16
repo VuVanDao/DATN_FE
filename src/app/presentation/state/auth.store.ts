@@ -1,8 +1,11 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { LoginUseCase } from '../../application/auth/login.use-case';
 import { RegisterUseCase } from '../../application/auth/register.use-case';
 import { LogoutUseCase } from '../../application/auth/logout.use-case';
 import { StorageService } from '../../infrastructure/storage/storage.service';
+import { TokenService } from '../../infrastructure/storage/token.service';
+import { AuthRepository } from '../../domain/repositories/auth.repository';
 import { Router } from '@angular/router';
 import { ChangePasswordRequest, UpdateProfileRequest, User } from '../../domain/models/user.model';
 import {
@@ -23,10 +26,11 @@ import { UploadAvatarUseCase } from '../../application/user/upload-avatar.use-ca
   providedIn: 'root',
 })
 export class AuthStore {
-  // Use cases
+  // Use cases & services
   private readonly _loginUseCase = inject(LoginUseCase);
   private readonly _registerUseCase = inject(RegisterUseCase);
   private readonly _logoutUseCase = inject(LogoutUseCase);
+  private readonly _authRepository = inject(AuthRepository);
   private readonly _getCurrentUserUseCase = inject(GetCurrentUserUseCase);
   private readonly _updateProfileUseCase = inject(UpdateProfileUseCase);
   private readonly _changePasswordUseCase = inject(ChangePasswordUseCase);
@@ -34,6 +38,8 @@ export class AuthStore {
   private readonly _resetPasswordUseCase = inject(ResetPasswordUseCase);
   private readonly _uploadAvatarUseCase = inject(UploadAvatarUseCase);
   private readonly _storageService = inject(StorageService);
+  private readonly _tokenService = inject(TokenService);
+  private readonly _platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
 
   // States
@@ -54,6 +60,32 @@ export class AuthStore {
 
   readonly isAuthenticated = computed(() => !!this._currentUser());
 
+  // Silent Refresh khi khởi động ứng dụng (App Initializer)
+  initSession(): Promise<void> {
+    if (!isPlatformBrowser(this._platformId)) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      this._authRepository.RefreshToken().subscribe({
+        next: (response) => {
+          this._currentUser.set(response.User);
+          this._storageService.saveUserData(response.User);
+          this._tokenService.setAccessToken(response.Tokens.AccessToken);
+          resolve();
+        },
+        error: () => {
+          // Chưa đăng nhập hoặc Refresh Token đã hết hạn / bị thu hồi
+          // Âm thầm xóa state, không toast thông báo khi mới mở web
+          this._tokenService.clear();
+          this._storageService.clear();
+          this._currentUser.set(null);
+          resolve();
+        },
+      });
+    });
+  }
+
   // Actions
   login(request: LoginRequest): void {
     this._isLoading.set(true);
@@ -61,6 +93,7 @@ export class AuthStore {
 
     this._loginUseCase.execute(request).subscribe({
       next: (response) => {
+        this._tokenService.setAccessToken(response.Tokens.AccessToken);
         this._currentUser.set(response.User);
         this._isLoading.set(false);
         this.router.navigate(['/']);
@@ -80,6 +113,7 @@ export class AuthStore {
 
     this._registerUseCase.execute(request).subscribe({
       next: (response) => {
+        this._tokenService.setAccessToken(response.Tokens.AccessToken);
         this._currentUser.set(response.User);
         this._isLoading.set(false);
         this.router.navigate(['/']);
@@ -97,6 +131,7 @@ export class AuthStore {
     this._errorMessage.set(null);
     this._logoutUseCase.execute().subscribe({
       next: () => {
+        this._tokenService.clear();
         this._currentUser.set(null);
         this._isLoading.set(false);
         this._storageService.clear();
@@ -104,6 +139,7 @@ export class AuthStore {
       },
       error: () => {
         // Kể cả BE lỗi mạng thì FE vẫn xóa sạch phiên để user thoát ra an toàn
+        this._tokenService.clear();
         this._currentUser.set(null);
         this._isLoading.set(false);
         this._storageService.clear();
@@ -113,6 +149,7 @@ export class AuthStore {
   }
 
   clearSession(): void {
+    this._tokenService.clear();
     this._currentUser.set(null);
     this._isLoading.set(false);
     this._isProfileLoading.set(false);
