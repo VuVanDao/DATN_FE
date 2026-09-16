@@ -17,48 +17,58 @@ import { ApiResponse, AuthResponseDto } from '../dtos/auth.dto';
 import { AuthMapper } from '../mappers/auth.mapper';
 import { environment } from '../../../environments/environment';
 
+import { TokenService } from '../storage/token.service';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthHttpRepository implements AuthRepository {
   private readonly API_URL = `${environment.apiUrl}/auth`;
-  private readonly http = inject(HttpClient);
+  private readonly http: HttpClient;
   private readonly storageService: StorageService;
-  //   constructor(
-  //     private http: HttpClient,
-  //     private storageService: StorageService,
-  //   ) {}
-  // same với cái constructor trên nhưng viết theo cách khác
-  constructor(http: HttpClient, storageService: StorageService) {
+  private readonly tokenService: TokenService;
+
+  constructor(http: HttpClient, storageService: StorageService, tokenService: TokenService) {
     this.http = http;
     this.storageService = storageService;
+    this.tokenService = tokenService;
   }
 
   Login(request: LoginRequest): Observable<LoginResponse> {
     return this.http
-      .post<ApiResponse<AuthResponseDto>>(`${this.API_URL}/login`, {
-        Email: request.Email,
-        Password: request.Password,
-      })
+      .post<ApiResponse<AuthResponseDto>>(
+        `${this.API_URL}/login`,
+        {
+          Email: request.Email,
+          Password: request.Password,
+        },
+        { withCredentials: true },
+      )
       .pipe(
         map((res) => {
           const result = AuthMapper.toLoginResponse(res.data);
-          this.storageService.saveAuthData(result.Tokens, result.User);
+          this.tokenService.setAccessToken(result.Tokens.AccessToken);
+          this.storageService.saveUserData(result.User);
           return result;
         }),
       );
   }
   Register(request: RegisterRequest): Observable<RegisterResponse> {
     return this.http
-      .post<ApiResponse<AuthResponseDto>>(`${this.API_URL}/register`, {
-        Email: request.Email,
-        Password: request.Password,
-        Username: request.Username,
-      })
+      .post<ApiResponse<AuthResponseDto>>(
+        `${this.API_URL}/register`,
+        {
+          Email: request.Email,
+          Password: request.Password,
+          Username: request.Username,
+        },
+        { withCredentials: true },
+      )
       .pipe(
         map((res) => {
           const result = AuthMapper.toLoginResponse(res.data);
-          this.storageService.saveAuthData(result.Tokens, result.User);
+          this.tokenService.setAccessToken(result.Tokens.AccessToken);
+          this.storageService.saveUserData(result.User);
           return result;
         }),
       );
@@ -74,27 +84,31 @@ export class AuthHttpRepository implements AuthRepository {
       }
     });
   }
-  RefreshToken(): Observable<AuthTokens> {
-    const refreshToken = this.storageService.getRefreshToken();
+  RefreshToken(): Observable<LoginResponse> {
     return this.http
-      .post<ApiResponse<AuthResponseDto>>(`${this.API_URL}/refresh-token`, {
-        refreshToken,
-      })
+      .post<ApiResponse<AuthResponseDto>>(
+        `${this.API_URL}/refresh-token`,
+        {},
+        { withCredentials: true },
+      )
       .pipe(
         map((res) => {
           const result = AuthMapper.toLoginResponse(res.data);
-          this.storageService.saveAuthData(result.Tokens, result.User);
-          return result.Tokens;
+          this.tokenService.setAccessToken(result.Tokens.AccessToken);
+          this.storageService.saveUserData(result.User);
+          return result;
         }),
       );
   }
   Logout(): Observable<void> {
-    const refreshToken = this.storageService.getRefreshToken();
-    return this.http.post(`${this.API_URL}/revoke-token`, { refreshToken }).pipe(
-      map((res) => {
-        this.storageService.clear();
-      }),
-    );
+    return this.http
+      .post(`${this.API_URL}/revoke-token`, {}, { withCredentials: true })
+      .pipe(
+        map(() => {
+          this.tokenService.clear();
+          this.storageService.clear();
+        }),
+      );
   }
   ForgotPassword(request: ForgotPasswordRequest): Observable<string> {
     const email = request.Email;
