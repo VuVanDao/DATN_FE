@@ -9,7 +9,7 @@ export class AuthMapper {
       Email: dto.email,
       UserName: dto.username,
       AvatarUrl: dto.avatarUrl ?? undefined,
-      Roles: dto.roles,
+      Role: dto.role,
       IsActive: dto.isActive,
       CreatedAt: dto.createdAt,
     };

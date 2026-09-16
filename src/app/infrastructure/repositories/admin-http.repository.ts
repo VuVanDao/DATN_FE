@@ -65,9 +65,9 @@ export class AdminHttpRepository extends AdminRepository {
       })
       .pipe(map((res) => res.data));
   }
-  AssignUserRoles(userId: string, roleIds: string[]): Observable<boolean> {
+  AssignUserRole(userId: string, roleId: string): Observable<boolean> {
     return this.http
-      .post<ApiResponse<boolean>>(`${this.API_URL}/users/${userId}/roles`, roleIds)
+      .post<ApiResponse<boolean>>(`${this.API_URL}/users/${userId}/role`, { roleId })
       .pipe(map((res) => res.data));
   }
   GetRoles(): Observable<Role[]> {

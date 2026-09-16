@@ -11,7 +11,7 @@ export interface UserMangementResponse {
   bio?: string | null;
   isActive?: boolean;
   createdAt?: string;
-  roles: string[];
+  role: string;
   isDeleted: boolean;
 }
 export interface PagedResult<T> {

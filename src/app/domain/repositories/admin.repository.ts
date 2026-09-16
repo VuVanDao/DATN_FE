@@ -11,7 +11,7 @@ import {
 export abstract class AdminRepository {
   abstract GetUsers(params: GetUserManagementParams): Observable<PagedResult<UserMangement>>;
   abstract UpdateUserStatus(request: UpdateUserStatusRequest): Observable<boolean>;
-  // Gán danh sách vai trò cho một người dùng
-  abstract AssignUserRoles(userId: string, roleIds: string[]): Observable<boolean>;
+  // Gán vai trò cho một người dùng
+  abstract AssignUserRole(userId: string, roleId: string): Observable<boolean>;
   abstract GetRoles(): Observable<Role[]>;
 }

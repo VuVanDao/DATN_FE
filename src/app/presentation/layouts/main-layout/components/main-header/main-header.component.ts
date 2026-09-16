@@ -37,8 +37,8 @@ export class MainHeaderComponent implements OnInit {
 
   // Phân quyền Quản trị: chỉ tài khoản SystemAdmin hoặc Admin mới thấy tab Quản trị
   readonly isSystemAdmin = computed(() => {
-    const roles = this.authStore.currentUser()?.Roles || [];
-    return roles.includes('SystemAdmin') || roles.includes('Admin');
+    const user = this.authStore.currentUser();
+    return user?.Role === 'SystemAdmin' || user?.Role === 'Admin';
   });
 
   readonly notifData = signal<NotificationItem[]>([

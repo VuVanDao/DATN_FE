@@ -6,7 +6,7 @@ export interface User {
   Bio?: string | null;
   IsActive?: boolean;
   CreatedAt?: string;
-  Roles: string[];
+  Role: string;
 }
 export interface UserResponse {
   id: string;
@@ -16,7 +16,7 @@ export interface UserResponse {
   bio?: string;
   isActive?: boolean;
   createdAt?: string;
-  roles: string[];
+  role: string;
 }
 export interface ChangePasswordRequest {
   CurrentPassword: string;

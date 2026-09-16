@@ -21,7 +21,15 @@ export class AdminStore {
   private readonly _isLoading = signal<boolean>(false); // Đang tải dữ liệu hay không
   private readonly _isSubmitting = signal<boolean>(false); // Đang gửi lệnh cập nhật hay không
 
-  readonly users = this._users.asReadonly();
+  // Danh sách hiển thị tự động lọc theo vai trò (Role) bằng computed signal ngay trên Client
+  readonly users = computed(() => {
+    const role = this._roleFilter();
+    const listUser = this._users();
+    if (role === 'all') {
+      return listUser;
+    }
+    return listUser.filter((u) => u.Role === role);
+  });
   readonly roles = this._roles.asReadonly();
   readonly totalCount = this._totalCount.asReadonly();
   readonly pageIndex = this._pageIndex.asReadonly();
@@ -39,8 +47,7 @@ export class AdminStore {
       total: this._totalCount(),
       activeCount: list.filter((u) => u.IsActive).length,
       inactiveCount: list.filter((u) => !u.IsActive).length,
-      adminCount: list.filter((u) => u.Roles.includes('SystemAdmin') || u.Roles.includes('Admin'))
-        .length,
+      adminCount: list.filter((u) => u.Role === 'SystemAdmin' || u.Role === 'Admin').length,
     };
   });
   loadUsers = (): void => {
@@ -57,12 +64,8 @@ export class AdminStore {
       })
       .subscribe({
         next: (result) => {
-          console.log('🚀 ~ AdminStore ~ result:', result);
-          let items = result.items;
-          if (this._roleFilter() !== 'all') {
-            items = items.filter((u) => u.Roles.includes(this._roleFilter()));
-          }
-          this._users.set(items);
+          // Lưu nguyên vẹn danh sách người dùng từ BE về signal _users
+          this._users.set(result.items);
           this._totalCount.set(result.totalCount);
           this._totalPages.set(result.totalPages);
           this._isLoading.set(false);
@@ -111,8 +114,7 @@ export class AdminStore {
   }
   setRoleFilter(role: string): void {
     this._roleFilter.set(role);
-    this._pageIndex.set(1);
-    this.loadUsers();
+    // Lọc tức thì ở Client thông qua computed signal 'users', KHÔNG gọi lại API Backend
   }
   setPage(page: number): void {
     if (page < 1 || page > this._totalPages()) return;
@@ -152,9 +154,9 @@ export class AdminStore {
       },
     });
   };
-  assignRoles(userId: string, roleIds: string[], onSuccess?: () => void): void {
+  assignRole(userId: string, roleId: string, onSuccess?: () => void): void {
     this._isSubmitting.set(true);
-    this._adminRepository.AssignUserRoles(userId, roleIds).subscribe({
+    this._adminRepository.AssignUserRole(userId, roleId).subscribe({
       next: () => {
         this._isSubmitting.set(false);
         toast.success('Cập nhật vai trò người dùng thành công');

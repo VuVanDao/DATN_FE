@@ -24,8 +24,8 @@
       <p><strong>User ID:</strong> {{ authStore.currentUser()?.Id }}</p>
       <p><strong>Email:</strong> {{ authStore.currentUser()?.Email }}</p>
       <p>
-        <strong>Roles:</strong>
-        {{ authStore.currentUser()?.Roles?.join(', ') || 'Chưa phân quyền' }}
+        <strong>Role:</strong>
+        {{ authStore.currentUser()?.Role || 'Chưa phân quyền' }}
       </p>
     </div>
   </div>

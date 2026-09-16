@@ -9,7 +9,7 @@ export class AdminMapper {
       UserName: dto.username,
       AvatarUrl: dto.avatarUrl ?? undefined,
       Bio: dto.bio,
-      Roles: dto.roles,
+      Role: dto.role,
       IsActive: dto.isActive,
       CreatedAt: dto.createdAt,
       IsDeleted: dto.isDeleted,

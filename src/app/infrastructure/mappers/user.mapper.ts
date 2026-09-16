@@ -10,7 +10,7 @@ export class UserMapper {
       Bio: data.bio ?? '',
       IsActive: data.isActive,
       CreatedAt: data.createdAt,
-      Roles: data.roles ?? [],
+      Role: data.role,
     };
     return user;
   }

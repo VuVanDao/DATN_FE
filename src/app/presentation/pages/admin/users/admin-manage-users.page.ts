@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -26,7 +26,12 @@ export class AdminManageUserPage implements OnInit {
   // State mở Modal Phân quyền
   readonly isRoleModalOpen = signal<boolean>(false);
   readonly selectedUserForRoles = signal<UserMangement | null>(null);
-  readonly selectedRoleIds = signal<string[]>([]);
+  readonly selectedRoleId = signal<string>('');
+
+  // Chỉ lấy danh sách Role toàn cục (Scope = Global) áp dụng cho tài khoản người dùng
+  readonly globalRoles = computed(() => {
+    return this.store.roles().filter((r) => r.Scope === 'Global');
+  });
 
   // State mở Modal status
   readonly isStatusModalOpen = signal<boolean>(false);
@@ -61,30 +66,28 @@ export class AdminManageUserPage implements OnInit {
   }
   openRoleModal(user: UserMangement): void {
     this.selectedUserForRoles.set(user);
-    // Lấy danh sách ID của các Role mà user này đang có
+    // Lấy ID Role hiện tại của User
     const allRoles = this.store.roles();
-    const currentRoleIds = allRoles.filter((r) => user.Roles.includes(r.Name)).map((r) => r.Id);
-    this.selectedRoleIds.set(currentRoleIds);
+    const currentRole = allRoles.find((r) => r.Name === user.Role);
+    this.selectedRoleId.set(currentRole ? currentRole.Id : '');
     this.isRoleModalOpen.set(true);
   }
   closeRoleModal(): void {
     this.isRoleModalOpen.set(false);
     this.selectedUserForRoles.set(null);
-    this.selectedRoleIds.set([]);
+    this.selectedRoleId.set('');
   }
-  toggleRoleSelection(roleId: string): void {
-    this.selectedRoleIds.update((ids) =>
-      ids.includes(roleId) ? ids.filter((id) => id !== roleId) : [...ids, roleId],
-    );
+  selectRole(roleId: string): void {
+    this.selectedRoleId.set(roleId);
   }
   saveRoles(): void {
     const user = this.selectedUserForRoles();
     if (!user) return;
-    if (this.selectedRoleIds().length === 0) {
-      toast.error('Người dùng phải có ít nhất 1 vai trò!');
+    if (!this.selectedRoleId()) {
+      toast.error('Vui lòng chọn vai trò cho người dùng!');
       return;
     }
-    this.store.assignRoles(user.Id, this.selectedRoleIds(), () => {
+    this.store.assignRole(user.Id, this.selectedRoleId(), () => {
       this.closeRoleModal();
     });
   }
@@ -132,6 +135,8 @@ export class AdminManageUserPage implements OnInit {
       case 'SystemAdmin':
       case 'Admin':
         return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+      case 'User':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800';
       case 'WorkspaceOwner':
         return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800';
       case 'ProjectOwner':
