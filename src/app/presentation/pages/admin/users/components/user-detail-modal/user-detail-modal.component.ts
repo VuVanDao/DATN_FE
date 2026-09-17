@@ -13,9 +13,17 @@ export class UserDetailModalComponent {
   @Input() user: UserMangement | null = null;
   @Input() isOpen = false;
   @Output() closed = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<UserMangement>();
 
   close(): void {
     this.closed.emit();
+  }
+
+  onEdit(): void {
+    if (this.user) {
+      this.edit.emit(this.user);
+      this.close();
+    }
   }
 
   getRoleBadgeClass(role: string): string {

@@ -13,6 +13,7 @@ import { UserDetailModalComponent } from './components/user-detail-modal/user-de
 import { UserCreateModalComponent } from './components/user-create-modal/user-create-modal.component';
 import { UserDeleteModalComponent } from './components/user-delete-modal/user-delete-modal.component';
 import { UserStatusModalComponent } from './components/user-status-modal/user-status-modal.component';
+import { UserUpdateModalComponent } from './components/user-update-modal/user-update-modal.component';
 
 @Component({
   selector: 'app-admin-users',
@@ -27,6 +28,7 @@ import { UserStatusModalComponent } from './components/user-status-modal/user-st
     UserCreateModalComponent,
     UserDeleteModalComponent,
     UserStatusModalComponent,
+    UserUpdateModalComponent,
   ],
   templateUrl: './admin-manage-users.page.html',
 })
@@ -62,6 +64,10 @@ export class AdminManageUserPage implements OnInit {
   // State mở Modal xác nhận xóa người dùng
   readonly isDeleteModalOpen = signal<boolean>(false);
   readonly selectedUserForDelete = signal<UserMangement | null>(null);
+
+  // State mở Modal cập nhật người dùng
+  readonly isUpdateModalOpen = signal<boolean>(false);
+  readonly selectedUserForUpdate = signal<UserMangement | null>(null);
 
   ngOnInit(): void {
     // Đảm bảo sidebar chuyển sang chế độ Admin
@@ -155,6 +161,15 @@ export class AdminManageUserPage implements OnInit {
   closeDeleteModal(): void {
     this.isDeleteModalOpen.set(false);
     this.selectedUserForDelete.set(null);
+  }
+  // Modal cập nhật người dùng
+  openUpdateModal(user: UserMangement): void {
+    this.selectedUserForUpdate.set(user);
+    this.isUpdateModalOpen.set(true);
+  }
+  closeUpdateModal(): void {
+    this.isUpdateModalOpen.set(false);
+    this.selectedUserForUpdate.set(null);
   }
   getRoleBadgeClass(role: string): string {
     switch (role) {

@@ -385,6 +385,16 @@
                       <mat-icon fontIcon="visibility" class="icon-sm"></mat-icon>
                     </button>
 
+                    <!-- Nút Chỉnh sửa -->
+                    <button
+                      type="button"
+                      (click)="openUpdateModal(user)"
+                      matTooltip="Chỉnh sửa thông tin"
+                      class="w-8 h-8 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex items-center justify-center cursor-pointer"
+                    >
+                      <mat-icon fontIcon="edit" class="icon-sm"></mat-icon>
+                    </button>
+
                     <!-- Nút Phân vai trò -->
                     <button
                       type="button"
@@ -581,6 +591,7 @@
     [user]="selectedUserForDetail()"
     [isOpen]="isDetailModalOpen()"
     (closed)="closeDetailModal()"
+    (edit)="openUpdateModal($event)"
   />
 
   <!-- 9. MODAL TẠO NGƯỜI DÙNG MỚI (Component riêng) -->
@@ -591,5 +602,12 @@
     [user]="selectedUserForDelete()"
     [isOpen]="isDeleteModalOpen()"
     (closed)="closeDeleteModal()"
+  />
+
+  <!-- 11. MODAL CẬP NHẬT NGƯỜI DÙNG (Component riêng) -->
+  <app-user-update-modal
+    [user]="selectedUserForUpdate()"
+    [isOpen]="isUpdateModalOpen()"
+    (closed)="closeUpdateModal()"
   />
 </div>
