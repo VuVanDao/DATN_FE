@@ -1,5 +1,4 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { AdminRepository } from '../../domain/repositories/admin.repository';
 import {
   UserMangement,
   Role,
@@ -7,13 +6,27 @@ import {
   CreateUserRequest,
   AdminUpdateUserRequest,
 } from '../../domain/models/admin.model';
+import { GetUsersUseCase } from '../../application/admin/get-users.use-case';
+import { GetRolesUseCase } from '../../application/admin/get-roles.use-case';
+import { UpdateUserStatusUseCase } from '../../application/admin/update-user-status.use-case';
+import { AssignUserRoleUseCase } from '../../application/admin/assign-user-role.use-case';
+import { CreateUserUseCase } from '../../application/admin/create-user.use-case';
+import { DeleteUserUseCase } from '../../application/admin/delete-user.use-case';
+import { UpdateUserUseCase } from '../../application/admin/update-user.use-case';
 import { toast } from 'ngx-sonner';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AdminStore {
-  private readonly _adminRepository = inject(AdminRepository);
+  // UseCases
+  private readonly _getUsersUseCase = inject(GetUsersUseCase);
+  private readonly _getRolesUseCase = inject(GetRolesUseCase);
+  private readonly _updateUserStatusUseCase = inject(UpdateUserStatusUseCase);
+  private readonly _assignUserRoleUseCase = inject(AssignUserRoleUseCase);
+  private readonly _createUserUseCase = inject(CreateUserUseCase);
+  private readonly _deleteUserUseCase = inject(DeleteUserUseCase);
+  private readonly _updateUserUseCase = inject(UpdateUserUseCase);
 
   private readonly _users = signal<UserMangement[]>([]); // Danh sách user trang hiện tại
   private readonly _roles = signal<Role[]>([]); // Danh sách tất cả vai trò
@@ -56,13 +69,14 @@ export class AdminStore {
       adminCount: list.filter((u) => u.Role === 'SystemAdmin' || u.Role === 'Admin').length,
     };
   });
+
   loadUsers = (): void => {
     this._isLoading.set(true);
     let isActiveParam: boolean | undefined = undefined;
     if (this._statusFilter() === 'active') isActiveParam = true;
     if (this._statusFilter() === 'inactive') isActiveParam = false;
-    this._adminRepository
-      .GetUsers({
+    this._getUsersUseCase
+      .execute({
         isActive: isActiveParam,
         pageIndex: this._pageIndex(),
         pageSize: this._pageSize(),
@@ -82,40 +96,47 @@ export class AdminStore {
         },
       });
   };
+
   loadRoles(): void {
-    this._adminRepository.GetRoles().subscribe({
+    this._getRolesUseCase.execute().subscribe({
       next: (roles) => this._roles.set(roles),
       error: (err) => this._showError(err),
     });
   }
+
   // Đổi từ khóa tìm kiếm
   setSearch(query: string): void {
     this._searchQuery.set(query);
     this._pageIndex.set(1); // Reset về trang 1 khi tìm kiếm
     this.loadUsers();
   }
+
   setStatusFilter(status: 'all' | 'active' | 'inactive'): void {
     this._statusFilter.set(status);
     this._pageIndex.set(1);
     this.loadUsers();
   }
+
   setRoleFilter(role: string): void {
     this._roleFilter.set(role);
     // Lọc tức thì ở Client thông qua computed signal 'users', KHÔNG gọi lại API Backend
   }
+
   setPage(page: number): void {
     if (page < 1 || page > this._totalPages()) return;
     this._pageIndex.set(page);
     this.loadUsers();
   }
+
   setPageSize(size: number): void {
     this._pageSize.set(size);
     this._pageIndex.set(1);
     this.loadUsers();
   }
+
   updateUserStatus = (request: UpdateUserStatusRequest, onSuccess?: () => void): void => {
     this._isSubmitting.set(true);
-    this._adminRepository.UpdateUserStatus(request).subscribe({
+    this._updateUserStatusUseCase.execute(request).subscribe({
       next: () => {
         this._isSubmitting.set(false);
         // Cập nhật ngay trên mảng signal người dùng mà không cần reload cả trang
@@ -133,9 +154,10 @@ export class AdminStore {
       },
     });
   };
+
   assignRole(userId: string, roleId: string, onSuccess?: () => void): void {
     this._isSubmitting.set(true);
-    this._adminRepository.AssignUserRole(userId, roleId).subscribe({
+    this._assignUserRoleUseCase.execute(userId, roleId).subscribe({
       next: () => {
         this._isSubmitting.set(false);
         toast.success('Cập nhật vai trò người dùng thành công');
@@ -148,9 +170,10 @@ export class AdminStore {
       },
     });
   }
+
   createUser(request: CreateUserRequest, onSuccess?: () => void): void {
     this._isSubmitting.set(true);
-    this._adminRepository.CreateUser(request).subscribe({
+    this._createUserUseCase.execute(request).subscribe({
       next: () => {
         this._isSubmitting.set(false);
         toast.success('Tạo người dùng mới thành công');
@@ -163,13 +186,32 @@ export class AdminStore {
       },
     });
   }
+
   deleteUser(userId: string, onSuccess?: () => void): void {
     this._isSubmitting.set(true);
-    this._adminRepository.DeleteUser(userId).subscribe({
+    this._deleteUserUseCase.execute(userId).subscribe({
       next: () => {
         this._isSubmitting.set(false);
         toast.success('Xóa người dùng thành công');
         this.loadUsers(); // Tải lại danh sách
+        if (onSuccess) onSuccess();
+      },
+      error: (err) => {
+        this._isSubmitting.set(false);
+        this._showError(err);
+      },
+    });
+  }
+
+  updateUser(userId: string, request: AdminUpdateUserRequest, onSuccess?: () => void): void {
+    this._isSubmitting.set(true);
+    this._updateUserUseCase.execute(userId, request).subscribe({
+      next: (updatedUser) => {
+        this._isSubmitting.set(false);
+        this._users.update((list) =>
+          list.map((u) => (u.Id === userId ? { ...u, ...updatedUser } : u)),
+        );
+        toast.success('Cập nhật thông tin người dùng thành công');
         if (onSuccess) onSuccess();
       },
       error: (err) => {
