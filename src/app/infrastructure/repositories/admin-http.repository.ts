@@ -8,6 +8,8 @@ import {
   UpdateUserStatusRequest,
   Role,
   UserMangementResponse,
+  CreateUserRequest,
+  AdminUpdateUserRequest,
 } from '../../domain/models/admin.model';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -82,5 +84,20 @@ export class AdminHttpRepository extends AdminRepository {
         }));
       }),
     );
+  }
+  CreateUser(request: CreateUserRequest): Observable<string> {
+    return this.http
+      .post<ApiResponse<string>>(`${this.API_URL}/users`, request)
+      .pipe(map((res) => res.data));
+  }
+  UpdateUser(userId: string, request: AdminUpdateUserRequest): Observable<UserMangement> {
+    return this.http
+      .put<ApiResponse<UserMangementResponse>>(`${this.API_URL}/users/${userId}`, request)
+      .pipe(map((res) => AdminMapper.toAdminUser(res.data)));
+  }
+  DeleteUser(userId: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.API_URL}/users/${userId}`)
+      .pipe(map((res) => res.data));
   }
 }

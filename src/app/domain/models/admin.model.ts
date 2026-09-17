@@ -41,3 +41,13 @@ export interface Role {
   Scope: string;
   IsSystemRole: boolean;
 }
+export interface CreateUserRequest {
+  email: string;
+  username: string;
+  password: string;
+  bio?: string;
+}
+export interface AdminUpdateUserRequest {
+  username: string;
+  bio?: string;
+}
