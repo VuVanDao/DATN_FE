@@ -1,6 +1,12 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AdminRepository } from '../../domain/repositories/admin.repository';
-import { UserMangement, Role, UpdateUserStatusRequest } from '../../domain/models/admin.model';
+import {
+  UserMangement,
+  Role,
+  UpdateUserStatusRequest,
+  CreateUserRequest,
+  AdminUpdateUserRequest,
+} from '../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
 
 @Injectable({
@@ -71,34 +77,15 @@ export class AdminStore {
           this._isLoading.set(false);
         },
         error: (err) => {
-          const errorsList = err?.error?.errors;
-          let detailedMsg: string | null = null;
-          if (Array.isArray(errorsList) && errorsList.length > 0) {
-            detailedMsg = errorsList[0];
-          } else if (typeof errorsList === 'object' && errorsList !== null) {
-            const firstKey = Object.keys(errorsList)[0];
-            detailedMsg = errorsList[firstKey]?.[0];
-          }
-          const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-          toast.error(msg);
+          this._isLoading.set(false);
+          this._showError(err);
         },
       });
   };
   loadRoles(): void {
     this._adminRepository.GetRoles().subscribe({
       next: (roles) => this._roles.set(roles),
-      error: (err) => {
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
-      },
+      error: (err) => this._showError(err),
     });
   }
   // Đổi từ khóa tìm kiếm
@@ -141,16 +128,8 @@ export class AdminStore {
         if (onSuccess) onSuccess();
       },
       error: (err) => {
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
+        this._isSubmitting.set(false);
+        this._showError(err);
       },
     });
   };
@@ -165,8 +144,52 @@ export class AdminStore {
       },
       error: (err) => {
         this._isSubmitting.set(false);
-        toast.error(err?.error?.message || 'Có lỗi khi phân quyền vai trò');
+        this._showError(err);
       },
     });
+  }
+  createUser(request: CreateUserRequest, onSuccess?: () => void): void {
+    this._isSubmitting.set(true);
+    this._adminRepository.CreateUser(request).subscribe({
+      next: () => {
+        this._isSubmitting.set(false);
+        toast.success('Tạo người dùng mới thành công');
+        this.loadUsers(); // Tải lại danh sách
+        if (onSuccess) onSuccess();
+      },
+      error: (err) => {
+        this._isSubmitting.set(false);
+        this._showError(err);
+      },
+    });
+  }
+  deleteUser(userId: string, onSuccess?: () => void): void {
+    this._isSubmitting.set(true);
+    this._adminRepository.DeleteUser(userId).subscribe({
+      next: () => {
+        this._isSubmitting.set(false);
+        toast.success('Xóa người dùng thành công');
+        this.loadUsers(); // Tải lại danh sách
+        if (onSuccess) onSuccess();
+      },
+      error: (err) => {
+        this._isSubmitting.set(false);
+        this._showError(err);
+      },
+    });
+  }
+
+  // --- Private helper: Trích xuất và hiển thị lỗi từ API response ---
+  private _showError(err: any): void {
+    const errorsList = err?.error?.errors;
+    let detailedMsg: string | null = null;
+    if (Array.isArray(errorsList) && errorsList.length > 0) {
+      detailedMsg = errorsList[0];
+    } else if (typeof errorsList === 'object' && errorsList !== null) {
+      const firstKey = Object.keys(errorsList)[0];
+      detailedMsg = errorsList[firstKey]?.[0];
+    }
+    const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
+    toast.error(msg);
   }
 }
