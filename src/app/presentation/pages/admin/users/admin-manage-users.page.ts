@@ -11,6 +11,7 @@ import { UserMangement } from '../../../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
 import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
 import { UserCreateModalComponent } from './components/user-create-modal/user-create-modal.component';
+import { UserDeleteModalComponent } from './components/user-delete-modal/user-delete-modal.component';
 
 @Component({
   selector: 'app-admin-users',
@@ -23,6 +24,7 @@ import { UserCreateModalComponent } from './components/user-create-modal/user-cr
     MatMenuModule,
     UserDetailModalComponent,
     UserCreateModalComponent,
+    UserDeleteModalComponent,
   ],
   templateUrl: './admin-manage-users.page.html',
 })
@@ -168,13 +170,6 @@ export class AdminManageUserPage implements OnInit {
   closeDeleteModal(): void {
     this.isDeleteModalOpen.set(false);
     this.selectedUserForDelete.set(null);
-  }
-  confirmDelete(): void {
-    const user = this.selectedUserForDelete();
-    if (!user) return;
-    this.store.deleteUser(user.Id, () => {
-      this.closeDeleteModal();
-    });
   }
   getRoleBadgeClass(role: string): string {
     switch (role) {
