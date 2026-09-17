@@ -9,11 +9,21 @@ import { AuthStore } from '../../../state/auth.store';
 import { AdminStore } from '../../../state/admin.store';
 import { UserMangement } from '../../../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
+import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
+import { UserCreateModalComponent } from './components/user-create-modal/user-create-modal.component';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, MatTooltipModule, MatMenuModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatMenuModule,
+    UserDetailModalComponent,
+    UserCreateModalComponent,
+  ],
   templateUrl: './admin-manage-users.page.html',
 })
 export class AdminManageUserPage implements OnInit {
@@ -42,6 +52,13 @@ export class AdminManageUserPage implements OnInit {
   // State mở Modal chi tiết
   readonly isDetailModalOpen = signal<boolean>(false);
   readonly selectedUserForDetail = signal<UserMangement | null>(null);
+
+  // State mở Modal tạo mới người dùng
+  readonly isCreateModalOpen = signal<boolean>(false);
+
+  // State mở Modal xác nhận xóa người dùng
+  readonly isDeleteModalOpen = signal<boolean>(false);
+  readonly selectedUserForDelete = signal<UserMangement | null>(null);
 
   ngOnInit(): void {
     // Đảm bảo sidebar chuyển sang chế độ Admin
@@ -122,6 +139,7 @@ export class AdminManageUserPage implements OnInit {
       },
     );
   }
+  // Modal chi tiết
   openDetailModal(user: UserMangement): void {
     this.selectedUserForDetail.set(user);
     this.isDetailModalOpen.set(true);
@@ -129,6 +147,34 @@ export class AdminManageUserPage implements OnInit {
   closeDetailModal(): void {
     this.isDetailModalOpen.set(false);
     this.selectedUserForDetail.set(null);
+  }
+  // Modal tạo mới người dùng
+  openCreateModal(): void {
+    this.isCreateModalOpen.set(true);
+  }
+  closeCreateModal(): void {
+    this.isCreateModalOpen.set(false);
+  }
+  // Modal xác nhận xóa người dùng
+  openDeleteModal(user: UserMangement): void {
+    // Kiểm tra an toàn: Không cho Admin tự xóa chính mình
+    if (this.authStore.currentUser()?.Id === user.Id) {
+      toast.error('Bạn không thể tự xóa tài khoản Quản trị viên của chính mình!');
+      return;
+    }
+    this.selectedUserForDelete.set(user);
+    this.isDeleteModalOpen.set(true);
+  }
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen.set(false);
+    this.selectedUserForDelete.set(null);
+  }
+  confirmDelete(): void {
+    const user = this.selectedUserForDelete();
+    if (!user) return;
+    this.store.deleteUser(user.Id, () => {
+      this.closeDeleteModal();
+    });
   }
   getRoleBadgeClass(role: string): string {
     switch (role) {
