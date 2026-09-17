@@ -12,6 +12,7 @@ import { toast } from 'ngx-sonner';
 import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
 import { UserCreateModalComponent } from './components/user-create-modal/user-create-modal.component';
 import { UserDeleteModalComponent } from './components/user-delete-modal/user-delete-modal.component';
+import { UserStatusModalComponent } from './components/user-status-modal/user-status-modal.component';
 
 @Component({
   selector: 'app-admin-users',
@@ -25,6 +26,7 @@ import { UserDeleteModalComponent } from './components/user-delete-modal/user-de
     UserDetailModalComponent,
     UserCreateModalComponent,
     UserDeleteModalComponent,
+    UserStatusModalComponent,
   ],
   templateUrl: './admin-manage-users.page.html',
 })
@@ -49,7 +51,6 @@ export class AdminManageUserPage implements OnInit {
   readonly isStatusModalOpen = signal<boolean>(false);
   readonly selectedUserForStatus = signal<UserMangement | null>(null);
   readonly targetStatus = signal<boolean>(true); // true = mở khóa, false = khóa
-  readonly statusReason = signal<string>('');
 
   // State mở Modal chi tiết
   readonly isDetailModalOpen = signal<boolean>(false);
@@ -119,27 +120,11 @@ export class AdminManageUserPage implements OnInit {
     }
     this.selectedUserForStatus.set(user);
     this.targetStatus.set(newStatus);
-    this.statusReason.set('');
     this.isStatusModalOpen.set(true);
   }
   closeStatusModal(): void {
     this.isStatusModalOpen.set(false);
     this.selectedUserForStatus.set(null);
-    this.statusReason.set('');
-  }
-  confirmStatusChange(): void {
-    const user = this.selectedUserForStatus();
-    if (!user) return;
-    this.store.updateUserStatus(
-      {
-        userId: user.Id,
-        IsActive: this.targetStatus(),
-        reason: this.statusReason(),
-      },
-      () => {
-        this.closeStatusModal();
-      },
-    );
   }
   // Modal chi tiết
   openDetailModal(user: UserMangement): void {
