@@ -147,10 +147,10 @@
           </button>
           <button
             type="submit"
-            [disabled]="isSubmitting() || createUserForm.invalid"
+            [disabled]="store.isSubmitting() || createUserForm.invalid"
             class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
           >
-            {{ isSubmitting() ? 'Đang tạo...' : 'Tạo người dùng' }}
+            {{ store.isSubmitting() ? 'Đang tạo...' : 'Tạo người dùng' }}
           </button>
         </div>
       </form>

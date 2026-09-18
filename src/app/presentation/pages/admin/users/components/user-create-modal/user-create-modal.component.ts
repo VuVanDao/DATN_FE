@@ -21,7 +21,6 @@ export class UserCreateModalComponent {
 
   @Input() isOpen = false;
   @Output() closed = new EventEmitter<void>();
-  readonly isSubmitting = signal<boolean>(false);
 
   readonly createUserForm = new FormGroup({
     email: new FormControl('', {
@@ -59,9 +58,6 @@ export class UserCreateModalComponent {
   }
   readonly showPassword = signal<boolean>(false);
 
-  // Validation errors (hiển thị sau khi submit lần đầu)
-  readonly submitted = signal<boolean>(false);
-
   close(): void {
     this.resetForm();
     this.closed.emit();
@@ -76,7 +72,6 @@ export class UserCreateModalComponent {
       this.createUserForm.markAllAsTouched();
       return;
     }
-    this.submitted.set(true);
     const { email, username, password, bio } = this.createUserForm.getRawValue();
     this.store.createUser(
       {
@@ -92,6 +87,5 @@ export class UserCreateModalComponent {
   private resetForm(): void {
     this.createUserForm.reset();
     this.showPassword.set(false);
-    this.submitted.set(false);
   }
 }
