@@ -106,6 +106,7 @@ export class AdminStore {
     this.loadUsers();
   }
 
+  // cập nhật số trang
   setPage(page: number): void {
     if (page < 1 || page > this._totalPages()) return;
     this._pageIndex.set(page);

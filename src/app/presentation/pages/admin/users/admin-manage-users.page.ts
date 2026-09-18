@@ -74,6 +74,7 @@ export class AdminManageUserPage implements OnInit {
     this.store.loadUsers();
     this.store.loadRoles();
   }
+  // phần Input search
   onSearchChange(val: string): void {
     this.searchInput.set(val);
     this.store.setSearch(val.trim());
@@ -82,9 +83,11 @@ export class AdminManageUserPage implements OnInit {
     this.searchInput.set('');
     this.store.setSearch('');
   }
+  // lọc theo trạng thái
   onStatusFilterChange(status: 'all' | 'active' | 'inactive'): void {
     this.store.setStatusFilter(status);
   }
+  // set role cho các tài khoản
   openRoleModal(user: UserMangement): void {
     this.selectedUserForRoles.set(user);
     // Lấy ID Role hiện tại của User
@@ -166,6 +169,11 @@ export class AdminManageUserPage implements OnInit {
     this.isUpdateModalOpen.set(false);
     this.selectedUserForUpdate.set(null);
   }
+  // thiết lập pageSize cho table
+  onPageSizeChangeFunc = (event: Event): void => {
+    const selectedElement = event.target as HTMLSelectElement;
+    this.store.setPageSize(Number(selectedElement.value));
+  };
   getRoleBadgeClass(role: string): string {
     switch (role) {
       case 'SystemAdmin':

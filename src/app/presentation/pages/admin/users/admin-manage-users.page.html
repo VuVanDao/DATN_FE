@@ -395,7 +395,17 @@
         <span class="font-semibold text-slate-800 dark:text-slate-200">{{
           store.totalPages()
         }}</span>
-        (Tổng cộng {{ store.totalCount() }} người dùng)
+        <span> (Tổng cộng {{ store.totalCount() }} người dùng)</span>
+        <select
+          [value]="store.pageSize()"
+          (change)="onPageSizeChangeFunc($event)"
+          class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer transition ml-3"
+        >
+          <option value="5">5 dòng / trang</option>
+          <option value="10">10 dòng / trang</option>
+          <option value="20">20 dòng / trang</option>
+          <option value="50">50 dòng / trang</option>
+        </select>
       </div>
 
       <div class="flex items-center gap-2">
