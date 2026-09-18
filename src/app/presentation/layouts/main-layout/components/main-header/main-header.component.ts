@@ -125,7 +125,7 @@ export class MainHeaderComponent implements OnInit {
 
   navigateToSettings(): void {
     this.layoutService.setSidebar('settings');
-    this.router.navigate(['/settings']);
+    this.router.navigate(['/change-password']);
   }
 
   navigateToAdmin(): void {

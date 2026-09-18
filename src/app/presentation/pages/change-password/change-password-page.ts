@@ -29,12 +29,12 @@ export const passwordMatchValidator: ValidatorFn = (
 };
 
 @Component({
-  selector: 'app-settings',
+  selector: 'app-change-password-page',
   standalone: true,
   imports: [ReactiveFormsModule],
-  templateUrl: './settings.html',
+  templateUrl: './change-password-page.html',
 })
-export class SettingsPage implements OnInit {
+export class ChangePasswordPage implements OnInit {
   readonly authStore = inject(AuthStore);
   readonly layoutService = inject(LayoutService);
 

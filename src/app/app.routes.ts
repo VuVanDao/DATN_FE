@@ -5,8 +5,7 @@ import { RegisterPage } from './presentation/pages/auth/register';
 import { MainLayout } from './presentation/layouts/main-layout/main-layout';
 import { HomePage } from './presentation/pages/home/home';
 import { authGuard } from './presentation/guards/auth.guards';
-import { SettingsPage } from './presentation/pages/settings/settings';
-import { MainSecurityPage } from './presentation/pages/security/main-security-page';
+import { ChangePasswordPage } from './presentation/pages/change-password/change-password-page';
 import { ProfilePage } from './presentation/pages/profile/profile';
 import { guestGuard } from './presentation/guards/guest.guards';
 
@@ -35,12 +34,8 @@ export const routes: Routes = [
         component: ProfilePage,
       },
       {
-        path: 'settings',
-        component: SettingsPage,
-      },
-      {
-        path: 'security',
-        component: MainSecurityPage,
+        path: 'change-password',
+        component: ChangePasswordPage,
       },
       {
         path: 'workspaces',
