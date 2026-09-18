@@ -13,6 +13,8 @@ import { SecurityRepository } from './domain/repositories/security.repository';
 import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
 import { AdminRepository } from './domain/repositories/admin.repository';
 import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
+import { WorkspaceRepository } from './domain/repositories/workspace.repository';
+import { WorkspaceHttpRepository } from './infrastructure/repositories/workspace-http.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -39,6 +41,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: AdminRepository,
       useClass: AdminHttpRepository,
+    },
+    {
+      provide: WorkspaceRepository,
+      useClass: WorkspaceHttpRepository,
     },
   ],
 };
