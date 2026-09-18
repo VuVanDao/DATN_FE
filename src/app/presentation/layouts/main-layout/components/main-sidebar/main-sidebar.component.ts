@@ -6,6 +6,7 @@ import { LayoutService } from '../../../../../application/layout/layout.service'
 import { WorkspaceStore } from '../../../../state/workspace.store';
 import { AuthStore } from '../../../../state/auth.store';
 import { Workspace } from '../../../../../domain/models/workspace.model';
+import { WorkspaceCreateModalComponent } from '../../../../components/workspace-create-modal/workspace-create-modal.component';
 
 export interface RecentBoardItem {
   id: string;
@@ -30,6 +31,7 @@ export interface RecentWorkspaceItem {
     RouterLinkActive,
     MatIconModule,
     MatTooltipModule,
+    WorkspaceCreateModalComponent,
   ],
   templateUrl: './main-sidebar.component.html',
 })
@@ -38,10 +40,21 @@ export class MainSidebarComponent implements OnInit {
   readonly workspaceStore = inject(WorkspaceStore);
   readonly authStore = inject(AuthStore);
 
+  // trạng thái mở modal tạo mới Workspace
+  readonly isCreateModalOpen = signal<boolean>(false);
+
   ngOnInit(): void {
     if (this.authStore.isAuthenticated()) {
       this.workspaceStore.loadWorkspaces();
     }
+  }
+
+  openCreateModal(): void {
+    this.isCreateModalOpen.set(true);
+  }
+
+  closeCreateModal(): void {
+    this.isCreateModalOpen.set(false);
   }
 
   // ===== RECENT SECTION STATE (Bảng & Workspace gần đây/đã ghim) =====
@@ -56,31 +69,33 @@ export class MainSidebarComponent implements OnInit {
     { id: 'rb-4', name: 'Hệ thống Quản lý Task', color: 'bg-amber-500', isPinned: true },
   ]);
 
-  readonly recentBoardsList = computed(() =>
-    this.recentBoards().filter((b) => !b.isPinned)
-  );
-  readonly pinnedBoardsList = computed(() =>
-    this.recentBoards().filter((b) => b.isPinned)
-  );
+  readonly recentBoardsList = computed(() => this.recentBoards().filter((b) => !b.isPinned));
+  readonly pinnedBoardsList = computed(() => this.recentBoards().filter((b) => b.isPinned));
 
   readonly recentWorkspacesList = computed<RecentWorkspaceItem[]>(() =>
-    this.workspaceStore.workspaces().slice(0, 2).map((ws) => ({
-      id: ws.id,
-      name: ws.name,
-      initial: ws.initial,
-      color: ws.color,
-      isPinned: false,
-    }))
+    this.workspaceStore
+      .workspaces()
+      .slice(0, 2)
+      .map((ws) => ({
+        id: ws.id,
+        name: ws.name,
+        initial: ws.initial,
+        color: ws.color,
+        isPinned: false,
+      })),
   );
 
   readonly pinnedWorkspacesList = computed<RecentWorkspaceItem[]>(() =>
-    this.workspaceStore.workspaces().slice(2, 3).map((ws) => ({
-      id: ws.id,
-      name: ws.name,
-      initial: ws.initial,
-      color: ws.color,
-      isPinned: true,
-    }))
+    this.workspaceStore
+      .workspaces()
+      .slice(2, 3)
+      .map((ws) => ({
+        id: ws.id,
+        name: ws.name,
+        initial: ws.initial,
+        color: ws.color,
+        isPinned: true,
+      })),
   );
 
   toggleRecent(): void {
