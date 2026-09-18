@@ -1,12 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthStore } from '../../../../state/auth.store';
 import { toast } from 'ngx-sonner';
 
 @Component({
   selector: 'app-profile-overview',
   standalone: true,
-  imports: [MatTooltipModule],
+  imports: [MatTooltipModule, MatIconModule],
   templateUrl: './profile-overview.component.html',
 })
 export class ProfileOverviewComponent {

@@ -13,14 +13,7 @@
       <div
         class="w-9 h-9 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z"
-          />
-        </svg>
+        <mat-icon fontIcon="auto_awesome" class="icon-md"></mat-icon>
       </div>
       <div>
         <h3 class="font-bold text-sm text-slate-900 dark:text-white">Trợ lý AI TrelloClone</h3>
@@ -33,14 +26,7 @@
       matTooltip="Đóng trợ lý AI"
       class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center cursor-pointer"
     >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
+      <mat-icon fontIcon="close" class="icon-xs"></mat-icon>
     </button>
   </div>
 
@@ -136,14 +122,7 @@
         [disabled]="!currentAiInput().trim() || isAiThinking()"
         class="absolute right-1.5 w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white flex items-center justify-center transition cursor-pointer"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-          />
-        </svg>
+        <mat-icon fontIcon="send" class="icon-xs"></mat-icon>
       </button>
     </form>
 

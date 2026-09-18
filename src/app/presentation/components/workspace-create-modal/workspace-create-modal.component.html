@@ -18,7 +18,9 @@
             <mat-icon fontIcon="workspaces" class="text-xl"></mat-icon>
           </div>
           <div>
-            <h3 class="font-bold text-slate-900 dark:text-white text-base">Tạo không gian làm việc</h3>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">
+              Tạo không gian làm việc
+            </h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
               Nơi gắn kết các dự án, bảng Kanban và cộng tác cùng nhóm của bạn.
             </p>
@@ -35,7 +37,9 @@
 
       <!-- Live Preview Card -->
       <div class="px-5 pt-4">
-        <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
+        <div
+          class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80 flex items-center gap-3"
+        >
           <div
             class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-xs shrink-0"
           >
@@ -45,10 +49,14 @@
             <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
               {{ nameControl.value.trim() || 'Tên không gian làm việc' }}
             </h4>
-            <span class="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
+            <span
+              class="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5"
+            >
               <span>1 thành viên</span>
               <span>•</span>
-              <span class="text-indigo-600 dark:text-indigo-400 font-medium">Bạn là Trưởng nhóm</span>
+              <span class="text-indigo-600 dark:text-indigo-400 font-medium"
+                >Bạn là Trưởng nhóm</span
+              >
             </span>
           </div>
         </div>
@@ -106,9 +114,7 @@
             [class.border-rose-400]="descriptionControl.invalid && descriptionControl.touched"
           ></textarea>
           @if (descriptionControl.invalid && descriptionControl.touched) {
-            <p class="text-xs mt-1 text-rose-500">
-              Mô tả không được vượt quá 500 ký tự.
-            </p>
+            <p class="text-xs mt-1 text-rose-500">Mô tả không được vượt quá 500 ký tự.</p>
           }
         </div>
 
@@ -130,13 +136,12 @@
             class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
           >
             @if (workspaceStore.isCreating()) {
-              <svg class="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <mat-icon
+                fontIcon="sync"
+                class="icon-xs animate-spin -ml-0.5 mr-1 text-white"
+              ></mat-icon>
               <span>Đang tạo...</span>
             } @else {
-              <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
               <span>Tạo không gian làm việc</span>
             }
           </button>

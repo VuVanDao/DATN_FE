@@ -7,12 +7,13 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthStore } from '../../../../state/auth.store';
 
 @Component({
   selector: 'app-profile-details',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, DatePipe],
+  imports: [FormsModule, ReactiveFormsModule, DatePipe, MatIconModule],
   templateUrl: './profile-details.component.html',
 })
 export class ProfileDetailsComponent {

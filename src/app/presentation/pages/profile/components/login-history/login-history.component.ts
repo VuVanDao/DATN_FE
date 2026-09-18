@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { GetMyLoginHistoryUseCase } from '../../../../../application/security/get-my-login-history.use-case';
 import { LoginHistory } from '../../../../../domain/models/user.model';
 
@@ -8,7 +9,7 @@ type HistoryFilter = 'all' | 'success' | 'failed';
 @Component({
   selector: 'app-login-history',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, MatIconModule],
   templateUrl: './login-history.component.html',
 })
 export class LoginHistoryComponent {

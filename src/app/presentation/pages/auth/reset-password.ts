@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { toast } from 'ngx-sonner';
 import { AuthStore } from '../../state/auth.store';
 import { isPlatformBrowser } from '@angular/common';
@@ -26,7 +27,7 @@ export const passwordMatchValidator: ValidatorFn = (
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatIconModule],
   templateUrl: './reset-password.html',
 })
 export class ResetPasswordPage implements OnInit {

@@ -8,6 +8,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthStore } from '../../state/auth.store';
 import { LayoutService } from '../../../application/layout/layout.service';
 
@@ -31,7 +32,7 @@ export const passwordMatchValidator: ValidatorFn = (
 @Component({
   selector: 'app-change-password-page',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, MatIconModule],
   templateUrl: './change-password-page.html',
 })
 export class ChangePasswordPage implements OnInit {

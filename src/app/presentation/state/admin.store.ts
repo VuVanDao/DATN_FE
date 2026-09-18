@@ -36,19 +36,10 @@ export class AdminStore {
   private readonly _totalPages = signal<number>(1); // Tổng số trang
   private readonly _searchQuery = signal<string>(''); // Từ khóa tìm kiếm
   private readonly _statusFilter = signal<'all' | 'active' | 'inactive'>('all'); // Bộ lọc trạng thái
-  private readonly _roleFilter = signal<string>('all'); // Bộ lọc vai trò
   private readonly _isLoading = signal<boolean>(false); // Đang tải dữ liệu hay không
   private readonly _isSubmitting = signal<boolean>(false); // Đang gửi lệnh cập nhật hay không
 
-  // Danh sách hiển thị tự động lọc theo vai trò (Role) bằng computed signal ngay trên Client
-  readonly users = computed(() => {
-    const role = this._roleFilter();
-    const listUser = this._users();
-    if (role === 'all') {
-      return listUser;
-    }
-    return listUser.filter((u) => u.Role === role);
-  });
+  readonly users = this._users.asReadonly();
   readonly roles = this._roles.asReadonly();
   readonly totalCount = this._totalCount.asReadonly();
   readonly pageIndex = this._pageIndex.asReadonly();
@@ -56,7 +47,6 @@ export class AdminStore {
   readonly totalPages = this._totalPages.asReadonly();
   readonly searchQuery = this._searchQuery.asReadonly();
   readonly statusFilter = this._statusFilter.asReadonly();
-  readonly roleFilter = this._roleFilter.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
   readonly isSubmitting = this._isSubmitting.asReadonly();
 
@@ -66,7 +56,6 @@ export class AdminStore {
       total: this._totalCount(),
       activeCount: list.filter((u) => u.IsActive).length,
       inactiveCount: list.filter((u) => !u.IsActive).length,
-      adminCount: list.filter((u) => u.Role === 'SystemAdmin' || u.Role === 'Admin').length,
     };
   });
 
@@ -115,11 +104,6 @@ export class AdminStore {
     this._statusFilter.set(status);
     this._pageIndex.set(1);
     this.loadUsers();
-  }
-
-  setRoleFilter(role: string): void {
-    this._roleFilter.set(role);
-    // Lọc tức thì ở Client thông qua computed signal 'users', KHÔNG gọi lại API Backend
   }
 
   setPage(page: number): void {

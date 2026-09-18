@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { AuthStore } from '../../../state/auth.store';
@@ -23,7 +22,6 @@ import { UserUpdateModalComponent } from './components/user-update-modal/user-up
     FormsModule,
     MatIconModule,
     MatTooltipModule,
-    MatMenuModule,
     UserDetailModalComponent,
     UserCreateModalComponent,
     UserDeleteModalComponent,
@@ -86,9 +84,6 @@ export class AdminManageUserPage implements OnInit {
   }
   onStatusFilterChange(status: 'all' | 'active' | 'inactive'): void {
     this.store.setStatusFilter(status);
-  }
-  onRoleFilterChange(role: string): void {
-    this.store.setRoleFilter(role);
   }
   openRoleModal(user: UserMangement): void {
     this.selectedUserForRoles.set(user);

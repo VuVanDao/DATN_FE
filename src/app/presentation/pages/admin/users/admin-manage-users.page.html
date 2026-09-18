@@ -44,7 +44,7 @@
   </div>
 
   <!-- 2. THỐNG KÊ (STAT CARDS) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
     <!-- Thẻ 1: Tổng người dùng -->
     <div
       class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
@@ -95,23 +95,6 @@
         </p>
       </div>
     </div>
-
-    <!-- Thẻ 4: Quản trị viên (Admins) -->
-    <div
-      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
-    >
-      <div
-        class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0"
-      >
-        <mat-icon fontIcon="admin_panel_settings" class="icon-md"></mat-icon>
-      </div>
-      <div>
-        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Quản trị viên</p>
-        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-0.5">
-          {{ store.stats().adminCount }}
-        </p>
-      </div>
-    </div>
   </div>
 
   <!-- 3. TOOLBAR: TÌM KIẾM & BỘ LỌC -->
@@ -142,95 +125,40 @@
       }
     </div>
 
-    <!-- Nhóm Lọc Trạng thái & Vai trò -->
-    <div class="flex flex-wrap items-center gap-2.5">
-      <!-- Lọc Trạng thái -->
-      <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-        <button
-          type="button"
-          (click)="onStatusFilterChange('all')"
-          [class.bg-white]="store.statusFilter() === 'all'"
-          [class.dark:bg-slate-900]="store.statusFilter() === 'all'"
-          [class.shadow-xs]="store.statusFilter() === 'all'"
-          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
-        >
-          Tất cả
-        </button>
-        <button
-          type="button"
-          (click)="onStatusFilterChange('active')"
-          [class.bg-white]="store.statusFilter() === 'active'"
-          [class.dark:bg-slate-900]="store.statusFilter() === 'active'"
-          [class.text-emerald-600]="store.statusFilter() === 'active'"
-          [class.shadow-xs]="store.statusFilter() === 'active'"
-          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
-        >
-          Hoạt động
-        </button>
-        <button
-          type="button"
-          (click)="onStatusFilterChange('inactive')"
-          [class.bg-white]="store.statusFilter() === 'inactive'"
-          [class.dark:bg-slate-900]="store.statusFilter() === 'inactive'"
-          [class.text-rose-600]="store.statusFilter() === 'inactive'"
-          [class.shadow-xs]="store.statusFilter() === 'inactive'"
-          class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
-        >
-          Đã khóa
-        </button>
-      </div>
-
-      <!-- Lọc Vai trò (Dropdown) -->
+    <!-- Lọc Trạng thái -->
+    <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
       <button
         type="button"
-        [matMenuTriggerFor]="roleFilterMenu"
-        class="inline-flex items-center justify-between gap-2 px-3.5 py-2 text-xs font-medium rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-xs min-w-[138px]"
+        (click)="onStatusFilterChange('all')"
+        [class.bg-white]="store.statusFilter() === 'all'"
+        [class.dark:bg-slate-900]="store.statusFilter() === 'all'"
+        [class.shadow-xs]="store.statusFilter() === 'all'"
+        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
       >
-        <div class="flex items-center gap-1.5 truncate">
-          <mat-icon
-            fontIcon="shield"
-            class="icon-xs text-slate-400 dark:text-slate-500 shrink-0"
-          ></mat-icon>
-          <span class="truncate">
-            {{ store.roleFilter() === 'all' ? 'Tất cả vai trò' : store.roleFilter() }}
-          </span>
-        </div>
-        <mat-icon
-          fontIcon="keyboard_arrow_down"
-          class="icon-xs text-slate-400 dark:text-slate-500 shrink-0"
-        ></mat-icon>
+        Tất cả
       </button>
-
-      <mat-menu #roleFilterMenu="matMenu" class="custom-dropdown-menu" xPosition="after">
-        <button
-          mat-menu-item
-          (click)="onRoleFilterChange('all')"
-          [class.active-item]="store.roleFilter() === 'all'"
-        >
-          <span>Tất cả vai trò</span>
-          @if (store.roleFilter() === 'all') {
-            <mat-icon
-              fontIcon="check"
-              class="check-icon text-indigo-600 dark:text-indigo-400"
-            ></mat-icon>
-          }
-        </button>
-        @for (role of store.roles(); track role.Id) {
-          <button
-            mat-menu-item
-            (click)="onRoleFilterChange(role.Name)"
-            [class.active-item]="store.roleFilter() === role.Name"
-          >
-            <span>{{ role.Name }}</span>
-            @if (store.roleFilter() === role.Name) {
-              <mat-icon
-                fontIcon="check"
-                class="check-icon text-indigo-600 dark:text-indigo-400"
-              ></mat-icon>
-            }
-          </button>
-        }
-      </mat-menu>
+      <button
+        type="button"
+        (click)="onStatusFilterChange('active')"
+        [class.bg-white]="store.statusFilter() === 'active'"
+        [class.dark:bg-slate-900]="store.statusFilter() === 'active'"
+        [class.text-emerald-600]="store.statusFilter() === 'active'"
+        [class.shadow-xs]="store.statusFilter() === 'active'"
+        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+      >
+        Hoạt động
+      </button>
+      <button
+        type="button"
+        (click)="onStatusFilterChange('inactive')"
+        [class.bg-white]="store.statusFilter() === 'inactive'"
+        [class.dark:bg-slate-900]="store.statusFilter() === 'inactive'"
+        [class.text-rose-600]="store.statusFilter() === 'inactive'"
+        [class.shadow-xs]="store.statusFilter() === 'inactive'"
+        class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+      >
+        Đã khóa
+      </button>
     </div>
   </div>
 

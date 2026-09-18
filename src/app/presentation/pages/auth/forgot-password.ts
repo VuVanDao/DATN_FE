@@ -2,13 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { toast } from 'ngx-sonner';
 import { AuthStore } from '../../state/auth.store';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatIconModule],
   templateUrl: './forgot-password.html',
 })
 export class ForgotPasswordPage {

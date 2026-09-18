@@ -1,13 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
 import { AiAssistantService, AiMessage } from '../../../../../application/ai/ai-assistant.service';
 import { LayoutService } from '../../../../../application/layout/layout.service';
 
 @Component({
   selector: 'app-ai-drawer',
   standalone: true,
-  imports: [FormsModule, MatTooltipModule],
+  imports: [FormsModule, MatTooltipModule, MatIconModule],
   templateUrl: './ai-drawer.component.html',
 })
 export class AiDrawerComponent {

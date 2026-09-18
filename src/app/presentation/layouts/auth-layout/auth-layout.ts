@@ -1,9 +1,10 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { filter } from 'rxjs';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, MatIconModule],
   selector: 'app-auth-layout',
   standalone: true,
   templateUrl: './auth-layout.html',

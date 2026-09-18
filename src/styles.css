@@ -222,6 +222,13 @@ html.dark .custom-user-menu .admin-item mat-icon {
 }
 
 /* ===== TIỆN ÍCH CUSTOM KÍCH THƯỚC MAT-ICON TOÀN DỰ ÁN ===== */
+mat-icon.icon-xxs {
+  width: 0.875rem !important;  /* 14px */
+  height: 0.875rem !important;
+  font-size: 0.875rem !important;
+  line-height: 0.875rem !important;
+}
+
 mat-icon.icon-xs {
   width: 1rem !important;      /* 16px */
   height: 1rem !important;
@@ -241,6 +248,27 @@ mat-icon.icon-md {
   height: 1.25rem !important;
   font-size: 1.25rem !important;
   line-height: 1.25rem !important;
+}
+
+mat-icon.icon-lg {
+  width: 1.5rem !important;    /* 24px */
+  height: 1.5rem !important;
+  font-size: 1.5rem !important;
+  line-height: 1.5rem !important;
+}
+
+mat-icon.icon-xl {
+  width: 2rem !important;      /* 32px */
+  height: 2rem !important;
+  font-size: 2rem !important;
+  line-height: 2rem !important;
+}
+
+mat-icon.icon-2xl {
+  width: 2.25rem !important;   /* 36px */
+  height: 2.25rem !important;
+  font-size: 2.25rem !important;
+  line-height: 2.25rem !important;
 }
 
 /* ===== CUSTOM MATERIAL DROPDOWN / FILTER MENU ===== */
