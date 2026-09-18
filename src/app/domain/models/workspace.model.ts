@@ -31,6 +31,5 @@ export interface WorkspaceResponse {
 
 export interface CreateWorkspaceRequest {
   name: string;
-  description?: string;
-  logoUrl?: string;
+  description?: string | null;
 }
