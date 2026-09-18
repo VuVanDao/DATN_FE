@@ -14,6 +14,7 @@ export class WorkspaceStore {
   private readonly _authStore = inject(AuthStore);
 
   // States
+  // danh sách các workspace hiện có
   private readonly _workspaces = signal<Workspace[]>([]);
   // state loading của loadWorkspace
   private readonly _isLoading = signal<boolean>(false);

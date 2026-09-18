@@ -14,7 +14,11 @@ const GRADIENT_PALETTES = [
 export class WorkspaceMapper {
   static toWorkspace(dto: WorkspaceResponse): Workspace {
     const trimmedName = dto.name?.trim() || 'Workspace';
-    const initial = trimmedName.charAt(0).toUpperCase();
+    const words = trimmedName.split(/\s+/).filter(Boolean);
+    const initial =
+      words.length >= 2
+        ? (words[0].charAt(0) + words[1].charAt(0)).toUpperCase()
+        : trimmedName.charAt(0).toUpperCase();
 
     // Xác định màu sắc ổn định dựa trên id hoặc tên của workspace
     const hash = (dto.id || trimmedName).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);

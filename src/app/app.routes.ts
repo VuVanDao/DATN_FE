@@ -13,6 +13,7 @@ import { ForgotPasswordPage } from './presentation/pages/auth/forgot-password';
 import { ResetPasswordPage } from './presentation/pages/auth/reset-password';
 import { adminGuard } from './presentation/guards/admin.guards';
 import { AdminManageUserPage } from './presentation/pages/admin/users/admin-manage-users.page';
+import { WorkspacesPage } from './presentation/pages/workspaces/workspaces.page';
 
 export const routes: Routes = [
   {
@@ -39,7 +40,7 @@ export const routes: Routes = [
       },
       {
         path: 'workspaces',
-        component: HomePage, // Trang danh sách tất cả workspace sẽ bổ sung sau
+        component: WorkspacesPage,
       },
       {
         path: 'admin',
