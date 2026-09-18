@@ -10,14 +10,12 @@
       [class.justify-center]="layoutService.isSidebarCollapsed()">
       <button type="button" (click)="navigateBack()" matTooltip="Quay lại trang chủ"
         [matTooltipPosition]="layoutService.isSidebarCollapsed() ? 'right' : 'above'"
-        class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
+        class="h-7 rounded-lg flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer shrink-0">
+        <mat-icon fontIcon="arrow_back" class="icon-xs"></mat-icon>
+        @if(!layoutService.isSidebarCollapsed()){
+        <span class="text-sm font-medium">Quay lại</span>
+        }
       </button>
-      @if (!layoutService.isSidebarCollapsed()) {
-      <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Quay lại</span>
-      }
     </div>
 
     <!-- User mini info -->
