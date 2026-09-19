@@ -12,6 +12,7 @@ import { WorkspaceStore } from '../../../state/workspace.store';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceMember } from '../../../../domain/models/workspace.model';
+import { toast } from 'ngx-sonner';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 @Component({
@@ -104,28 +105,65 @@ export class WorkspaceDetailPage implements OnInit {
   }
   onSelectLogoFunc = (event: Event): void => {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      this.logoFile.set(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.logoPreview.set(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    const file = input.files?.[0];
+    if (!file) {
+      input.value = '';
+      return;
     }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Chỉ hỗ trợ ảnh JPG, JPEG, PNG hoặc WEBP');
+      input.value = '';
+      return;
+    }
+
+    const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+    if (file.size > maxSizeInBytes) {
+      toast.error('Ảnh logo không được vượt quá 2 MB');
+      input.value = '';
+      return;
+    }
+
+    this.logoFile.set(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.logoPreview.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
   };
+
   // Xử lý chọn Ảnh bìa (Cover)
   onSelectCoverFunc = (event: Event): void => {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      this.coverFile.set(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.coverPreview.set(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    const file = input.files?.[0];
+    if (!file) {
+      input.value = '';
+      return;
     }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Chỉ hỗ trợ ảnh JPG, JPEG, PNG hoặc WEBP');
+      input.value = '';
+      return;
+    }
+
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
+    if (file.size > maxSizeInBytes) {
+      toast.error('Ảnh bìa không được vượt quá 5 MB');
+      input.value = '';
+      return;
+    }
+
+    this.coverFile.set(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.coverPreview.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
   };
   saveUdpate = (): void => {
     const ws = this.workspaceStore.currentWorkspace();

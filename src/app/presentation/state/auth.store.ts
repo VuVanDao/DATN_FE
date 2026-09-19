@@ -321,6 +321,7 @@ export class AuthStore {
         toast.success('Cập nhật ảnh đại diện thành công');
       },
       error: (err) => {
+        this._isAvatarUploading.set(false);
         const errorsList = err?.error?.errors;
         let detailedMsg: string | null = null;
         if (Array.isArray(errorsList) && errorsList.length > 0) {
