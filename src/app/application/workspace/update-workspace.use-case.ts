@@ -3,9 +3,9 @@ import { WorkspaceRepository } from '../../domain/repositories/workspace.reposit
 import { UpdateWorkspaceRequest, WorkspaceDetail } from '../../domain/models/workspace.model';
 import { Observable } from 'rxjs';
 
-Injectable({
+@Injectable({
   providedIn: 'root',
-});
+})
 export class UpdateWorkspaceUsecase {
   private readonly _workspaceRepository = inject(WorkspaceRepository);
   execute = (id: string, requets: UpdateWorkspaceRequest): Observable<WorkspaceDetail> => {

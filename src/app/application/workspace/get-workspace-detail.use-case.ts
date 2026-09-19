@@ -8,6 +8,7 @@ import { WorkspaceDetail } from '../../domain/models/workspace.model';
 })
 export class GetWorkspaceDetailUseCase {
   private readonly _workspaceRepository = inject(WorkspaceRepository);
+
   execute(slug: string): Observable<WorkspaceDetail> {
     return this._workspaceRepository.getWorkspaceBySlug(slug);
   }
