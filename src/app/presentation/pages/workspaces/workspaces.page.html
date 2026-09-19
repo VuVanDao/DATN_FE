@@ -39,12 +39,20 @@
         >
           <!-- Hàng trên: Icon Avatar Gradient & Badge Vai trò -->
           <div class="flex items-start justify-between">
-            <div
-              class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm"
-              [class]="ws.color"
-            >
-              {{ ws.initial }}
-            </div>
+            @if (ws.logoUrl !== null) {
+              <img
+                class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm"
+                src="{{ ws.logoUrl }}"
+              />
+            } @else {
+              <div
+                class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm"
+                [class]="ws.color"
+              >
+                {{ ws.initial }}
+              </div>
+            }
+
             <span
               class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60"
             >
