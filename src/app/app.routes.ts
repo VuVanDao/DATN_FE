@@ -14,6 +14,7 @@ import { ResetPasswordPage } from './presentation/pages/auth/reset-password';
 import { adminGuard } from './presentation/guards/admin.guards';
 import { AdminManageUserPage } from './presentation/pages/admin/users/admin-manage-users.page';
 import { WorkspacesPage } from './presentation/pages/workspaces/workspaces.page';
+import { WorkspaceDetailPage } from './presentation/pages/workspaces/workspace-detail/workspace-detail.page';
 
 export const routes: Routes = [
   {
@@ -41,6 +42,10 @@ export const routes: Routes = [
       {
         path: 'workspaces',
         component: WorkspacesPage,
+      },
+      {
+        path: 'workspaces/:slug',
+        component: WorkspaceDetailPage,
       },
       {
         path: 'admin',
