@@ -1,0 +1,166 @@
+@if (isOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-150"
+    (click)="close()"
+  >
+    <div
+      class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div
+        class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0 mt-0.5"
+          >
+            <mat-icon fontIcon="person_add" class="text-xl"></mat-icon>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">Mời thành viên</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+              Thêm thành viên vào không gian làm việc bằng email (tối đa 10 người mỗi lượt).
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+        <!-- Hiển thị kết quả sau khi gửi API -->
+        @if (addResult()) {
+          <div class="space-y-2">
+            @for (r of addResult()!.results; track r.email) {
+              <div
+                class="flex items-center gap-2 p-2.5 rounded-xl text-xs"
+                [class]="
+                  r.success
+                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
+                    : 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400'
+                "
+              >
+                <mat-icon
+                  [fontIcon]="r.success ? 'check_circle' : 'error'"
+                  class="icon-sm shrink-0"
+                ></mat-icon>
+                <span class="font-medium">{{ r.email }}</span>
+                <span class="text-slate-400 mx-1">—</span>
+                <span class="flex-1">{{ r.message }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Danh sách dòng nhập email + vai trò -->
+          @for (row of rows(); track $index; let i = $index) {
+            <div class="flex items-start gap-2">
+              <!-- Ô nhập Email -->
+              <div class="flex-1 min-w-0">
+                <input
+                  type="email"
+                  [(ngModel)]="row.email"
+                  placeholder="name@company.com"
+                  class="w-full bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                  [class.border-rose-400]="row.error"
+                  [class.border-slate-200]="!row.error"
+                  [class.dark:border-slate-700]="!row.error"
+                />
+                @if (row.error) {
+                  <p class="text-[11px] mt-0.5 text-rose-500">{{ row.error }}</p>
+                }
+              </div>
+
+              <!-- Dropdown chọn Vai trò -->
+              <select
+                [(ngModel)]="row.roleId"
+                class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition min-w-[130px] cursor-pointer"
+              >
+                <option [ngValue]="null">Developer</option>
+                @for (role of roles; track role.id) {
+                  @if (role.name !== 'Developer') {
+                    <option [ngValue]="role.id">{{ role.name }}</option>
+                  }
+                }
+              </select>
+
+              <!-- Nút xóa dòng -->
+              <button
+                type="button"
+                (click)="removeRow(i)"
+                [disabled]="rows().length <= 1"
+                class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0 mt-0.5"
+                title="Xóa dòng"
+              >
+                <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+              </button>
+            </div>
+          }
+
+          <!-- Nút thêm dòng -->
+          @if (rows().length < 10) {
+            <button
+              type="button"
+              (click)="addRow()"
+              class="flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition cursor-pointer mt-1"
+            >
+              <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
+              <span>Thêm người khác</span>
+            </button>
+          }
+        }
+      </div>
+
+      <!-- Footer -->
+      @if (!addResult()) {
+        <div
+          class="px-5 py-3.5 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5"
+        >
+          <button
+            type="button"
+            (click)="close()"
+            [disabled]="workspaceStore.isAddingMembers()"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 rounded-xl transition cursor-pointer disabled:opacity-50"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            (click)="submit()"
+            [disabled]="workspaceStore.isAddingMembers()"
+            class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+          >
+            @if (workspaceStore.isAddingMembers()) {
+              <mat-icon
+                fontIcon="sync"
+                class="icon-xs animate-spin -ml-0.5 mr-1 text-white"
+              ></mat-icon>
+              <span>Đang gửi...</span>
+            } @else {
+              <mat-icon fontIcon="send" class="icon-xs"></mat-icon>
+              <span>Gửi lời mời</span>
+            }
+          </button>
+        </div>
+      } @else {
+        <div
+          class="px-5 py-3.5 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end"
+        >
+          <button
+            type="button"
+            (click)="close()"
+            class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+}

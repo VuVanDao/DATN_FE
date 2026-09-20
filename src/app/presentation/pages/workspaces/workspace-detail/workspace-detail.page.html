@@ -87,6 +87,7 @@
         <!-- Nút Mời thành viên (Placeholder) -->
         <button
           type="button"
+          (click)="openInviteModal()"
           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all shadow-sm shadow-indigo-500/20 cursor-pointer"
         >
           <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
@@ -344,9 +345,7 @@
                     <mat-icon fontIcon="upload" class="icon-xs"></mat-icon>
                     <span>Đổi Logo</span>
                   </button>
-                  <p class="text-[10px] text-slate-500 mt-1 text-center">
-                    JPG, PNG · Tối đa 2MB
-                  </p>
+                  <p class="text-[10px] text-slate-500 mt-1 text-center">JPG, PNG · Tối đa 2MB</p>
                 </div>
               </div>
             </div>
@@ -414,4 +413,9 @@
       }
     }
   }
+  <app-invite-members-modal
+    (closed)="closeInviteModal()"
+    [isOpen]="showInviteModal()"
+    [workspaceId]="workspaceStore.currentWorkspace()?.id ?? ''"
+  ></app-invite-members-modal>
 </div>

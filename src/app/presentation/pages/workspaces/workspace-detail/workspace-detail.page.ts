@@ -13,12 +13,19 @@ import { LayoutService } from '../../../../application/layout/layout.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceMember } from '../../../../domain/models/workspace.model';
 import { toast } from 'ngx-sonner';
+import { InviteMembersModalComponent } from '../../../components/invite-members-modal/invite-members-modal.component';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 @Component({
   selector: 'app-workspace-detail-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatIconModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    InviteMembersModalComponent,
+  ],
   templateUrl: './workspace-detail.page.html',
 })
 export class WorkspaceDetailPage implements OnInit {
@@ -27,13 +34,15 @@ export class WorkspaceDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  // tab dng mo
+  // tab dang mo
   readonly activeTab = signal<WorkspaceTab>('projects');
   // Quản lý file upload cho Tab Cài đặt
   readonly logoFile = signal<File | null>(null);
   readonly logoPreview = signal<string | null>(null);
   readonly coverFile = signal<File | null>(null);
   readonly coverPreview = signal<string | null>(null);
+  // Modal mời thành viên
+  readonly showInviteModal = signal<boolean>(false);
 
   //Form update
   readonly updateForm = new FormGroup({
@@ -73,6 +82,12 @@ export class WorkspaceDetailPage implements OnInit {
   get displayHeaderMember(): WorkspaceMember[] {
     const members = this.workspaceStore.currentWorkspace()?.members ?? [];
     return members.slice(0, 4);
+  }
+  openInviteModal(): void {
+    this.showInviteModal.set(true);
+  }
+  closeInviteModal(): void {
+    this.showInviteModal.set(false);
   }
   get extraHeaderMembersCount(): number {
     const total = this.workspaceStore.currentWorkspace()?.members?.length ?? 0;

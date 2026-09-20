@@ -73,7 +73,7 @@ export class WorkspaceStore {
   readonly isLoadingDetail = this._isLoadingDetail.asReadonly();
   readonly isUpdating = this._isUpdating.asReadonly();
   readonly workspaceRoles = this._workspaceRoles.asReadonly();
-  readonly isAddingMember = this._isAddingMembers.asReadonly();
+  readonly isAddingMembers = this._isAddingMembers.asReadonly();
 
   loadWorkspaces(forceRefresh = false): void {
     if (this._isLoading()) {
@@ -266,6 +266,8 @@ export class WorkspaceStore {
     this._currentWorkspace.set(null);
     this._isLoadingDetail.set(false);
     this._isUpdating.set(false);
+    this._workspaceRoles.set([]);
+    this._isAddingMembers.set(false);
   }
   private extractErrorMessage(err: any, defaultMsg: string): string {
     const errorsList = err?.error?.errors;
