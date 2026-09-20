@@ -13,7 +13,7 @@ import { LayoutService } from '../../../../application/layout/layout.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceMember } from '../../../../domain/models/workspace.model';
 import { toast } from 'ngx-sonner';
-import { InviteMembersModalComponent } from '../../../components/invite-members-modal/invite-members-modal.component';
+import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 @Component({

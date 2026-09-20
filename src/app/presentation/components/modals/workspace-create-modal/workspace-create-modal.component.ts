@@ -8,8 +8,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceStore } from '../../state/workspace.store';
-import { Workspace } from '../../../domain/models/workspace.model';
+import { WorkspaceStore } from '../../../state/workspace.store';
+import { Workspace } from '../../../../domain/models/workspace.model';
 
 @Component({
   selector: 'app-workspace-create-modal',

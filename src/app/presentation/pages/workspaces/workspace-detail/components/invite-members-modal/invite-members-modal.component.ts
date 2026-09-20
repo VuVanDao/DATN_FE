@@ -11,8 +11,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceStore } from '../../state/workspace.store';
-import { AddWorkspaceMembersResponse, WorkspaceRole } from '../../../domain/models/workspace.model';
+import { WorkspaceStore } from '../../../../../state/workspace.store';
+import { AddWorkspaceMembersResponse, WorkspaceRole } from '../../../../../../domain/models/workspace.model';
 interface MemberRow {
   email: string;
   roleId: string | null;
