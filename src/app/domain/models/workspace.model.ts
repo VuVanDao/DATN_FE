@@ -30,7 +30,7 @@ export interface WorkspaceResponse {
   currentUserRole?: string | null;
   createdAt: string;
 }
-
+// endpoint tao workspace moi
 export interface CreateWorkspaceRequest {
   name: string;
   description?: string | null;
@@ -68,7 +68,7 @@ export interface WorkspaceProject {
   color: string;
 }
 
-// Response từ Backend cho từng Project
+// Response  danh sách các project thuộc workspace từ Backend cho từng Project
 export interface WorkspaceProjectResponse {
   id: string;
   name: string;
@@ -114,10 +114,40 @@ export interface WorkspaceDetail {
   color: string;
 }
 
-// Request cập nhật thông tin cài đặt Workspace (Tab Cài đặt - ảnh 3)
+// Request cập nhật thông tin cài đặt Workspace \
 export interface UpdateWorkspaceRequest {
   name?: string;
   description?: string | null;
   logo?: File | null;
   coverImage?: File | null;
+}
+// ---- model cho usecase add member to workspace --------
+// danh sach cac role scope workspace
+export interface WorkspaceRole {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+// dai dien cho 1 thanh vien trong list duoc add vao workspace
+export interface MemberInviteEntry {
+  email: string;
+  roleId?: string | null;
+}
+// Request gửi lên API
+export interface AddWorkspaceMembersRequest {
+  members: MemberInviteEntry[];
+}
+// Kết quả của từng email
+export interface MemberAddResult {
+  email: string;
+  success: boolean;
+  message?: string | null;
+  member?: WorkspaceMember | null;
+}
+// Response tổng hợp từ Backend
+export interface AddWorkspaceMembersResponse {
+  totalRequested: number;
+  totalSuccess: number;
+  totalFailed: number;
+  results: MemberAddResult[];
 }

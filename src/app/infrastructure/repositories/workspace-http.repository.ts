@@ -3,12 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { WorkspaceRepository } from '../../domain/repositories/workspace.repository';
 import {
+  AddWorkspaceMembersRequest,
+  AddWorkspaceMembersResponse,
   CreateWorkspaceRequest,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
   WorkspaceDetailResponse,
   WorkspaceResponse,
+  WorkspaceRole,
 } from '../../domain/models/workspace.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../dtos/auth.dto';
@@ -59,5 +62,21 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
     return this.http
       .put<ApiResponse<WorkspaceDetailResponse>>(`${this.API_URL}/${id}`, formData)
       .pipe(map((res) => WorkspaceMapper.toWorkspaceDetail(res.data)));
+  }
+  getWorkspaceRole(): Observable<WorkspaceRole[]> {
+    return this.http
+      .get<ApiResponse<WorkspaceRole[]>>(`${this.API_URL}/roles`)
+      .pipe(map((res) => res.data || []));
+  }
+  addMember(
+    workspaceId: string,
+    request: AddWorkspaceMembersRequest,
+  ): Observable<AddWorkspaceMembersResponse> {
+    return this.http
+      .post<ApiResponse<AddWorkspaceMembersResponse>>(
+        `${this.API_URL}/${workspaceId}/members`,
+        request,
+      )
+      .pipe(map((res) => res.data));
   }
 }

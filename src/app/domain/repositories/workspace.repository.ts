@@ -1,9 +1,12 @@
 import { Observable } from 'rxjs';
 import {
+  AddWorkspaceMembersRequest,
+  AddWorkspaceMembersResponse,
   CreateWorkspaceRequest,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
+  WorkspaceRole,
 } from '../models/workspace.model';
 
 export abstract class WorkspaceRepository {
@@ -14,4 +17,9 @@ export abstract class WorkspaceRepository {
     id: string,
     request: UpdateWorkspaceRequest,
   ): Observable<WorkspaceDetail>;
+  abstract getWorkspaceRole(): Observable<WorkspaceRole[]>;
+  abstract addMember(
+    workspaceId: string,
+    request: AddWorkspaceMembersRequest,
+  ): Observable<AddWorkspaceMembersResponse>;
 }
