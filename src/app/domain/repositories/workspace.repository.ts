@@ -17,8 +17,8 @@ export abstract class WorkspaceRepository {
     id: string,
     request: UpdateWorkspaceRequest,
   ): Observable<WorkspaceDetail>;
-  abstract getWorkspaceRole(): Observable<WorkspaceRole[]>;
-  abstract addMember(
+  abstract getWorkspaceRoles(): Observable<WorkspaceRole[]>;
+  abstract addMembers(
     workspaceId: string,
     request: AddWorkspaceMembersRequest,
   ): Observable<AddWorkspaceMembersResponse>;

@@ -63,12 +63,12 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
       .put<ApiResponse<WorkspaceDetailResponse>>(`${this.API_URL}/${id}`, formData)
       .pipe(map((res) => WorkspaceMapper.toWorkspaceDetail(res.data)));
   }
-  getWorkspaceRole(): Observable<WorkspaceRole[]> {
+  getWorkspaceRoles(): Observable<WorkspaceRole[]> {
     return this.http
       .get<ApiResponse<WorkspaceRole[]>>(`${this.API_URL}/roles`)
       .pipe(map((res) => res.data || []));
   }
-  addMember(
+  addMembers(
     workspaceId: string,
     request: AddWorkspaceMembersRequest,
   ): Observable<AddWorkspaceMembersResponse> {
