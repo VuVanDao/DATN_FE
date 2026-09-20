@@ -282,46 +282,48 @@
       <!-- ================= TAB 3: CÀI ĐẶT (ẢNH 3 + UPLOAD LOGO & COVER) ================= -->
       @case ('settings') {
         <div
-          class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-6 max-w-2xl mt-4 space-y-6 shadow-xs"
+          class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-6 max-w-4xl mx-auto mt-4 space-y-6 shadow-xs"
         >
           <form [formGroup]="updateForm" (ngSubmit)="saveUdpate()" class="space-y-5">
-            <!-- Tên không gian làm việc -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-medium text-slate-300"
-                >Tên không gian làm việc</label
-              >
-              <input
-                type="text"
-                formControlName="name"
-                class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all"
-                placeholder="Nhập tên workspace..."
-              />
-            </div>
+            <!-- Hàng trên: Tên & Mô tả bên trái + Logo bên phải -->
+            <div class="flex gap-6">
+              <!-- Tên + Mô tả (bên trái) -->
+              <div class="flex-1 space-y-4">
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-medium text-slate-300"
+                    >Tên không gian làm việc</label
+                  >
+                  <input
+                    type="text"
+                    formControlName="name"
+                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all"
+                    placeholder="Nhập tên workspace..."
+                  />
+                </div>
 
-            <!-- Mô tả -->
-            <div class="space-y-1.5">
-              <label class="block text-xs font-medium text-slate-300">Mô tả</label>
-              <textarea
-                formControlName="description"
-                rows="3"
-                class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all resize-none"
-                placeholder="Mô tả không gian làm việc..."
-              ></textarea>
-            </div>
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-medium text-slate-300">Mô tả</label>
+                  <textarea
+                    formControlName="description"
+                    rows="3"
+                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all resize-none"
+                    placeholder="Mô tả không gian làm việc..."
+                  ></textarea>
+                </div>
+              </div>
 
-            <!-- Upload Logo (Yêu cầu bổ sung) -->
-            <div class="space-y-2 pt-3 border-t border-slate-800/80">
-              <label class="block text-xs font-medium text-slate-300">Ảnh Logo Workspace</label>
-              <div class="flex items-center gap-4">
+              <!-- Logo Workspace (bên phải) -->
+              <div class="shrink-0 space-y-2.5">
+                <label class="block text-xs font-medium text-slate-300">Logo</label>
                 <div
-                  class="w-16 h-16 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shrink-0 flex items-center justify-center"
+                  class="w-24 h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 flex items-center justify-center"
                 >
                   @if (logoPreview()) {
                     <img [src]="logoPreview()" class="w-full h-full object-cover" alt="Preview" />
                   } @else if (ws.logoUrl) {
                     <img [src]="ws.logoUrl" class="w-full h-full object-cover" alt="Logo" />
                   } @else {
-                    <span class="text-xl font-bold text-white">{{ ws.initial }}</span>
+                    <span class="text-2xl font-bold text-white">{{ ws.initial }}</span>
                   }
                 </div>
                 <div>
@@ -337,19 +339,19 @@
                     type="button"
                     [disabled]="workspaceStore.isUpdating()"
                     (click)="logoInput.click()"
-                    class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full justify-center"
                   >
                     <mat-icon fontIcon="upload" class="icon-xs"></mat-icon>
-                    <span>Thay đổi Logo</span>
+                    <span>Đổi Logo</span>
                   </button>
-                  <p class="text-[11px] text-slate-500 mt-1">
-                    Định dạng JPG, PNG vuông tối đa 2MB.
+                  <p class="text-[10px] text-slate-500 mt-1 text-center">
+                    JPG, PNG · Tối đa 2MB
                   </p>
                 </div>
               </div>
             </div>
 
-            <!-- Upload Ảnh bìa (Cover - Yêu cầu bổ sung) -->
+            <!-- Upload Ảnh bìa (Cover Banner) -->
             <div class="space-y-2 pt-3 border-t border-slate-800/80">
               <label class="block text-xs font-medium text-slate-300">Ảnh bìa (Cover Banner)</label>
               <div
