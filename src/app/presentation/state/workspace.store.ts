@@ -1,9 +1,12 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import {
+  AddWorkspaceMembersRequest,
+  AddWorkspaceMembersResponse,
   CreateWorkspaceRequest,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
+  WorkspaceRole,
 } from '../../domain/models/workspace.model';
 import { GetUserWorkspacesUseCase } from '../../application/workspace/get-user-workspaces.use-case';
 import { CreateWorkspaceUseCase } from '../../application/workspace/create-workspace.use-case';
@@ -11,6 +14,8 @@ import { AuthStore } from './auth.store';
 import { toast } from 'ngx-sonner';
 import { GetWorkspaceDetailUseCase } from '../../application/workspace/get-workspace-detail.use-case';
 import { UpdateWorkspaceUsecase } from '../../application/workspace/update-workspace.use-case';
+import { getWorkspaceRolesUsecase } from '../../application/workspace/get-workspace-roles.use-case';
+import { AddMembersToWorksapceUsecase } from '../../application/workspace/Add-members-to-workspace.use-case';
 
 @Injectable({
   providedIn: 'root',
@@ -20,6 +25,8 @@ export class WorkspaceStore {
   private readonly _createWorkspaceUseCase = inject(CreateWorkspaceUseCase);
   private readonly _getWorkspaceDetailUseCase = inject(GetWorkspaceDetailUseCase);
   private readonly _updateWorkspaceUseCase = inject(UpdateWorkspaceUsecase);
+  private readonly _getWorkspaceRolesUseCase = inject(getWorkspaceRolesUsecase);
+  private readonly _AddMembersToWorksapceUseCase = inject(AddMembersToWorksapceUsecase);
   private readonly _authStore = inject(AuthStore);
 
   // States
@@ -35,6 +42,10 @@ export class WorkspaceStore {
   private readonly _currentWorkspace = signal<WorkspaceDetail | null>(null);
   private readonly _isLoadingDetail = signal<boolean>(false);
   private readonly _isUpdating = signal<boolean>(false);
+  // state danh sach casc role co scope la workspace
+  private readonly _workspaceRoles = signal<WorkspaceRole[]>([]);
+  // state loading cho viec add member
+  private readonly _isAddingMembers = signal<boolean>(false);
 
   constructor() {
     // Tự động xóa danh sách workspace khi user đăng xuất
@@ -61,6 +72,8 @@ export class WorkspaceStore {
   readonly currentWorkspace = this._currentWorkspace.asReadonly();
   readonly isLoadingDetail = this._isLoadingDetail.asReadonly();
   readonly isUpdating = this._isUpdating.asReadonly();
+  readonly workspaceRoles = this._workspaceRoles.asReadonly();
+  readonly isAddingMember = this._isAddingMembers.asReadonly();
 
   loadWorkspaces(forceRefresh = false): void {
     if (this._isLoading()) {
@@ -188,6 +201,62 @@ export class WorkspaceStore {
       },
     });
   };
+  loadWorkspaceRoles(): void {
+    this._getWorkspaceRolesUseCase.execute().subscribe({
+      next: (roles) => {
+        this._workspaceRoles.set(roles);
+      },
+      error: (err) => {
+        const msg = this.extractErrorMessage(err, 'Không thể tải danh sách vai trò');
+        toast.error(msg);
+      },
+    });
+  }
+  addMembers(
+    workspaceId: string,
+    request: AddWorkspaceMembersRequest,
+    onSuccess?: (result: AddWorkspaceMembersResponse) => void,
+    onError?: (errorMsg: string) => void,
+  ): void {
+    this._isAddingMembers.set(true);
+    this._AddMembersToWorksapceUseCase.execute(workspaceId, request).subscribe({
+      next: (result) => {
+        this._isAddingMembers.set(false);
+        const newMembers = result.results
+          .filter((r) => r.success && r.member)
+          .map((r) => r.member!);
+        if (newMembers.length > 0) {
+          this._currentWorkspace.update((ws) => {
+            if (!ws) {
+              return ws;
+            }
+            return {
+              ...ws,
+              members: [...ws.members, ...newMembers],
+            };
+          });
+        }
+        if (result.totalFailed === 0) {
+          toast.success(`Đã thêm thành công ${result.totalSuccess} thành viên`);
+        } else {
+          toast.warning(
+            `Thêm thành công ${result.totalSuccess}/${result.totalRequested} thành viên (${result.totalFailed} thất bại)`,
+          );
+        }
+        if (onSuccess) {
+          onSuccess(result);
+        }
+      },
+      error: (err) => {
+        this._isAddingMembers.set(false);
+        const msg = this.extractErrorMessage(err, 'Thêm thành viên thất bại');
+        toast.error(msg);
+        if (onError) {
+          onError(msg);
+        }
+      },
+    });
+  }
   clear(): void {
     this._workspaces.set([]);
     this._hasLoaded.set(false);

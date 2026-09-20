@@ -36,7 +36,7 @@ export interface CreateWorkspaceRequest {
   description?: string | null;
 }
 
-// Model thành viên trong Workspace
+// Model thông tin thành viên trong Workspace
 export interface WorkspaceMember {
   userId: string;
   username: string;
