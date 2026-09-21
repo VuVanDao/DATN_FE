@@ -99,10 +99,12 @@ export class WorkspaceDetailPage implements OnInit {
         return 'Chủ sở hữu';
       case 'WorkspaceAdmin':
         return 'Quản trị viên';
-      case 'Developer':
+      case 'WorkspaceMember':
         return 'Thành viên';
-      case 'Observer':
-        return 'Khách';
+      case 'ProjectLeader':
+        return 'Trưởng dự án';
+      case 'ProjectMember':
+        return 'Thành viên dự án';
       default:
         return roleName || 'Thành viên';
     }
