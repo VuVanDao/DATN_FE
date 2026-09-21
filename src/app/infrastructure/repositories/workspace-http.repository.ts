@@ -79,4 +79,10 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
       )
       .pipe(map((res) => res.data));
   }
+
+  deleteWorkspace(id: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.API_URL}/${id}`)
+      .pipe(map((res) => res.data));
+  }
 }

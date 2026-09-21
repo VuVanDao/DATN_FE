@@ -22,4 +22,5 @@ export abstract class WorkspaceRepository {
     workspaceId: string,
     request: AddWorkspaceMembersRequest,
   ): Observable<AddWorkspaceMembersResponse>;
+  abstract deleteWorkspace(id: string): Observable<boolean>;
 }
