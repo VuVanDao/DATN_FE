@@ -1,4 +1,4 @@
-export interface CreatePropjectRequest {
+export interface CreateProjectRequest {
   workspaceId: string;
   name: string;
   projectKey: string;
