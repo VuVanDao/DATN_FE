@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -9,11 +9,13 @@ import {
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { WorkspaceStore } from '../../../state/workspace.store';
+import { AuthStore } from '../../../state/auth.store';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceMember } from '../../../../domain/models/workspace.model';
 import { toast } from 'ngx-sonner';
 import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
+import { WorkspaceDeleteModalComponent } from './components/workspace-delete-modal/workspace-delete-modal.component';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 @Component({
@@ -25,11 +27,13 @@ type WorkspaceTab = 'projects' | 'members' | 'settings';
     ReactiveFormsModule,
     MatIconModule,
     InviteMembersModalComponent,
+    WorkspaceDeleteModalComponent,
   ],
   templateUrl: './workspace-detail.page.html',
 })
 export class WorkspaceDetailPage implements OnInit {
   readonly workspaceStore = inject(WorkspaceStore);
+  readonly authStore = inject(AuthStore);
   private readonly layoutService = inject(LayoutService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -43,6 +47,22 @@ export class WorkspaceDetailPage implements OnInit {
   readonly coverPreview = signal<string | null>(null);
   // Modal mời thành viên
   readonly showInviteModal = signal<boolean>(false);
+  // Modal xác nhận xóa Workspace
+  readonly showDeleteModal = signal<boolean>(false);
+
+  // Kiểm tra quyền WorkspaceOwner hoặc SystemAdmin
+  readonly isOwner = computed(() => {
+    const currUser = this.authStore.currentUser();
+    const ws = this.workspaceStore.currentWorkspace();
+
+    if (
+      ws?.currentUserRole !== 'WorkspaceOwner' ||
+      ws?.ownerId.toString() !== currUser?.Id.toString()
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   //Form update
   readonly updateForm = new FormGroup({
@@ -208,5 +228,22 @@ export class WorkspaceDetailPage implements OnInit {
         }
       },
     );
+  };
+
+  openDeleteWorkspaceModal = (): void => {
+    this.showDeleteModal.set(true);
+  };
+
+  closeDeleteWorkspaceModal = (): void => {
+    this.showDeleteModal.set(false);
+  };
+
+  onConfirmDelete = (): void => {
+    const ws = this.workspaceStore.currentWorkspace();
+    if (!ws) return;
+    this.workspaceStore.deleteWorkspace(ws.id, () => {
+      this.closeDeleteWorkspaceModal();
+      this.router.navigate(['/workspaces']);
+    });
   };
 }
