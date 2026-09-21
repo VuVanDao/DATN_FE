@@ -17,6 +17,7 @@ import { UpdateWorkspaceUsecase } from '../../application/workspace/update-works
 import { getWorkspaceRolesUsecase } from '../../application/workspace/get-workspace-roles.use-case';
 import { AddMembersToWorksapceUsecase } from '../../application/workspace/Add-members-to-workspace.use-case';
 import { DeleteWorkspaceUseCase } from '../../application/workspace/delete-workspace.use-case';
+import { CreateProjectUsecase } from '../../application/project/create-project.use-case';
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +30,8 @@ export class WorkspaceStore {
   private readonly _getWorkspaceRolesUseCase = inject(getWorkspaceRolesUsecase);
   private readonly _AddMembersToWorksapceUseCase = inject(AddMembersToWorksapceUsecase);
   private readonly _deleteWorkspaceUseCase = inject(DeleteWorkspaceUseCase);
+  //project
+  private readonly _craeteProjectUseCase = inject(CreateProjectUsecase);
   private readonly _authStore = inject(AuthStore);
 
   // States
@@ -50,6 +53,8 @@ export class WorkspaceStore {
   private readonly _isAddingMembers = signal<boolean>(false);
   // state loading cho viec delete workspace
   private readonly _isDeletingWorkspace = signal<boolean>(false);
+  // state loading cho viec create project
+  private readonly _isCreatingProject = signal<boolean>(false);
 
   constructor() {
     // Tự động xóa danh sách workspace khi user đăng xuất
@@ -79,6 +84,7 @@ export class WorkspaceStore {
   readonly workspaceRoles = this._workspaceRoles.asReadonly();
   readonly isAddingMembers = this._isAddingMembers.asReadonly();
   readonly isDeletingWorkspace = this._isDeletingWorkspace.asReadonly();
+  readonly isCreatingProject = this._isCreatingProject.asReadonly();
 
   loadWorkspaces(forceRefresh = false): void {
     if (this._isLoading()) {
@@ -299,6 +305,7 @@ export class WorkspaceStore {
     this._workspaceRoles.set([]);
     this._isAddingMembers.set(false);
     this._isDeletingWorkspace.set(false);
+    this._isCreatingProject.set(false);
   }
   private extractErrorMessage(err: any, defaultMsg: string): string {
     const errorsList = err?.error?.errors;

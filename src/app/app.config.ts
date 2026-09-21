@@ -1,4 +1,9 @@
-import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
@@ -15,6 +20,8 @@ import { AdminRepository } from './domain/repositories/admin.repository';
 import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
 import { WorkspaceRepository } from './domain/repositories/workspace.repository';
 import { WorkspaceHttpRepository } from './infrastructure/repositories/workspace-http.repository';
+import { ProjectRepository } from './domain/repositories/project.repository';
+import { ProjectHttpRepository } from './infrastructure/repositories/project-http.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -45,6 +52,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: WorkspaceRepository,
       useClass: WorkspaceHttpRepository,
+    },
+    {
+      provide: ProjectRepository,
+      useClass: ProjectHttpRepository,
     },
   ],
 };
