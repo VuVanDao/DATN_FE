@@ -141,7 +141,29 @@
       <!-- ================= TAB 1: DỰ ÁN (ẢNH 1) ================= -->
       @case ('projects') {
         @if (ws.projects.length > 0) {
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-4">
+          <!-- Header thanh công cụ Tab Dự án -->
+          <div class="flex items-center justify-between pt-4 pb-1">
+            <div class="flex items-center gap-2.5">
+              <span class="text-sm font-semibold text-slate-200">Danh sách dự án</span>
+              <span
+                class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-medium border border-slate-700/60"
+              >
+                {{ ws.projects.length }}
+              </span>
+            </div>
+            @if (isOwner()) {
+              <button
+                type="button"
+                (click)="openCreateProjectModal()"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
+              >
+                <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+                <span>Tạo dự án mới</span>
+              </button>
+            }
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
             @for (p of ws.projects; track p.id) {
               <div
                 class="bg-[#131b2e] border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 group shadow-xs cursor-pointer"
@@ -204,6 +226,16 @@
             <p class="text-sm text-slate-400">
               Không gian làm việc này hiện chưa có dự án nào được tạo.
             </p>
+            @if (isOwner()) {
+              <button
+                type="button"
+                (click)="openCreateProjectModal()"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
+              >
+                <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+                <span>Tạo dự án đầu tiên</span>
+              </button>
+            }
           </div>
         }
       }
@@ -436,4 +468,9 @@
     (closed)="closeDeleteWorkspaceModal()"
     (confirmed)="onConfirmDelete()"
   ></app-workspace-delete-modal>
+  <app-create-project-modal
+    [isOpen]="showCreateProjectModal()"
+    [workspaceId]="workspaceStore.currentWorkspace()?.id ?? ''"
+    (closed)="closeCreateProjectModal()"
+  ></app-create-project-modal>
 </div>

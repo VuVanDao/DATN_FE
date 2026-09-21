@@ -1,0 +1,139 @@
+@if (isOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+    (click)="close()"
+  >
+    <div
+      class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div
+        class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 mt-0.5"
+          >
+            <mat-icon fontIcon="create_new_folder" class="text-xl"></mat-icon>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">Tạo dự án mới</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Khởi tạo không gian quản lý công việc và phân công nhiệm vụ cho nhóm.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-5 space-y-4">
+        <!-- Tên Dự Án -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Tên dự án <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="name"
+            (input)="onNameChange()"
+            placeholder="Ví dụ: Phát triển Ứng dụng Di động"
+            class="w-full bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition border-slate-200 dark:border-slate-700"
+          />
+          @if (form.controls.name.touched && form.controls.name.errors) {
+            <p class="text-[11px] mt-1 text-rose-500">Tên dự án phải từ 2 đến 100 ký tự.</p>
+          }
+        </div>
+
+        <!-- Mã Viết Tắt (ProjectKey) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Mã dự án (Key) <span class="text-rose-500">*</span>
+            <span class="text-slate-400 font-normal ml-1 text-[11px]"
+              >(Viết hoa, dùng định danh các thẻ việc)</span
+            >
+          </label>
+          <input
+            type="text"
+            formControlName="projectKey"
+            placeholder="VD: DATN, MOB, CRM"
+            class="w-full uppercase bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 text-sm font-semibold tracking-wider text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition border-slate-200 dark:border-slate-700"
+          />
+          @if (form.controls.projectKey.touched && form.controls.projectKey.errors) {
+            <p class="text-[11px] mt-1 text-rose-500">
+              Mã dự án phải gồm 2-10 ký tự chữ cái hoặc số.
+            </p>
+          }
+        </div>
+
+        <!-- Mô tả -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
+            >Mô tả dự án</label
+          >
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="Mục tiêu hoặc tóm tắt kế hoạch của dự án..."
+            class="w-full bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition border-slate-200 dark:border-slate-700 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Checkbox: Gán ProjectLeader -->
+        <div
+          class="p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30"
+        >
+          <label class="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              formControlName="isAssignAsLeader"
+              class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+            />
+            <div>
+              <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                Tôi sẽ là Trưởng dự án (Project Leader)
+              </span>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                Tự động tham gia dự án để quản lý board, cột và phân công thẻ công việc. Nếu bỏ
+                chọn, bạn sẽ đóng vai trò giám sát của Chủ sở hữu (Chỉ xem).
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            (click)="close()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            [disabled]="workspaceStore.isCreatingProject() || form.invalid"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            @if (workspaceStore.isCreatingProject()) {
+              <span
+                class="inline-block animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"
+              ></span>
+              <span>Đang tạo...</span>
+            } @else {
+              <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+              <span>Tạo dự án</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

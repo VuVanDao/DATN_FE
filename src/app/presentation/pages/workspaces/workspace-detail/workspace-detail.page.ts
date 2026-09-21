@@ -16,6 +16,7 @@ import { WorkspaceMember } from '../../../../domain/models/workspace.model';
 import { toast } from 'ngx-sonner';
 import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
 import { WorkspaceDeleteModalComponent } from './components/workspace-delete-modal/workspace-delete-modal.component';
+import { CreateProjectModalComponent } from './components/create-project-modal/create-project-modal.component';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 @Component({
@@ -28,6 +29,7 @@ type WorkspaceTab = 'projects' | 'members' | 'settings';
     MatIconModule,
     InviteMembersModalComponent,
     WorkspaceDeleteModalComponent,
+    CreateProjectModalComponent,
   ],
   templateUrl: './workspace-detail.page.html',
 })
@@ -49,6 +51,8 @@ export class WorkspaceDetailPage implements OnInit {
   readonly showInviteModal = signal<boolean>(false);
   // Modal xác nhận xóa Workspace
   readonly showDeleteModal = signal<boolean>(false);
+  // state modal create project
+  readonly showCreateProjectModal = signal<boolean>(false);
 
   // Kiểm tra quyền WorkspaceOwner hoặc SystemAdmin
   readonly isOwner = computed(() => {
@@ -246,4 +250,10 @@ export class WorkspaceDetailPage implements OnInit {
       this.router.navigate(['/workspaces']);
     });
   };
+  openCreateProjectModal(): void {
+    this.showCreateProjectModal.set(true);
+  }
+  closeCreateProjectModal(): void {
+    this.showCreateProjectModal.set(false);
+  }
 }

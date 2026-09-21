@@ -6,6 +6,7 @@ import {
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
+  WorkspaceProject,
   WorkspaceRole,
 } from '../../domain/models/workspace.model';
 import { GetUserWorkspacesUseCase } from '../../application/workspace/get-user-workspaces.use-case';
@@ -18,6 +19,7 @@ import { getWorkspaceRolesUsecase } from '../../application/workspace/get-worksp
 import { AddMembersToWorksapceUsecase } from '../../application/workspace/Add-members-to-workspace.use-case';
 import { DeleteWorkspaceUseCase } from '../../application/workspace/delete-workspace.use-case';
 import { CreateProjectUsecase } from '../../application/project/create-project.use-case';
+import { CreateProjectRequest } from '../../domain/models/project.model';
 
 @Injectable({
   providedIn: 'root',
@@ -292,7 +294,28 @@ export class WorkspaceStore {
       },
     });
   }
+  createProject(request: CreateProjectRequest, onSuccess?: () => void): void {
+    this._isCreatingProject.set(true);
+    this._craeteProjectUseCase.execute(request).subscribe({
+      next: (res) => {
+        this._isCreatingProject.set(false);
 
+        toast.success(`Dự án "${res.name}" đã được tạo thành công`);
+        const currWs = this.currentWorkspace();
+        if (currWs?.slug) {
+          this.getWorkspaceDetail(currWs.slug);
+        }
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+      error: (err) => {
+        this._isCreatingProject.set(false);
+        const message = err?.error?.message || 'Tạo dự án thất bại, vui lòng thử lại.';
+        toast.error(message);
+      },
+    });
+  }
   clear(): void {
     this._workspaces.set([]);
     this._hasLoaded.set(false);
