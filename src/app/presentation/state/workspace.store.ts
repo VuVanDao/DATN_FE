@@ -16,6 +16,7 @@ import { GetWorkspaceDetailUseCase } from '../../application/workspace/get-works
 import { UpdateWorkspaceUsecase } from '../../application/workspace/update-workspace.use-case';
 import { getWorkspaceRolesUsecase } from '../../application/workspace/get-workspace-roles.use-case';
 import { AddMembersToWorksapceUsecase } from '../../application/workspace/Add-members-to-workspace.use-case';
+import { DeleteWorkspaceUseCase } from '../../application/workspace/delete-workspace.use-case';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,7 @@ export class WorkspaceStore {
   private readonly _updateWorkspaceUseCase = inject(UpdateWorkspaceUsecase);
   private readonly _getWorkspaceRolesUseCase = inject(getWorkspaceRolesUsecase);
   private readonly _AddMembersToWorksapceUseCase = inject(AddMembersToWorksapceUsecase);
+  private readonly _deleteWorkspaceUseCase = inject(DeleteWorkspaceUseCase);
   private readonly _authStore = inject(AuthStore);
 
   // States
@@ -46,6 +48,8 @@ export class WorkspaceStore {
   private readonly _workspaceRoles = signal<WorkspaceRole[]>([]);
   // state loading cho viec add member
   private readonly _isAddingMembers = signal<boolean>(false);
+  // state loading cho viec delete workspace
+  private readonly _isDeletingWorkspace = signal<boolean>(false);
 
   constructor() {
     // Tự động xóa danh sách workspace khi user đăng xuất
@@ -74,6 +78,7 @@ export class WorkspaceStore {
   readonly isUpdating = this._isUpdating.asReadonly();
   readonly workspaceRoles = this._workspaceRoles.asReadonly();
   readonly isAddingMembers = this._isAddingMembers.asReadonly();
+  readonly isDeletingWorkspace = this._isDeletingWorkspace.asReadonly();
 
   loadWorkspaces(forceRefresh = false): void {
     if (this._isLoading()) {
@@ -257,6 +262,31 @@ export class WorkspaceStore {
       },
     });
   }
+  deleteWorkspace(id: string, onSuccess?: () => void, onError?: (errorMsg: string) => void): void {
+    this._isDeletingWorkspace.set(true);
+    this._deleteWorkspaceUseCase.execute(id).subscribe({
+      next: () => {
+        this._isDeletingWorkspace.set(false);
+        this._workspaces.update((list) => list.filter((w) => w.id !== id));
+        if (this._currentWorkspace()?.id === id) {
+          this._currentWorkspace.set(null);
+        }
+        toast.success('Xóa không gian làm việc thành công');
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+      error: (err) => {
+        this._isDeletingWorkspace.set(false);
+        const msg = this.extractErrorMessage(err, 'Xóa không gian làm việc thất bại');
+        toast.error(msg);
+        if (onError) {
+          onError(msg);
+        }
+      },
+    });
+  }
+
   clear(): void {
     this._workspaces.set([]);
     this._hasLoaded.set(false);
@@ -268,6 +298,7 @@ export class WorkspaceStore {
     this._isUpdating.set(false);
     this._workspaceRoles.set([]);
     this._isAddingMembers.set(false);
+    this._isDeletingWorkspace.set(false);
   }
   private extractErrorMessage(err: any, defaultMsg: string): string {
     const errorsList = err?.error?.errors;
