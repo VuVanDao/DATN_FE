@@ -1,25 +1,13 @@
 import { Routes } from '@angular/router';
-import { Authlayout } from './presentation/layouts/auth-layout/auth-layout';
-import { LoginPage } from './presentation/pages/auth/login';
-import { RegisterPage } from './presentation/pages/auth/register';
-import { MainLayout } from './presentation/layouts/main-layout/main-layout';
-import { HomePage } from './presentation/pages/home/home';
 import { authGuard } from './presentation/guards/auth.guards';
-import { ChangePasswordPage } from './presentation/pages/change-password/change-password-page';
-import { ProfilePage } from './presentation/pages/profile/profile';
 import { guestGuard } from './presentation/guards/guest.guards';
-
-import { ForgotPasswordPage } from './presentation/pages/auth/forgot-password';
-import { ResetPasswordPage } from './presentation/pages/auth/reset-password';
 import { adminGuard } from './presentation/guards/admin.guards';
-import { AdminManageUserPage } from './presentation/pages/admin/users/admin-manage-users.page';
-import { WorkspacesPage } from './presentation/pages/workspaces/workspaces.page';
-import { WorkspaceDetailPage } from './presentation/pages/workspaces/workspace-detail/workspace-detail.page';
 
 export const routes: Routes = [
   {
     path: '',
-    component: MainLayout,
+    loadComponent: () =>
+      import('./presentation/layouts/main-layout/main-layout').then((m) => m.MainLayout),
     canActivate: [authGuard],
     children: [
       {
@@ -29,23 +17,31 @@ export const routes: Routes = [
       },
       {
         path: 'home-page',
-        component: HomePage,
+        loadComponent: () => import('./presentation/pages/home/home').then((m) => m.HomePage),
       },
       {
         path: 'profile',
-        component: ProfilePage,
+        loadComponent: () =>
+          import('./presentation/pages/profile/profile').then((m) => m.ProfilePage),
       },
       {
         path: 'change-password',
-        component: ChangePasswordPage,
+        loadComponent: () =>
+          import('./presentation/pages/change-password/change-password-page').then(
+            (m) => m.ChangePasswordPage,
+          ),
       },
       {
         path: 'workspaces',
-        component: WorkspacesPage,
+        loadComponent: () =>
+          import('./presentation/pages/workspaces/workspaces.page').then((m) => m.WorkspacesPage),
       },
       {
         path: 'workspaces/:slug',
-        component: WorkspaceDetailPage,
+        loadComponent: () =>
+          import('./presentation/pages/workspaces/workspace-detail/workspace-detail.page').then(
+            (m) => m.WorkspaceDetailPage,
+          ),
       },
       {
         path: 'admin',
@@ -58,7 +54,10 @@ export const routes: Routes = [
           },
           {
             path: 'users',
-            component: AdminManageUserPage,
+            loadComponent: () =>
+              import('./presentation/pages/admin/users/admin-manage-users.page').then(
+                (m) => m.AdminManageUserPage,
+              ),
           },
         ],
       },
@@ -66,7 +65,8 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: Authlayout,
+    loadComponent: () =>
+      import('./presentation/layouts/auth-layout/auth-layout').then((m) => m.Authlayout),
     canActivate: [guestGuard],
     children: [
       {
@@ -76,19 +76,23 @@ export const routes: Routes = [
       },
       {
         path: 'login',
-        component: LoginPage,
+        loadComponent: () =>
+          import('./presentation/pages/auth/login').then((m) => m.LoginPage),
       },
       {
         path: 'register',
-        component: RegisterPage,
+        loadComponent: () =>
+          import('./presentation/pages/auth/register').then((m) => m.RegisterPage),
       },
       {
         path: 'forgot-password',
-        component: ForgotPasswordPage,
+        loadComponent: () =>
+          import('./presentation/pages/auth/forgot-password').then((m) => m.ForgotPasswordPage),
       },
       {
         path: 'reset-password',
-        component: ResetPasswordPage,
+        loadComponent: () =>
+          import('./presentation/pages/auth/reset-password').then((m) => m.ResetPasswordPage),
       },
     ],
   },
