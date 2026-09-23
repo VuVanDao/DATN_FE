@@ -1,9 +1,9 @@
 import { User } from './user.model';
 
-export interface UserMangement extends User {
+export interface UserManagement extends User {
   IsDeleted: boolean;
 }
-export interface UserMangementResponse {
+export interface UserManagementResponse {
   id: string;
   email: string;
   username: string;

@@ -12,7 +12,7 @@ import { ApiResponse } from '../dtos/auth.dto';
 export class ProjectHttpRepository implements ProjectRepository {
   private readonly API_URL = `${environment.apiUrl}/project`;
   private readonly http = inject(HttpClient);
-  createPrject(request: CreateProjectRequest): Observable<Project> {
+  createProject(request: CreateProjectRequest): Observable<Project> {
     return this.http.post<ApiResponse<Project>>(this.API_URL, request).pipe(map((res) => res.data));
   }
 }

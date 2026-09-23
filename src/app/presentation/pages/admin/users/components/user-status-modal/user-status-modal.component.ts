@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { UserMangement } from '../../../../../../domain/models/admin.model';
+import { UserManagement } from '../../../../../../domain/models/admin.model';
 import { AdminStore } from '../../../../../state/admin.store';
 
 @Component({
@@ -15,7 +15,7 @@ export class UserStatusModalComponent {
   readonly store = inject(AdminStore);
 
   @Input() isOpen = false;
-  @Input() user: UserMangement | null = null;
+  @Input() user: UserManagement | null = null;
   @Input() targetStatus = true; // true: mở khóa, false: khóa
 
   @Output() closed = new EventEmitter<void>();

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { UserMangement } from '../../../../../../domain/models/admin.model';
+import { UserManagement } from '../../../../../../domain/models/admin.model';
 
 @Component({
   selector: 'app-user-detail-modal',
@@ -10,10 +10,10 @@ import { UserMangement } from '../../../../../../domain/models/admin.model';
   templateUrl: './user-detail-modal.component.html',
 })
 export class UserDetailModalComponent {
-  @Input() user: UserMangement | null = null;
+  @Input() user: UserManagement | null = null;
   @Input() isOpen = false;
   @Output() closed = new EventEmitter<void>();
-  @Output() edit = new EventEmitter<UserMangement>();
+  @Output() edit = new EventEmitter<UserManagement>();
 
   close(): void {
     this.closed.emit();

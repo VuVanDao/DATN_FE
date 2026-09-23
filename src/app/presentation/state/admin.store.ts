@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import {
-  UserMangement,
+  UserManagement,
   Role,
   UpdateUserStatusRequest,
   CreateUserRequest,
@@ -28,7 +28,7 @@ export class AdminStore {
   private readonly _deleteUserUseCase = inject(DeleteUserUseCase);
   private readonly _updateUserUseCase = inject(UpdateUserUseCase);
 
-  private readonly _users = signal<UserMangement[]>([]); // Danh sách user trang hiện tại
+  private readonly _users = signal<UserManagement[]>([]); // Danh sách user trang hiện tại
   private readonly _roles = signal<Role[]>([]); // Danh sách tất cả vai trò
   private readonly _totalCount = signal<number>(0); // Tổng số user hệ thống
   private readonly _pageIndex = signal<number>(1); // Trang hiện tại

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { UserMangement } from '../../../../../../domain/models/admin.model';
+import { UserManagement } from '../../../../../../domain/models/admin.model';
 import { AdminStore } from '../../../../../state/admin.store';
 
 @Component({
@@ -14,9 +14,9 @@ export class UserDeleteModalComponent {
   readonly store = inject(AdminStore);
 
   @Input() isOpen = false;
-  @Input() user: UserMangement | null = null;
+  @Input() user: UserManagement | null = null;
   @Output() closed = new EventEmitter<void>();
-  @Output() deleted = new EventEmitter<UserMangement>();
+  @Output() deleted = new EventEmitter<UserManagement>();
 
   close(): void {
     this.closed.emit();

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { AdminRepository } from '../../domain/repositories/admin.repository';
-import { AdminUpdateUserRequest, UserMangement } from '../../domain/models/admin.model';
+import { AdminUpdateUserRequest, UserManagement } from '../../domain/models/admin.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 export class UpdateUserUseCase {
   private readonly _adminRepository = inject(AdminRepository);
 
-  execute(userId: string, request: AdminUpdateUserRequest): Observable<UserMangement> {
+  execute(userId: string, request: AdminUpdateUserRequest): Observable<UserManagement> {
     const normalizedRequest: AdminUpdateUserRequest = {
       username: request.username.trim(),
       bio: request.bio?.trim(),

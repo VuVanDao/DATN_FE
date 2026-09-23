@@ -6,7 +6,7 @@ import { WorkspaceRole } from '../../domain/models/workspace.model';
 @Injectable({
   providedIn: 'root',
 })
-export class getWorkspaceRolesUsecase {
+export class GetWorkspaceRolesUseCase {
   private readonly _repository = inject(WorkspaceRepository);
   execute(): Observable<WorkspaceRole[]> {
     return this._repository.getWorkspaceRoles();

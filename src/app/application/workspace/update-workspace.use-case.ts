@@ -6,9 +6,9 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class UpdateWorkspaceUsecase {
+export class UpdateWorkspaceUseCase {
   private readonly _workspaceRepository = inject(WorkspaceRepository);
-  execute = (id: string, requets: UpdateWorkspaceRequest): Observable<WorkspaceDetail> => {
-    return this._workspaceRepository.updateWorkspace(id, requets);
+  execute = (id: string, request: UpdateWorkspaceRequest): Observable<WorkspaceDetail> => {
+    return this._workspaceRepository.updateWorkspace(id, request);
   };
 }

@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class AddMembersToWorksapceUsecase {
+export class AddMembersToWorkspaceUseCase {
   private readonly _repository = inject(WorkspaceRepository);
   execute(
     workspaceId: string,

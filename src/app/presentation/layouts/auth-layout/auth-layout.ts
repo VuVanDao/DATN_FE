@@ -9,7 +9,7 @@ import { filter } from 'rxjs';
   standalone: true,
   templateUrl: './auth-layout.html',
 })
-export class Authlayout implements OnInit {
+export class AuthLayout implements OnInit {
   private readonly router = inject(Router);
   readonly isRecoveryMode = signal<boolean>(false);
 

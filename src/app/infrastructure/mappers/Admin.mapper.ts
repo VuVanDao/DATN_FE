@@ -1,9 +1,9 @@
-import { UserMangement, UserMangementResponse } from '../../domain/models/admin.model';
+import { UserManagement, UserManagementResponse } from '../../domain/models/admin.model';
 import { User } from '../../domain/models/user.model';
 
 export class AdminMapper {
-  static toAdminUser(dto: UserMangementResponse): UserMangement {
-    const userMangement: UserMangement = {
+  static toAdminUser(dto: UserManagementResponse): UserManagement {
+    const userManagement: UserManagement = {
       Id: dto.id,
       Email: dto.email,
       UserName: dto.username,
@@ -15,6 +15,6 @@ export class AdminMapper {
       IsDeleted: dto.isDeleted,
     };
 
-    return userMangement;
+    return userManagement;
   }
 }

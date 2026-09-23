@@ -15,13 +15,13 @@ import { CreateWorkspaceUseCase } from '../../application/workspace/create-works
 import { AuthStore } from './auth.store';
 import { toast } from 'ngx-sonner';
 import { GetWorkspaceDetailUseCase } from '../../application/workspace/get-workspace-detail.use-case';
-import { UpdateWorkspaceUsecase } from '../../application/workspace/update-workspace.use-case';
-import { getWorkspaceRolesUsecase } from '../../application/workspace/get-workspace-roles.use-case';
-import { AddMembersToWorksapceUsecase } from '../../application/workspace/Add-members-to-workspace.use-case';
+import { UpdateWorkspaceUseCase } from '../../application/workspace/update-workspace.use-case';
+import { GetWorkspaceRolesUseCase } from '../../application/workspace/get-workspace-roles.use-case';
+import { AddMembersToWorkspaceUseCase } from '../../application/workspace/add-members-to-workspace.use-case';
 import { DeleteWorkspaceUseCase } from '../../application/workspace/delete-workspace.use-case';
 import { RemoveMemberFromWorkspaceUseCase } from '../../application/workspace/remove-member-from-workspace.use-case';
 import { GetMemberRemovalImpactUseCase } from '../../application/workspace/get-member-removal-impact.use-case';
-import { CreateProjectUsecase } from '../../application/project/create-project.use-case';
+import { CreateProjectUseCase } from '../../application/project/create-project.use-case';
 import { CreateProjectRequest } from '../../domain/models/project.model';
 
 @Injectable({
@@ -31,14 +31,14 @@ export class WorkspaceStore {
   private readonly _getUserWorkspacesUseCase = inject(GetUserWorkspacesUseCase);
   private readonly _createWorkspaceUseCase = inject(CreateWorkspaceUseCase);
   private readonly _getWorkspaceDetailUseCase = inject(GetWorkspaceDetailUseCase);
-  private readonly _updateWorkspaceUseCase = inject(UpdateWorkspaceUsecase);
-  private readonly _getWorkspaceRolesUseCase = inject(getWorkspaceRolesUsecase);
-  private readonly _AddMembersToWorksapceUseCase = inject(AddMembersToWorksapceUsecase);
+  private readonly _updateWorkspaceUseCase = inject(UpdateWorkspaceUseCase);
+  private readonly _getWorkspaceRolesUseCase = inject(GetWorkspaceRolesUseCase);
+  private readonly _addMembersToWorkspaceUseCase = inject(AddMembersToWorkspaceUseCase);
   private readonly _deleteWorkspaceUseCase = inject(DeleteWorkspaceUseCase);
   private readonly _removeMemberFromWorkspaceUseCase = inject(RemoveMemberFromWorkspaceUseCase);
   private readonly _getMemberRemovalImpactUseCase = inject(GetMemberRemovalImpactUseCase);
   //project
-  private readonly _craeteProjectUseCase = inject(CreateProjectUsecase);
+  private readonly _createProjectUseCase = inject(CreateProjectUseCase);
   private readonly _authStore = inject(AuthStore);
 
   // States
@@ -249,7 +249,7 @@ export class WorkspaceStore {
     onError?: (errorMsg: string) => void,
   ): void {
     this._isAddingMembers.set(true);
-    this._AddMembersToWorksapceUseCase.execute(workspaceId, request).subscribe({
+    this._addMembersToWorkspaceUseCase.execute(workspaceId, request).subscribe({
       next: (result) => {
         this._isAddingMembers.set(false);
         const newMembers = result.results
@@ -313,7 +313,7 @@ export class WorkspaceStore {
   }
   createProject(request: CreateProjectRequest, onSuccess?: () => void): void {
     this._isCreatingProject.set(true);
-    this._craeteProjectUseCase.execute(request).subscribe({
+    this._createProjectUseCase.execute(request).subscribe({
       next: (res) => {
         this._isCreatingProject.set(false);
 

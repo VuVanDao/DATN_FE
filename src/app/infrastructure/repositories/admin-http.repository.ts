@@ -4,17 +4,17 @@ import { map, Observable } from 'rxjs';
 import {
   GetUserManagementParams,
   PagedResult,
-  UserMangement,
+  UserManagement,
   UpdateUserStatusRequest,
   Role,
-  UserMangementResponse,
+  UserManagementResponse,
   CreateUserRequest,
   AdminUpdateUserRequest,
 } from '../../domain/models/admin.model';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ApiResponse } from '../dtos/auth.dto';
-import { AdminMapper } from '../mappers/Admin.mapper';
+import { AdminMapper } from '../mappers/admin.mapper';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,7 @@ import { AdminMapper } from '../mappers/Admin.mapper';
 export class AdminHttpRepository extends AdminRepository {
   private readonly API_URL = `${environment.apiUrl}/admin`;
   private readonly http = inject(HttpClient);
-  GetUsers(params: GetUserManagementParams): Observable<PagedResult<UserMangement>> {
+  GetUsers(params: GetUserManagementParams): Observable<PagedResult<UserManagement>> {
     let httpParams = new HttpParams();
     if (params.search) {
       httpParams = httpParams.set('Search', params.search);
@@ -37,7 +37,7 @@ export class AdminHttpRepository extends AdminRepository {
       httpParams = httpParams.set('PageSize', params.pageSize.toString());
     }
     return this.http
-      .get<ApiResponse<PagedResult<UserMangementResponse>>>(`${this.API_URL}/users`, {
+      .get<ApiResponse<PagedResult<UserManagementResponse>>>(`${this.API_URL}/users`, {
         params: httpParams,
       })
       .pipe(
@@ -90,9 +90,9 @@ export class AdminHttpRepository extends AdminRepository {
       .post<ApiResponse<string>>(`${this.API_URL}/users`, request)
       .pipe(map((res) => res.data));
   }
-  UpdateUser(userId: string, request: AdminUpdateUserRequest): Observable<UserMangement> {
+  UpdateUser(userId: string, request: AdminUpdateUserRequest): Observable<UserManagement> {
     return this.http
-      .put<ApiResponse<UserMangementResponse>>(`${this.API_URL}/users/${userId}`, request)
+      .put<ApiResponse<UserManagementResponse>>(`${this.API_URL}/users/${userId}`, request)
       .pipe(map((res) => AdminMapper.toAdminUser(res.data)));
   }
   DeleteUser(userId: string): Observable<boolean> {

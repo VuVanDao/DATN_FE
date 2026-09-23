@@ -6,7 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { AuthStore } from '../../../state/auth.store';
 import { AdminStore } from '../../../state/admin.store';
-import { UserMangement } from '../../../../domain/models/admin.model';
+import { UserManagement } from '../../../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
 import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
 import { UserCreateModalComponent } from './components/user-create-modal/user-create-modal.component';
@@ -39,7 +39,7 @@ export class AdminManageUserPage implements OnInit {
 
   // State mở Modal Phân quyền
   readonly isRoleModalOpen = signal<boolean>(false);
-  readonly selectedUserForRoles = signal<UserMangement | null>(null);
+  readonly selectedUserForRoles = signal<UserManagement | null>(null);
   readonly selectedRoleId = signal<string>('');
 
   // Chỉ lấy danh sách Role toàn cục (Scope = Global) áp dụng cho tài khoản người dùng
@@ -49,23 +49,23 @@ export class AdminManageUserPage implements OnInit {
 
   // State mở Modal status
   readonly isStatusModalOpen = signal<boolean>(false);
-  readonly selectedUserForStatus = signal<UserMangement | null>(null);
+  readonly selectedUserForStatus = signal<UserManagement | null>(null);
   readonly targetStatus = signal<boolean>(true); // true = mở khóa, false = khóa
 
   // State mở Modal chi tiết
   readonly isDetailModalOpen = signal<boolean>(false);
-  readonly selectedUserForDetail = signal<UserMangement | null>(null);
+  readonly selectedUserForDetail = signal<UserManagement | null>(null);
 
   // State mở Modal tạo mới người dùng
   readonly isCreateModalOpen = signal<boolean>(false);
 
   // State mở Modal xác nhận xóa người dùng
   readonly isDeleteModalOpen = signal<boolean>(false);
-  readonly selectedUserForDelete = signal<UserMangement | null>(null);
+  readonly selectedUserForDelete = signal<UserManagement | null>(null);
 
   // State mở Modal cập nhật người dùng
   readonly isUpdateModalOpen = signal<boolean>(false);
-  readonly selectedUserForUpdate = signal<UserMangement | null>(null);
+  readonly selectedUserForUpdate = signal<UserManagement | null>(null);
 
   ngOnInit(): void {
     // Đảm bảo sidebar chuyển sang chế độ Admin
@@ -88,7 +88,7 @@ export class AdminManageUserPage implements OnInit {
     this.store.setStatusFilter(status);
   }
   // set role cho các tài khoản
-  openRoleModal(user: UserMangement): void {
+  openRoleModal(user: UserManagement): void {
     this.selectedUserForRoles.set(user);
     // Lấy ID Role hiện tại của User
     const allRoles = this.store.roles();
@@ -116,7 +116,7 @@ export class AdminManageUserPage implements OnInit {
     });
   }
   // update user'status
-  openStatusModal(user: UserMangement, newStatus: boolean): void {
+  openStatusModal(user: UserManagement, newStatus: boolean): void {
     // Kiểm tra an toàn: Không cho Admin tự khóa chính mình
     if (this.authStore.currentUser()?.Id === user.Id && !newStatus) {
       toast.error('Bạn không thể tự khóa tài khoản Quản trị viên của chính mình!');
@@ -131,7 +131,7 @@ export class AdminManageUserPage implements OnInit {
     this.selectedUserForStatus.set(null);
   }
   // Modal chi tiết
-  openDetailModal(user: UserMangement): void {
+  openDetailModal(user: UserManagement): void {
     this.selectedUserForDetail.set(user);
     this.isDetailModalOpen.set(true);
   }
@@ -147,7 +147,7 @@ export class AdminManageUserPage implements OnInit {
     this.isCreateModalOpen.set(false);
   }
   // Modal xác nhận xóa người dùng
-  openDeleteModal(user: UserMangement): void {
+  openDeleteModal(user: UserManagement): void {
     // Kiểm tra an toàn: Không cho Admin tự xóa chính mình
     if (this.authStore.currentUser()?.Id === user.Id) {
       toast.error('Bạn không thể tự xóa tài khoản Quản trị viên của chính mình!');
@@ -161,7 +161,7 @@ export class AdminManageUserPage implements OnInit {
     this.selectedUserForDelete.set(null);
   }
   // Modal cập nhật người dùng
-  openUpdateModal(user: UserMangement): void {
+  openUpdateModal(user: UserManagement): void {
     this.selectedUserForUpdate.set(user);
     this.isUpdateModalOpen.set(true);
   }
