@@ -303,7 +303,8 @@ export class WorkspaceDetailPage implements OnInit {
     this.selectedMemberToRemove.set(null);
   }
 
-  onMemberRemoved(removedUserId: string): void {
+  onMemberRemoved(event: { memberId: string; workspaceId: string } | string): void {
+    const removedUserId = typeof event === 'string' ? event : event.memberId;
     const currentUserId = this.authStore.currentUser()?.Id;
     if (currentUserId && removedUserId === currentUserId.toString()) {
       this.router.navigate(['/workspaces']);

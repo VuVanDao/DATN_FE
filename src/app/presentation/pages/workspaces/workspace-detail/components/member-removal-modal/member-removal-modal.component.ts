@@ -32,7 +32,7 @@ export class MemberRemovalModalComponent implements OnChanges {
 
   @Output() closed = new EventEmitter<void>();
 
-  @Output() memberRemoved = new EventEmitter<string>();
+  @Output() memberRemoved = new EventEmitter<{ memberId: string; workspaceId: string }>();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.isOpen && this.workspaceId && this.member) {
@@ -71,7 +71,7 @@ export class MemberRemovalModalComponent implements OnChanges {
       this.workspaceId,
       targetUserId,
       () => {
-        this.memberRemoved.emit(targetUserId);
+        this.memberRemoved.emit({ memberId: targetUserId, workspaceId: this.workspaceId });
 
         this.close();
       },

@@ -344,20 +344,35 @@ export class WorkspaceStore {
     this._removeMemberFromWorkspaceUseCase.execute(workspaceId, memberId).subscribe({
       next: () => {
         this._isRemovingMember.set(false);
-        this._currentWorkspace.update((ws) => {
-          if (!ws) return ws;
-          return {
-            ...ws,
-            members: ws.members.filter((m) => m.userId !== memberId),
-          };
-        });
-        this._workspaces.update((list) =>
-          list.map((w) =>
-            w.id === workspaceId ? { ...w, membersCount: Math.max(0, w.membersCount - 1) } : w,
-          ),
-        );
+        const currentUserId = this._authStore.currentUser()?.Id;
+        const isSelf = currentUserId && memberId.toString() === currentUserId.toString();
 
-        toast.success('Đã xoá thành viên khỏi không gian làm việc thành công');
+        if (isSelf) {
+          this._workspaces.update((list) => list.filter((w) => w.id !== workspaceId));
+          if (this._currentWorkspace()?.id === workspaceId) {
+            this._currentWorkspace.set(null);
+          }
+          this.loadWorkspaces(true);
+        } else {
+          this._currentWorkspace.update((ws) => {
+            if (!ws) return ws;
+            return {
+              ...ws,
+              members: ws.members.filter((m) => m.userId !== memberId),
+            };
+          });
+          this._workspaces.update((list) =>
+            list.map((w) =>
+              w.id === workspaceId ? { ...w, membersCount: Math.max(0, w.membersCount - 1) } : w,
+            ),
+          );
+        }
+
+        toast.success(
+          isSelf
+            ? 'Bạn đã rời khỏi không gian làm việc thành công'
+            : 'Đã xoá thành viên khỏi không gian làm việc thành công',
+        );
         if (onSuccess) {
           onSuccess();
         }
