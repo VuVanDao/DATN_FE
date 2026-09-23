@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthStore } from '../../../../state/auth.store';
+import { ProfileStore } from '../../../../state/profile.store';
 
 @Component({
   selector: 'app-profile-details',
@@ -17,7 +17,7 @@ import { AuthStore } from '../../../../state/auth.store';
   templateUrl: './profile-details.component.html',
 })
 export class ProfileDetailsComponent {
-  readonly authStore = inject(AuthStore);
+  readonly profileStore = inject(ProfileStore);
 
   readonly isEditMode = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
@@ -38,7 +38,7 @@ export class ProfileDetailsComponent {
   }
 
   initFormData(): void {
-    const user = this.authStore.currentUser();
+    const user = this.profileStore.currentUser();
     if (user) {
       this.form.patchValue({
         username: user.userName,
@@ -65,7 +65,7 @@ export class ProfileDetailsComponent {
     }
     this.isSaving.set(true);
     const { username, bio } = this.form.getRawValue();
-    this.authStore.updateProfile(
+    this.profileStore.updateProfile(
       { username: username, bio: bio },
       () => {
         this.isEditMode.set(false);

@@ -9,7 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthStore } from '../../state/auth.store';
+import { ProfileStore } from '../../state/profile.store';
 import { LayoutService } from '../../../application/layout/layout.service';
 
 export const passwordMatchValidator: ValidatorFn = (
@@ -36,7 +36,7 @@ export const passwordMatchValidator: ValidatorFn = (
   templateUrl: './change-password-page.html',
 })
 export class ChangePasswordPage implements OnInit {
-  readonly authStore = inject(AuthStore);
+  readonly profileStore = inject(ProfileStore);
   readonly layoutService = inject(LayoutService);
 
   readonly showCurrent = signal<boolean>(false);
@@ -93,7 +93,7 @@ export class ChangePasswordPage implements OnInit {
       return;
     }
     const { currentPassword, newPassword, confirmNewPassword } = this.form.getRawValue();
-    this.authStore.changePassword(
+    this.profileStore.changePassword(
       {
         currentPassword: currentPassword,
         newPassword: newPassword,

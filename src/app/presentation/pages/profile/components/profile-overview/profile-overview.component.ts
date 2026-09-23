@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthStore } from '../../../../state/auth.store';
+import { ProfileStore } from '../../../../state/profile.store';
 import { toast } from 'ngx-sonner';
 
 @Component({
@@ -11,7 +11,7 @@ import { toast } from 'ngx-sonner';
   templateUrl: './profile-overview.component.html',
 })
 export class ProfileOverviewComponent {
-  readonly authStore = inject(AuthStore);
+  readonly profileStore = inject(ProfileStore);
 
   /** Badge màu thống nhất cho role */
   readonly roleBadgeClass =
@@ -38,7 +38,7 @@ export class ProfileOverviewComponent {
       input.value = '';
       return;
     }
-    this.authStore.uploadAvatar(file);
+    this.profileStore.uploadAvatar(file);
     input.value = '';
   };
 }

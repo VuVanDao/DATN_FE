@@ -7,20 +7,11 @@ import { StorageService } from '../../infrastructure/storage/storage.service';
 import { TokenService } from '../../infrastructure/storage/token.service';
 import { AuthRepository } from '../../domain/repositories/auth.repository';
 import { Router } from '@angular/router';
-import { ChangePasswordRequest, UpdateProfileRequest, User } from '../../domain/models/user.model';
-import {
-  ForgotPasswordRequest,
-  LoginRequest,
-  RegisterRequest,
-  ResetPasswordRequest,
-} from '../../domain/models/auth.model';
-import { GetCurrentUserUseCase } from '../../application/user/get-current-user.use-case';
-import { UpdateProfileUseCase } from '../../application/user/update-profile.use-case';
-import { ChangePasswordUseCase } from '../../application/user/change-password.use-case';
-import { toast } from 'ngx-sonner';
+import { User } from '../../domain/models/user.model';
+import { ForgotPasswordRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from '../../domain/models/auth.model';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
-import { UploadAvatarUseCase } from '../../application/user/upload-avatar.use-case';
+import { toast } from 'ngx-sonner';
 import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
 
 @Injectable({
@@ -32,12 +23,8 @@ export class AuthStore {
   private readonly _registerUseCase = inject(RegisterUseCase);
   private readonly _logoutUseCase = inject(LogoutUseCase);
   private readonly _authRepository = inject(AuthRepository);
-  private readonly _getCurrentUserUseCase = inject(GetCurrentUserUseCase);
-  private readonly _updateProfileUseCase = inject(UpdateProfileUseCase);
-  private readonly _changePasswordUseCase = inject(ChangePasswordUseCase);
   private readonly _forgotPasswordUseCase = inject(ForgotPasswordUseCase);
   private readonly _resetPasswordUseCase = inject(ResetPasswordUseCase);
-  private readonly _uploadAvatarUseCase = inject(UploadAvatarUseCase);
   private readonly _storageService = inject(StorageService);
   private readonly _tokenService = inject(TokenService);
   private readonly _platformId = inject(PLATFORM_ID);
@@ -47,17 +34,11 @@ export class AuthStore {
   private readonly _currentUser = signal<User | null>(this._storageService.getUserData());
   private readonly _isLoading = signal<boolean>(false);
   private readonly _errorMessage = signal<string | null>(null);
-  private readonly _isProfileLoading = signal<boolean>(false);
-  private readonly _isPasswordChanging = signal<boolean>(false);
-  private readonly _isAvatarUploading = signal<boolean>(false);
 
   // Public readonly states
   readonly currentUser = this._currentUser.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
   readonly errorMessage = this._errorMessage.asReadonly();
-  readonly isProfileLoading = this._isProfileLoading.asReadonly();
-  readonly isPasswordChanging = this._isPasswordChanging.asReadonly();
-  readonly isAvatarUploading = this._isAvatarUploading.asReadonly();
 
   readonly isAuthenticated = computed(() => !!this._currentUser());
 
@@ -140,96 +121,29 @@ export class AuthStore {
     this._errorMessage.set(null);
     this._logoutUseCase.execute().subscribe({
       next: () => {
-        this._tokenService.clear();
-        this._currentUser.set(null);
-        this._isLoading.set(false);
-        this._storageService.clear();
-        this.router.navigate(['/login']);
+        this._clearSessionAndNavigate();
       },
       error: () => {
         // Kể cả BE lỗi mạng thì FE vẫn xóa sạch phiên để user thoát ra an toàn
-        this._tokenService.clear();
-        this._currentUser.set(null);
-        this._isLoading.set(false);
-        this._storageService.clear();
-        this.router.navigate(['/login']);
+        this._clearSessionAndNavigate();
       },
     });
   }
 
+  /** Xóa phiên khi interceptor phát hiện refresh token hết hạn */
   clearSession(): void {
-    this._tokenService.clear();
-    this._currentUser.set(null);
-    this._isLoading.set(false);
-    this._isProfileLoading.set(false);
-    this._isPasswordChanging.set(false);
-    this._errorMessage.set(null);
-    this._storageService.clear();
-    this.router.navigate(['/login']);
+    this._clearSessionAndNavigate();
   }
 
-  getCurrentUser(onSuccess?: () => void, onError?: () => void): void {
-    this._isProfileLoading.set(true);
-    this._getCurrentUserUseCase.execute().subscribe({
-      next: (userData: User) => {
-        this._isProfileLoading.set(false);
-        this._currentUser.set(userData);
-        this._storageService.saveUserData(userData);
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        this._isProfileLoading.set(false);
-        if (onError) {
-          onError();
-        }
-      },
-    });
+  /**
+   * Cập nhật thông tin user hiện tại trong store + persist xuống storage.
+   * Dùng nội bộ và cho ProfileStore ghi dữ liệu user mới.
+   */
+  updateCurrentUser(user: User): void {
+    this._currentUser.set(user);
+    this._storageService.saveUserData(user);
   }
 
-  updateProfile(request: UpdateProfileRequest, onSuccess?: () => void, onError?: () => void): void {
-    this._updateProfileUseCase.execute(request).subscribe({
-      next: (userData: User) => {
-        this._currentUser.set(userData);
-        this._storageService.saveUserData(userData);
-        toast.success('Cập nhật thông tin hồ sơ thành công');
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
-        if (onError) {
-          onError();
-        }
-      },
-    });
-  }
-
-  changePassword(
-    request: ChangePasswordRequest,
-    onSuccess?: () => void,
-    onError?: () => void,
-  ): void {
-    this._isPasswordChanging.set(true);
-    this._changePasswordUseCase.execute(request).subscribe({
-      next: () => {
-        this._isPasswordChanging.set(false);
-        toast.success('Đổi mật khẩu thành công!');
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        this._isPasswordChanging.set(false);
-        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
-        if (onError) {
-          onError();
-        }
-      },
-    });
-  }
   forgotPassword(
     request: ForgotPasswordRequest,
     onSuccess?: () => void,
@@ -250,11 +164,12 @@ export class AuthStore {
       },
     });
   }
-  resetPassword = (
+
+  resetPassword(
     request: ResetPasswordRequest,
     onSuccess?: () => void,
     onError?: () => void,
-  ): void => {
+  ): void {
     this._resetPasswordUseCase.execute(request).subscribe({
       next: () => {
         if (onSuccess) {
@@ -268,30 +183,18 @@ export class AuthStore {
         }
       },
     });
-  };
-  uploadAvatar = (file: File): void => {
-    this._isAvatarUploading.set(true);
-    this._uploadAvatarUseCase.execute(file).subscribe({
-      next: (avatarUrl) => {
-        const currUser = this._currentUser();
-        if (currUser) {
-          const updatedUser: User = {
-            ...currUser,
-            avatarUrl: avatarUrl,
-          };
-          this._currentUser.set(updatedUser);
-          this._storageService.saveUserData(updatedUser);
-        }
-        this._isAvatarUploading.set(false);
-        toast.success('Cập nhật ảnh đại diện thành công');
-      },
-      error: (err) => {
-        this._isAvatarUploading.set(false);
-        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
-      },
-    });
-  };
+  }
+
   clearError(): void {
     this._errorMessage.set(null);
+  }
+
+  private _clearSessionAndNavigate(): void {
+    this._tokenService.clear();
+    this._storageService.clear();
+    this._currentUser.set(null);
+    this._isLoading.set(false);
+    this._errorMessage.set(null);
+    this.router.navigate(['/login']);
   }
 }

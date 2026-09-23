@@ -4,17 +4,17 @@
 >
   <!-- Avatar + Nút camera (To hơn & Bo góc hiện đại) -->
   <div class="relative group mb-4">
-    @if (authStore.currentUser()?.avatarUrl) {
+    @if (profileStore.currentUser()?.avatarUrl) {
       <img
-        [src]="authStore.currentUser()!.avatarUrl"
-        [alt]="authStore.currentUser()!.userName"
+        [src]="profileStore.currentUser()!.avatarUrl"
+        [alt]="profileStore.currentUser()!.userName"
         class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover ring-4 ring-slate-100 dark:ring-slate-800 shadow-lg"
       />
     } @else {
       <div
         class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-3xl sm:text-4xl shadow-lg ring-4 ring-slate-100 dark:ring-slate-800"
       >
-        {{ (authStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
+        {{ (profileStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
       </div>
     }
     <input
@@ -29,10 +29,10 @@
       type="button"
       matTooltip="Thay đổi ảnh đại diện"
       class="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-md transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-      [disabled]="authStore.isAvatarUploading()"
+      [disabled]="profileStore.isAvatarUploading()"
       (click)="avatarInput.click()"
     >
-      @if (authStore.isAvatarUploading()) {
+      @if (profileStore.isAvatarUploading()) {
         <mat-icon fontIcon="sync" class="icon-xs animate-spin"></mat-icon>
       } @else {
         <mat-icon fontIcon="photo_camera" class="icon-xs"></mat-icon>
@@ -42,20 +42,20 @@
 
   <!-- Tên & Email -->
   <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate max-w-full px-2">
-    {{ authStore.currentUser()?.userName || 'Chưa có tên' }}
+    {{ profileStore.currentUser()?.userName || 'Chưa có tên' }}
   </h2>
   <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate max-w-full px-2">
-    {{ authStore.currentUser()?.email || '' }}
+    {{ profileStore.currentUser()?.email || '' }}
   </p>
 
   <!-- Badges: Role & Trạng thái -->
   <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
-    @if (authStore.currentUser()?.role) {
+    @if (profileStore.currentUser()?.role) {
       <span class="text-xs font-medium px-3 py-1 rounded-full" [class]="roleBadgeClass">
-        {{ authStore.currentUser()?.role }}
+        {{ profileStore.currentUser()?.role }}
       </span>
     }
-    @if (authStore.currentUser()?.isActive) {
+    @if (profileStore.currentUser()?.isActive) {
       <span
         class="text-xs font-medium px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25"
       >
