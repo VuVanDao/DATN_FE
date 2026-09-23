@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,8 +8,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceStore } from '../../../state/workspace.store';
-import { Workspace } from '../../../../domain/models/workspace.model';
+import { WorkspaceStore } from '../../../../../state/workspace.store';
+import { Workspace } from '../../../../../../domain/models/workspace.model';
 
 @Component({
   selector: 'app-workspace-create-modal',
@@ -21,7 +21,9 @@ export class WorkspaceCreateModalComponent {
   readonly workspaceStore = inject(WorkspaceStore);
 
   @Input() isOpen = false;
+
   @Output() closed = new EventEmitter<void>();
+
   @Output() created = new EventEmitter<Workspace>();
 
   readonly createForm = new FormGroup({
@@ -43,7 +45,6 @@ export class WorkspaceCreateModalComponent {
     return this.createForm.controls.description;
   }
 
-  // Live preview icon/initial dựa trên tên người dùng đang nhập
   get previewInitial(): string {
     const val = this.nameControl.value.trim();
     return val.length > 0 ? val.charAt(0).toUpperCase() : 'W';

@@ -6,7 +6,7 @@ import { LayoutService } from '../../../../../application/layout/layout.service'
 import { WorkspaceStore } from '../../../../state/workspace.store';
 import { AuthStore } from '../../../../state/auth.store';
 import { Workspace } from '../../../../../domain/models/workspace.model';
-import { WorkspaceCreateModalComponent } from '../../../../components/modals/workspace-create-modal/workspace-create-modal.component';
+import { WorkspaceCreateModalComponent } from '../../../../pages/workspaces/workspace-detail/components/workspace-create-modal/workspace-create-modal.component';
 
 export interface RecentBoardItem {
   id: string;
