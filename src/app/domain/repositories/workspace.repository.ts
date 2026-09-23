@@ -7,6 +7,7 @@ import {
   Workspace,
   WorkspaceDetail,
   WorkspaceRole,
+  MemberRemovalImpact,
 } from '../models/workspace.model';
 
 export abstract class WorkspaceRepository {
@@ -23,4 +24,11 @@ export abstract class WorkspaceRepository {
     request: AddWorkspaceMembersRequest,
   ): Observable<AddWorkspaceMembersResponse>;
   abstract deleteWorkspace(id: string): Observable<boolean>;
+
+  abstract getMemberRemovalImpact(
+    workspaceId: string,
+    memberId: string,
+  ): Observable<MemberRemovalImpact>;
+
+  abstract removeMember(workspaceId: string, memberId: string): Observable<boolean>;
 }

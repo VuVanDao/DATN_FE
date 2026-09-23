@@ -151,3 +151,16 @@ export interface AddWorkspaceMembersResponse {
   totalFailed: number;
   results: MemberAddResult[];
 }
+
+// Thông tin dự án mà member đang làm Trưởng dự án (Project Leader)
+export interface LeaderProject {
+  projectId: string;
+  projectName: string;
+}
+
+export interface MemberRemovalImpact {
+  memberId: string;
+  isProjectLeader: boolean;
+  assignedCardsCount: number;
+  leaderProjects: LeaderProject[];
+}

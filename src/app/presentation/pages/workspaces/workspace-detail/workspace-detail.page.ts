@@ -17,6 +17,7 @@ import { toast } from 'ngx-sonner';
 import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
 import { WorkspaceDeleteModalComponent } from './components/workspace-delete-modal/workspace-delete-modal.component';
 import { CreateProjectModalComponent } from './components/create-project-modal/create-project-modal.component';
+import { MemberRemovalModalComponent } from './components/member-removal-modal/member-removal-modal.component';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 @Component({
@@ -30,6 +31,7 @@ type WorkspaceTab = 'projects' | 'members' | 'settings';
     InviteMembersModalComponent,
     WorkspaceDeleteModalComponent,
     CreateProjectModalComponent,
+    MemberRemovalModalComponent,
   ],
   templateUrl: './workspace-detail.page.html',
 })
@@ -54,7 +56,22 @@ export class WorkspaceDetailPage implements OnInit {
   // state modal create project
   readonly showCreateProjectModal = signal<boolean>(false);
 
-  // Kiểm tra quyền WorkspaceOwner hoặc SystemAdmin
+  readonly selectedMemberToRemove = signal<WorkspaceMember | null>(null);
+
+  readonly showMemberRemovalModal = signal<boolean>(false);
+
+  readonly isSystemAdmin = computed(() => {
+    const role = this.authStore.currentUser()?.Role;
+    return role === 'SystemAdmin' || role === 'Admin';
+  });
+
+  readonly isSelfRemoval = computed(() => {
+    const currentUserId = this.authStore.currentUser()?.Id;
+    const selected = this.selectedMemberToRemove();
+    return !!(currentUserId && selected && currentUserId.toString() === selected.userId.toString());
+  });
+
+  // Kiểm tra quyền WorkspaceOwner
   readonly isOwner = computed(() => {
     const currUser = this.authStore.currentUser();
     const ws = this.workspaceStore.currentWorkspace();
@@ -255,5 +272,41 @@ export class WorkspaceDetailPage implements OnInit {
   }
   closeCreateProjectModal(): void {
     this.showCreateProjectModal.set(false);
+  }
+
+  canRemoveMember(member: WorkspaceMember): boolean {
+    const ws = this.workspaceStore.currentWorkspace();
+    const currUser = this.authStore.currentUser();
+
+    if (!ws || !currUser) {
+      return false;
+    }
+
+    if (member.userId.toString() === ws.ownerId.toString()) {
+      return false;
+    }
+
+    if (this.isOwner() || this.isSystemAdmin()) {
+      return true;
+    }
+
+    return member.userId.toString() === currUser.Id.toString();
+  }
+
+  openRemoveMemberModal(member: WorkspaceMember): void {
+    this.selectedMemberToRemove.set(member);
+    this.showMemberRemovalModal.set(true);
+  }
+
+  closeRemoveMemberModal(): void {
+    this.showMemberRemovalModal.set(false);
+    this.selectedMemberToRemove.set(null);
+  }
+
+  onMemberRemoved(removedUserId: string): void {
+    const currentUserId = this.authStore.currentUser()?.Id;
+    if (currentUserId && removedUserId === currentUserId.toString()) {
+      this.router.navigate(['/workspaces']);
+    }
   }
 }

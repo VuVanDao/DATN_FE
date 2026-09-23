@@ -8,6 +8,7 @@ import {
   WorkspaceDetail,
   WorkspaceProject,
   WorkspaceRole,
+  MemberRemovalImpact,
 } from '../../domain/models/workspace.model';
 import { GetUserWorkspacesUseCase } from '../../application/workspace/get-user-workspaces.use-case';
 import { CreateWorkspaceUseCase } from '../../application/workspace/create-workspace.use-case';
@@ -18,6 +19,8 @@ import { UpdateWorkspaceUsecase } from '../../application/workspace/update-works
 import { getWorkspaceRolesUsecase } from '../../application/workspace/get-workspace-roles.use-case';
 import { AddMembersToWorksapceUsecase } from '../../application/workspace/Add-members-to-workspace.use-case';
 import { DeleteWorkspaceUseCase } from '../../application/workspace/delete-workspace.use-case';
+import { RemoveMemberFromWorkspaceUseCase } from '../../application/workspace/remove-member-from-workspace.use-case';
+import { GetMemberRemovalImpactUseCase } from '../../application/workspace/get-member-removal-impact.use-case';
 import { CreateProjectUsecase } from '../../application/project/create-project.use-case';
 import { CreateProjectRequest } from '../../domain/models/project.model';
 
@@ -32,6 +35,8 @@ export class WorkspaceStore {
   private readonly _getWorkspaceRolesUseCase = inject(getWorkspaceRolesUsecase);
   private readonly _AddMembersToWorksapceUseCase = inject(AddMembersToWorksapceUsecase);
   private readonly _deleteWorkspaceUseCase = inject(DeleteWorkspaceUseCase);
+  private readonly _removeMemberFromWorkspaceUseCase = inject(RemoveMemberFromWorkspaceUseCase);
+  private readonly _getMemberRemovalImpactUseCase = inject(GetMemberRemovalImpactUseCase);
   //project
   private readonly _craeteProjectUseCase = inject(CreateProjectUsecase);
   private readonly _authStore = inject(AuthStore);
@@ -57,6 +62,14 @@ export class WorkspaceStore {
   private readonly _isDeletingWorkspace = signal<boolean>(false);
   // state loading cho viec create project
   private readonly _isCreatingProject = signal<boolean>(false);
+  // State loading cho việc xoá thành viên khỏi workspace
+  private readonly _isRemovingMember = signal<boolean>(false);
+  // State loading khi đang kiểm tra ảnh hưởng xoá thành viên
+  private readonly _isLoadingMemberImpact = signal<boolean>(false);
+  // State lưu trữ dữ liệu thông tin ảnh hưởng khi xoá thành viên
+  private readonly _memberRemovalImpact = signal<MemberRemovalImpact | null>(null);
+  // State lưu thông báo lỗi khi kiểm tra ảnh hưởng xoá thành viên
+  private readonly _memberRemovalImpactError = signal<string | null>(null);
 
   constructor() {
     // Tự động xóa danh sách workspace khi user đăng xuất
@@ -87,6 +100,10 @@ export class WorkspaceStore {
   readonly isAddingMembers = this._isAddingMembers.asReadonly();
   readonly isDeletingWorkspace = this._isDeletingWorkspace.asReadonly();
   readonly isCreatingProject = this._isCreatingProject.asReadonly();
+  readonly isRemovingMember = this._isRemovingMember.asReadonly();
+  readonly isLoadingMemberImpact = this._isLoadingMemberImpact.asReadonly();
+  readonly memberRemovalImpact = this._memberRemovalImpact.asReadonly();
+  readonly memberRemovalImpactError = this._memberRemovalImpactError.asReadonly();
 
   loadWorkspaces(forceRefresh = false): void {
     if (this._isLoading()) {
@@ -316,6 +333,84 @@ export class WorkspaceStore {
       },
     });
   }
+  removeMember(
+    workspaceId: string,
+    memberId: string,
+    onSuccess?: () => void,
+    onError?: (errorMsg: string) => void,
+  ): void {
+    this._isRemovingMember.set(true);
+
+    this._removeMemberFromWorkspaceUseCase.execute(workspaceId, memberId).subscribe({
+      next: () => {
+        this._isRemovingMember.set(false);
+        this._currentWorkspace.update((ws) => {
+          if (!ws) return ws;
+          return {
+            ...ws,
+            members: ws.members.filter((m) => m.userId !== memberId),
+          };
+        });
+        this._workspaces.update((list) =>
+          list.map((w) =>
+            w.id === workspaceId ? { ...w, membersCount: Math.max(0, w.membersCount - 1) } : w,
+          ),
+        );
+
+        toast.success('Đã xoá thành viên khỏi không gian làm việc thành công');
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+      error: (err) => {
+        this._isRemovingMember.set(false);
+        const msg = this.extractErrorMessage(err, 'Xóa thành viên thất bại');
+        toast.error(msg);
+        if (onError) {
+          onError(msg);
+        }
+      },
+    });
+  }
+
+  getMemberRemovalImpact(
+    workspaceId: string,
+    memberId: string,
+    onSuccess?: (impact: MemberRemovalImpact) => void,
+    onError?: (errorMsg: string) => void,
+  ): void {
+    this._isLoadingMemberImpact.set(true);
+    this._memberRemovalImpactError.set(null);
+    this._memberRemovalImpact.set(null);
+    this._getMemberRemovalImpactUseCase.execute(workspaceId, memberId).subscribe({
+      next: (data) => {
+        this._memberRemovalImpact.set(data);
+        this._isLoadingMemberImpact.set(false);
+
+        if (onSuccess) {
+          onSuccess(data);
+        }
+      },
+      error: (err) => {
+        this._isLoadingMemberImpact.set(false);
+        const errorMsg = this.extractErrorMessage(
+          err,
+          'Không thể kiểm tra thông tin ảnh hưởng của thành viên. Vui lòng thử lại sau.',
+        );
+        this._memberRemovalImpactError.set(errorMsg);
+        if (onError) {
+          onError(errorMsg);
+        }
+      },
+    });
+  }
+
+  clearMemberRemovalImpact(): void {
+    this._memberRemovalImpact.set(null);
+    this._isLoadingMemberImpact.set(false);
+    this._memberRemovalImpactError.set(null);
+  }
+
   clear(): void {
     this._workspaces.set([]);
     this._hasLoaded.set(false);
@@ -329,6 +424,8 @@ export class WorkspaceStore {
     this._isAddingMembers.set(false);
     this._isDeletingWorkspace.set(false);
     this._isCreatingProject.set(false);
+    this._isRemovingMember.set(false);
+    this.clearMemberRemovalImpact();
   }
   private extractErrorMessage(err: any, defaultMsg: string): string {
     const errorsList = err?.error?.errors;

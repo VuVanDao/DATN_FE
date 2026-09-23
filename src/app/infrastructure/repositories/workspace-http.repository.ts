@@ -12,6 +12,7 @@ import {
   WorkspaceDetailResponse,
   WorkspaceResponse,
   WorkspaceRole,
+  MemberRemovalImpact,
 } from '../../domain/models/workspace.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../dtos/auth.dto';
@@ -83,6 +84,20 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
   deleteWorkspace(id: string): Observable<boolean> {
     return this.http
       .delete<ApiResponse<boolean>>(`${this.API_URL}/${id}`)
+      .pipe(map((res) => res.data));
+  }
+
+  getMemberRemovalImpact(workspaceId: string, memberId: string): Observable<MemberRemovalImpact> {
+    return this.http
+      .get<ApiResponse<MemberRemovalImpact>>(
+        `${this.API_URL}/${workspaceId}/members/${memberId}/removal-impact`,
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  removeMember(workspaceId: string, memberId: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.API_URL}/${workspaceId}/members/${memberId}`)
       .pipe(map((res) => res.data));
   }
 }
