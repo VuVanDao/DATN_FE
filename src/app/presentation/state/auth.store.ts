@@ -78,9 +78,9 @@ export class AuthStore {
     return new Promise<void>((resolve) => {
       this._authRepository.RefreshToken().subscribe({
         next: (response) => {
-          this._currentUser.set(response.User);
-          this._storageService.saveUserData(response.User);
-          this._tokenService.setAccessToken(response.Tokens.AccessToken);
+          this._currentUser.set(response.user);
+          this._storageService.saveUserData(response.user);
+          this._tokenService.setAccessToken(response.tokens.accessToken);
           resolve();
         },
         error: () => {
@@ -102,8 +102,8 @@ export class AuthStore {
 
     this._loginUseCase.execute(request).subscribe({
       next: (response) => {
-        this._tokenService.setAccessToken(response.Tokens.AccessToken);
-        this._currentUser.set(response.User);
+        this._tokenService.setAccessToken(response.tokens.accessToken);
+        this._currentUser.set(response.user);
         this._isLoading.set(false);
         this.router.navigate(['/']);
       },
@@ -122,8 +122,8 @@ export class AuthStore {
 
     this._registerUseCase.execute(request).subscribe({
       next: (response) => {
-        this._tokenService.setAccessToken(response.Tokens.AccessToken);
-        this._currentUser.set(response.User);
+        this._tokenService.setAccessToken(response.tokens.accessToken);
+        this._currentUser.set(response.user);
         this._isLoading.set(false);
         this.router.navigate(['/']);
       },
@@ -277,7 +277,7 @@ export class AuthStore {
         if (currUser) {
           const updatedUser: User = {
             ...currUser,
-            AvatarUrl: avatarUrl,
+            avatarUrl: avatarUrl,
           };
           this._currentUser.set(updatedUser);
           this._storageService.saveUserData(updatedUser);

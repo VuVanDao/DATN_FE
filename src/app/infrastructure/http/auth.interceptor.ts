@@ -59,7 +59,7 @@ function handle401Error(
     return authRepo.RefreshToken().pipe(
       switchMap((response) => {
         isRefreshing = false;
-        const newToken = response.Tokens.AccessToken;
+        const newToken = response.tokens.accessToken;
         tokenService.setAccessToken(newToken);
         refreshTokenSubject.next(newToken);
 

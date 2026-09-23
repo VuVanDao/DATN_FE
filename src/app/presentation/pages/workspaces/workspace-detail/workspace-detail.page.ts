@@ -61,12 +61,12 @@ export class WorkspaceDetailPage implements OnInit {
   readonly showMemberRemovalModal = signal<boolean>(false);
 
   readonly isSystemAdmin = computed(() => {
-    const role = this.authStore.currentUser()?.Role;
+    const role = this.authStore.currentUser()?.role;
     return role === 'SystemAdmin' || role === 'Admin';
   });
 
   readonly isSelfRemoval = computed(() => {
-    const currentUserId = this.authStore.currentUser()?.Id;
+    const currentUserId = this.authStore.currentUser()?.id;
     const selected = this.selectedMemberToRemove();
     return !!(currentUserId && selected && currentUserId.toString() === selected.userId.toString());
   });
@@ -78,7 +78,7 @@ export class WorkspaceDetailPage implements OnInit {
 
     if (
       ws?.currentUserRole !== 'WorkspaceOwner' ||
-      ws?.ownerId.toString() !== currUser?.Id.toString()
+      ws?.ownerId.toString() !== currUser?.id.toString()
     ) {
       return false;
     }
@@ -290,7 +290,7 @@ export class WorkspaceDetailPage implements OnInit {
       return true;
     }
 
-    return member.userId.toString() === currUser.Id.toString();
+    return member.userId.toString() === currUser.id.toString();
   }
 
   openRemoveMemberModal(member: WorkspaceMember): void {
@@ -305,7 +305,7 @@ export class WorkspaceDetailPage implements OnInit {
 
   onMemberRemoved(event: { memberId: string; workspaceId: string } | string): void {
     const removedUserId = typeof event === 'string' ? event : event.memberId;
-    const currentUserId = this.authStore.currentUser()?.Id;
+    const currentUserId = this.authStore.currentUser()?.id;
     if (currentUserId && removedUserId === currentUserId.toString()) {
       this.router.navigate(['/workspaces']);
     }

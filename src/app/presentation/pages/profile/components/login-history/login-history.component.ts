@@ -23,8 +23,8 @@ export class LoginHistoryComponent {
   readonly visibleHistories = computed(() => {
     const selected = this.filter();
     const filtered = this.histories().filter((item) => {
-      if (selected === 'success') return item.IsSuccess;
-      if (selected === 'failed') return !item.IsSuccess;
+      if (selected === 'success') return item.isSuccess;
+      if (selected === 'failed') return !item.isSuccess;
       return true;
     });
     return this.showAll() ? filtered : filtered.slice(0, 5);
@@ -32,7 +32,7 @@ export class LoginHistoryComponent {
   readonly filteredCount = computed(() => {
     const selected = this.filter();
     if (selected === 'all') return this.histories().length;
-    return this.histories().filter((item) => (selected === 'success' ? item.IsSuccess : !item.IsSuccess))
+    return this.histories().filter((item) => (selected === 'success' ? item.isSuccess : !item.isSuccess))
       .length;
   });
 

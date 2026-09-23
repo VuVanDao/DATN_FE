@@ -4,17 +4,17 @@
 >
   <!-- Avatar + Nút camera (To hơn & Bo góc hiện đại) -->
   <div class="relative group mb-4">
-    @if (authStore.currentUser()?.AvatarUrl) {
+    @if (authStore.currentUser()?.avatarUrl) {
       <img
-        [src]="authStore.currentUser()!.AvatarUrl"
-        [alt]="authStore.currentUser()!.UserName"
+        [src]="authStore.currentUser()!.avatarUrl"
+        [alt]="authStore.currentUser()!.userName"
         class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover ring-4 ring-slate-100 dark:ring-slate-800 shadow-lg"
       />
     } @else {
       <div
         class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-3xl sm:text-4xl shadow-lg ring-4 ring-slate-100 dark:ring-slate-800"
       >
-        {{ (authStore.currentUser()?.UserName || 'U').charAt(0).toUpperCase() }}
+        {{ (authStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
       </div>
     }
     <input
@@ -42,20 +42,20 @@
 
   <!-- Tên & Email -->
   <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate max-w-full px-2">
-    {{ authStore.currentUser()?.UserName || 'Chưa có tên' }}
+    {{ authStore.currentUser()?.userName || 'Chưa có tên' }}
   </h2>
   <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 truncate max-w-full px-2">
-    {{ authStore.currentUser()?.Email || '' }}
+    {{ authStore.currentUser()?.email || '' }}
   </p>
 
   <!-- Badges: Role & Trạng thái -->
   <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
-    @if (authStore.currentUser()?.Role) {
+    @if (authStore.currentUser()?.role) {
       <span class="text-xs font-medium px-3 py-1 rounded-full" [class]="roleBadgeClass">
-        {{ authStore.currentUser()?.Role }}
+        {{ authStore.currentUser()?.role }}
       </span>
     }
-    @if (authStore.currentUser()?.IsActive) {
+    @if (authStore.currentUser()?.isActive) {
       <span
         class="text-xs font-medium px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25"
       >

@@ -41,8 +41,8 @@ export class ProfileDetailsComponent {
     const user = this.authStore.currentUser();
     if (user) {
       this.form.patchValue({
-        username: user.UserName,
-        bio: user.Bio ?? '',
+        username: user.userName,
+        bio: user.bio ?? '',
       });
     }
   }
@@ -66,7 +66,7 @@ export class ProfileDetailsComponent {
     this.isSaving.set(true);
     const { username, bio } = this.form.getRawValue();
     this.authStore.updateProfile(
-      { Username: username, Bio: bio },
+      { username: username, bio: bio },
       () => {
         this.isEditMode.set(false);
         this.isSaving.set(false);

@@ -87,9 +87,9 @@ export class RegisterPage {
     }
     const { username, email, password } = this.registerForm.getRawValue();
     this.authStore.register({
-      Username: username,
-      Email: email,
-      Password: password,
+      username: username,
+      email: email,
+      password: password,
     });
   }
 }

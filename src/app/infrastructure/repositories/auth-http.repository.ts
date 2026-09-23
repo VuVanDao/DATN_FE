@@ -39,16 +39,16 @@ export class AuthHttpRepository implements AuthRepository {
       .post<ApiResponse<AuthResponseDto>>(
         `${this.API_URL}/login`,
         {
-          Email: request.Email,
-          Password: request.Password,
+          Email: request.email,
+          Password: request.password,
         },
         { withCredentials: true },
       )
       .pipe(
         map((res) => {
           const result = AuthMapper.toLoginResponse(res.data);
-          this.tokenService.setAccessToken(result.Tokens.AccessToken);
-          this.storageService.saveUserData(result.User);
+          this.tokenService.setAccessToken(result.tokens.accessToken);
+          this.storageService.saveUserData(result.user);
           return result;
         }),
       );
@@ -58,17 +58,17 @@ export class AuthHttpRepository implements AuthRepository {
       .post<ApiResponse<AuthResponseDto>>(
         `${this.API_URL}/register`,
         {
-          Email: request.Email,
-          Password: request.Password,
-          Username: request.Username,
+          Email: request.email,
+          Password: request.password,
+          Username: request.username,
         },
         { withCredentials: true },
       )
       .pipe(
         map((res) => {
           const result = AuthMapper.toLoginResponse(res.data);
-          this.tokenService.setAccessToken(result.Tokens.AccessToken);
-          this.storageService.saveUserData(result.User);
+          this.tokenService.setAccessToken(result.tokens.accessToken);
+          this.storageService.saveUserData(result.user);
           return result;
         }),
       );
@@ -94,8 +94,8 @@ export class AuthHttpRepository implements AuthRepository {
       .pipe(
         map((res) => {
           const result = AuthMapper.toLoginResponse(res.data);
-          this.tokenService.setAccessToken(result.Tokens.AccessToken);
-          this.storageService.saveUserData(result.User);
+          this.tokenService.setAccessToken(result.tokens.accessToken);
+          this.storageService.saveUserData(result.user);
           return result;
         }),
       );
@@ -111,7 +111,7 @@ export class AuthHttpRepository implements AuthRepository {
       );
   }
   ForgotPassword(request: ForgotPasswordRequest): Observable<string> {
-    const email = request.Email;
+    const email = request.email;
     return this.http.post<ApiResponse<string>>(`${this.API_URL}/forgot-password`, { email }).pipe(
       map((res) => {
         return res.data;

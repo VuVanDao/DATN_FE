@@ -12,7 +12,7 @@ export class LoginUseCase {
   execute(request: LoginRequest): Observable<LoginResponse> {
     const normalizeRequest: LoginRequest = {
       ...request,
-      Email: request.Email.trim().toLocaleLowerCase(),
+      email: request.email.trim().toLocaleLowerCase(),
     };
     return this._authRepository.Login(normalizeRequest);
   }

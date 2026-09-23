@@ -61,6 +61,6 @@ export class LoginPage {
       return;
     }
     const { email, password } = this.loginForm.getRawValue();
-    this.authStore.login({ Email: email, Password: password });
+    this.authStore.login({ email: email, password: password });
   }
 }

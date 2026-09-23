@@ -24,7 +24,7 @@ export class UserDeleteModalComponent {
 
   confirmDelete(): void {
     if (!this.user) return;
-    this.store.deleteUser(this.user.Id, () => {
+    this.store.deleteUser(this.user.id, () => {
       this.deleted.emit(this.user!);
       this.close();
     });

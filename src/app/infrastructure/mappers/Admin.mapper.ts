@@ -1,18 +1,17 @@
 import { UserManagement, UserManagementResponse } from '../../domain/models/admin.model';
-import { User } from '../../domain/models/user.model';
 
 export class AdminMapper {
   static toAdminUser(dto: UserManagementResponse): UserManagement {
     const userManagement: UserManagement = {
-      Id: dto.id,
-      Email: dto.email,
-      UserName: dto.username,
-      AvatarUrl: dto.avatarUrl ?? undefined,
-      Bio: dto.bio,
-      Role: dto.role,
-      IsActive: dto.isActive,
-      CreatedAt: dto.createdAt,
-      IsDeleted: dto.isDeleted,
+      id: dto.id,
+      email: dto.email,
+      userName: dto.username,
+      avatarUrl: dto.avatarUrl ?? undefined,
+      bio: dto.bio,
+      role: dto.role,
+      isActive: dto.isActive,
+      createdAt: dto.createdAt,
+      isDeleted: dto.isDeleted,
     };
 
     return userManagement;

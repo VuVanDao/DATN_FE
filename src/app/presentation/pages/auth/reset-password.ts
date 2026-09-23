@@ -125,10 +125,10 @@ export class ResetPasswordPage implements OnInit {
 
     this.authStore.resetPassword(
       {
-        Email: this.targetEmail().toString(),
-        Token: token,
-        NewPassword: newPassword,
-        ConfirmNewPassword: confirmPassword,
+        email: this.targetEmail().toString(),
+        token: token,
+        newPassword: newPassword,
+        confirmNewPassword: confirmPassword,
       },
       () => {
         this.isSubmitting.set(false);

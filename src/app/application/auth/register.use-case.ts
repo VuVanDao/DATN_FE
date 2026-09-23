@@ -11,8 +11,8 @@ export class RegisterUseCase {
   execute(request: RegisterRequest): Observable<RegisterResponse> {
     const normalizeRequest: RegisterRequest = {
       ...request,
-      Email: request.Email.trim().toLocaleLowerCase(),
-      Username: request.Username.trim(),
+      email: request.email.trim().toLocaleLowerCase(),
+      username: request.username.trim(),
     };
     return this._authRepository.Register(normalizeRequest);
   }

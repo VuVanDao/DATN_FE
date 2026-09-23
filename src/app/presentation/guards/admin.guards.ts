@@ -15,7 +15,7 @@ export const adminGuard: CanActivateFn = () => {
 
   // Lấy thông tin user hiện tại từ AuthStore
   const user = authStore.currentUser();
-  const isAdmin = user?.Role === 'SystemAdmin' || user?.Role === 'Admin';
+  const isAdmin = user?.role === 'SystemAdmin' || user?.role === 'Admin';
   if (isAdmin) {
     return true; // Cho phép truy cập
   }

@@ -95,9 +95,9 @@ export class ChangePasswordPage implements OnInit {
     const { currentPassword, newPassword, confirmNewPassword } = this.form.getRawValue();
     this.authStore.changePassword(
       {
-        CurrentPassword: currentPassword,
-        NewPassword: newPassword,
-        ConfirmNewPassword: confirmNewPassword,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        confirmNewPassword: confirmNewPassword,
       },
       () => {
         this.form.reset();

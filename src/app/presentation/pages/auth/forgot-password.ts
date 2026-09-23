@@ -38,7 +38,7 @@ export class ForgotPasswordPage {
     const { email } = this.forgotForm.getRawValue();
     this.isSubmitting.set(true);
     this.authStore.forgotPassword(
-      { Email: email },
+      { email: email },
       () => {
         this.isSubmitting.set(false);
         this.router.navigate(['/reset-password'], {

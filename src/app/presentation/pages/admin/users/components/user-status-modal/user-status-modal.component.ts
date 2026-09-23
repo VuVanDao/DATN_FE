@@ -32,8 +32,8 @@ export class UserStatusModalComponent {
 
     this.store.updateUserStatus(
       {
-        userId: this.user.Id,
-        IsActive: this.targetStatus,
+        userId: this.user.id,
+        isActive: this.targetStatus,
         reason: this.statusReason().trim() || undefined,
       },
       () => {

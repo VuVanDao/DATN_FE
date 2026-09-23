@@ -227,37 +227,37 @@
               </td>
             </tr>
           } @else {
-            @for (user of store.users(); track user.Id) {
+            @for (user of store.users(); track user.id) {
               <tr class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                 <!-- Cột Người dùng: Avatar, Tên, Email -->
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-3">
-                    @if (user.AvatarUrl) {
+                    @if (user.avatarUrl) {
                       <img
-                        [src]="user.AvatarUrl"
-                        [alt]="user.UserName"
+                        [src]="user.avatarUrl"
+                        [alt]="user.userName"
                         class="w-10 h-10 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
                       />
                     } @else {
                       <div
                         class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center shrink-0"
                       >
-                        {{ user.UserName.charAt(0).toUpperCase() }}
+                        {{ user.userName.charAt(0).toUpperCase() }}
                       </div>
                     }
                     <div class="min-w-0">
                       <p
                         class="font-semibold text-slate-900 dark:text-white truncate flex items-center gap-1.5"
                       >
-                        {{ user.UserName }}
-                        @if (authStore.currentUser()?.Id === user.Id) {
+                        {{ user.userName }}
+                        @if (authStore.currentUser()?.id === user.id) {
                           <span
                             class="px-1.5 py-0.2 text-[10px] font-bold bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded"
                             >Bạn</span
                           >
                         }
                       </p>
-                      <p class="text-xs text-slate-400 truncate">{{ user.Email }}</p>
+                      <p class="text-xs text-slate-400 truncate">{{ user.email }}</p>
                     </div>
                   </div>
                 </td>
@@ -267,16 +267,16 @@
                   <div class="flex flex-wrap items-center gap-1.5">
                     <span
                       class="px-2 py-0.5 text-xs font-semibold rounded-md border"
-                      [class]="getRoleBadgeClass(user.Role)"
+                      [class]="getRoleBadgeClass(user.role)"
                     >
-                      {{ user.Role }}
+                      {{ user.role }}
                     </span>
                   </div>
                 </td>
 
                 <!-- Cột Trạng thái (Hoạt động / Khóa) -->
                 <td class="px-5 py-3.5">
-                  @if (user.IsActive) {
+                  @if (user.isActive) {
                     <span
                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                     >
@@ -297,7 +297,7 @@
                 <td
                   class="px-5 py-3.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap"
                 >
-                  {{ user.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
+                  {{ user.createdAt | date: 'dd/MM/yyyy HH:mm' }}
                 </td>
 
                 <!-- Cột Hành động -->
@@ -334,13 +334,13 @@
                     </button>
 
                     <!-- Nút Khóa / Mở khóa -->
-                    @if (user.IsActive) {
+                    @if (user.isActive) {
                       <button
                         type="button"
                         (click)="openStatusModal(user, false)"
-                        [disabled]="authStore.currentUser()?.Id === user.Id"
+                        [disabled]="authStore.currentUser()?.id === user.id"
                         [matTooltip]="
-                          authStore.currentUser()?.Id === user.Id
+                          authStore.currentUser()?.id === user.id
                             ? 'Không thể tự khóa tài khoản của chính mình'
                             : 'Khóa tài khoản'
                         "
@@ -363,9 +363,9 @@
                     <button
                       type="button"
                       (click)="openDeleteModal(user)"
-                      [disabled]="authStore.currentUser()?.Id === user.Id"
+                      [disabled]="authStore.currentUser()?.id === user.id"
                       [matTooltip]="
-                        authStore.currentUser()?.Id === user.Id
+                        authStore.currentUser()?.id === user.id
                           ? 'Không thể tự xóa tài khoản của chính mình'
                           : 'Xóa người dùng'
                       "
@@ -454,7 +454,7 @@
             </div>
             <div>
               <h3 class="font-bold text-slate-900 dark:text-white text-base">Phân quyền vai trò</h3>
-              <p class="text-xs text-slate-400">{{ selectedUserForRoles()?.Email }}</p>
+              <p class="text-xs text-slate-400">{{ selectedUserForRoles()?.email }}</p>
             </div>
           </div>
           <button
@@ -468,26 +468,26 @@
 
         <!-- Modal Body: Danh sách chọn Role Toàn cục -->
         <div class="p-5 space-y-3 max-h-80 overflow-y-auto">
-          @for (role of globalRoles(); track role.Id) {
+          @for (role of globalRoles(); track role.id) {
             <label
-              (click)="selectRole(role.Id)"
+              (click)="selectRole(role.id)"
               class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer"
-              [class.border-indigo-500]="selectedRoleId() === role.Id"
-              [class.bg-indigo-50/50]="selectedRoleId() === role.Id"
-              [class.dark:bg-indigo-900/10]="selectedRoleId() === role.Id"
-              [class.border-slate-200]="selectedRoleId() !== role.Id"
-              [class.dark:border-slate-800]="selectedRoleId() !== role.Id"
+              [class.border-indigo-500]="selectedRoleId() === role.id"
+              [class.bg-indigo-50/50]="selectedRoleId() === role.id"
+              [class.dark:bg-indigo-900/10]="selectedRoleId() === role.id"
+              [class.border-slate-200]="selectedRoleId() !== role.id"
+              [class.dark:border-slate-800]="selectedRoleId() !== role.id"
             >
               <input
                 type="radio"
                 name="userGlobalRole"
-                [checked]="selectedRoleId() === role.Id"
+                [checked]="selectedRoleId() === role.id"
                 class="mt-1 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
               <div class="min-w-0 flex-1">
-                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ role.Name }}</p>
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ role.name }}</p>
                 <p class="text-xs text-slate-400 mt-0.5">
-                  {{ role.Description || 'Không có mô tả' }}
+                  {{ role.description || 'Không có mô tả' }}
                 </p>
               </div>
             </label>

@@ -1,7 +1,7 @@
 import { User } from './user.model';
 
 export interface UserManagement extends User {
-  IsDeleted: boolean;
+  isDeleted: boolean;
 }
 export interface UserManagementResponse {
   id: string;
@@ -31,15 +31,15 @@ export interface GetUserManagementParams {
 }
 export interface UpdateUserStatusRequest {
   userId: string;
-  IsActive: boolean;
+  isActive: boolean;
   reason?: string;
 }
 export interface Role {
-  Id: string;
-  Name: string;
-  Description?: string;
-  Scope: string;
-  IsSystemRole: boolean;
+  id: string;
+  name: string;
+  description?: string;
+  scope: string;
+  isSystemRole: boolean;
 }
 export interface CreateUserRequest {
   email: string;

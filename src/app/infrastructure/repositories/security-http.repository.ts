@@ -19,14 +19,14 @@ export class SecurityHttpRepository implements SecurityRepository {
       .pipe(
         map((response) =>
           response.data.map((item) => ({
-            Id: item.id,
-            UserId: item.userId,
-            EmailAttempted: item.emailAttempted,
-            IpAddress: item.ipAddress,
-            UserAgent: item.userAgent,
-            IsSuccess: item.isSuccess,
-            FailureReason: item.failureReason,
-            CreatedAt: item.createdAt,
+            id: item.id,
+            userId: item.userId,
+            emailAttempted: item.emailAttempted,
+            ipAddress: item.ipAddress,
+            userAgent: item.userAgent,
+            isSuccess: item.isSuccess,
+            failureReason: item.failureReason,
+            createdAt: item.createdAt,
           })),
         ),
       );

@@ -55,8 +55,8 @@ export class AdminStore {
     const list = this._users();
     return {
       total: this._totalCount(),
-      activeCount: list.filter((u) => u.IsActive).length,
-      inactiveCount: list.filter((u) => !u.IsActive).length,
+      activeCount: list.filter((u) => u.isActive).length,
+      inactiveCount: list.filter((u) => !u.isActive).length,
     };
   });
 
@@ -127,10 +127,10 @@ export class AdminStore {
         this._isSubmitting.set(false);
         // Cập nhật ngay trên mảng signal người dùng mà không cần reload cả trang
         this._users.update((list) =>
-          list.map((u) => (u.Id === request.userId ? { ...u, IsActive: request.IsActive } : u)),
+          list.map((u) => (u.id === request.userId ? { ...u, isActive: request.isActive } : u)),
         );
         toast.success(
-          request.IsActive ? 'Đã mở khóa tài khoản thành công' : 'Đã khóa tài khoản thành công',
+          request.isActive ? 'Đã mở khóa tài khoản thành công' : 'Đã khóa tài khoản thành công',
         );
         if (onSuccess) onSuccess();
       },
@@ -195,7 +195,7 @@ export class AdminStore {
       next: (updatedUser) => {
         this._isSubmitting.set(false);
         this._users.update((list) =>
-          list.map((u) => (u.Id === userId ? { ...u, ...updatedUser } : u)),
+          list.map((u) => (u.id === userId ? { ...u, ...updatedUser } : u)),
         );
         toast.success('Cập nhật thông tin người dùng thành công');
         if (onSuccess) onSuccess();

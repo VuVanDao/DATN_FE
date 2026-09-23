@@ -12,7 +12,7 @@ export class ResetPasswordUseCase {
   execute(request: ResetPasswordRequest): Observable<boolean> {
     const req: ResetPasswordRequest = {
       ...request,
-      Email: request.Email.trim().toLocaleLowerCase(),
+      email: request.email.trim().toLocaleLowerCase(),
     };
     return this._authRepository.ResetPassword(req);
   }

@@ -44,7 +44,7 @@ export class AdminManageUserPage implements OnInit {
 
   // Chỉ lấy danh sách Role toàn cục (Scope = Global) áp dụng cho tài khoản người dùng
   readonly globalRoles = computed(() => {
-    return this.store.roles().filter((r) => r.Scope === 'Global');
+    return this.store.roles().filter((r) => r.scope === 'Global');
   });
 
   // State mở Modal status
@@ -92,8 +92,8 @@ export class AdminManageUserPage implements OnInit {
     this.selectedUserForRoles.set(user);
     // Lấy ID Role hiện tại của User
     const allRoles = this.store.roles();
-    const currentRole = allRoles.find((r) => r.Name === user.Role);
-    this.selectedRoleId.set(currentRole ? currentRole.Id : '');
+    const currentRole = allRoles.find((r) => r.name === user.role);
+    this.selectedRoleId.set(currentRole ? currentRole.id : '');
     this.isRoleModalOpen.set(true);
   }
   closeRoleModal(): void {
@@ -111,14 +111,14 @@ export class AdminManageUserPage implements OnInit {
       toast.error('Vui lòng chọn vai trò cho người dùng!');
       return;
     }
-    this.store.assignRole(user.Id, this.selectedRoleId(), () => {
+    this.store.assignRole(user.id, this.selectedRoleId(), () => {
       this.closeRoleModal();
     });
   }
   // update user'status
   openStatusModal(user: UserManagement, newStatus: boolean): void {
     // Kiểm tra an toàn: Không cho Admin tự khóa chính mình
-    if (this.authStore.currentUser()?.Id === user.Id && !newStatus) {
+    if (this.authStore.currentUser()?.id === user.id && !newStatus) {
       toast.error('Bạn không thể tự khóa tài khoản Quản trị viên của chính mình!');
       return;
     }
@@ -149,7 +149,7 @@ export class AdminManageUserPage implements OnInit {
   // Modal xác nhận xóa người dùng
   openDeleteModal(user: UserManagement): void {
     // Kiểm tra an toàn: Không cho Admin tự xóa chính mình
-    if (this.authStore.currentUser()?.Id === user.Id) {
+    if (this.authStore.currentUser()?.id === user.id) {
       toast.error('Bạn không thể tự xóa tài khoản Quản trị viên của chính mình!');
       return;
     }

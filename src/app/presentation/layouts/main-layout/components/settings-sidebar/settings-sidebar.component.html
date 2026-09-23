@@ -21,25 +21,25 @@
     <!-- User mini info -->
     <div class="flex items-center" [class.gap-3]="!layoutService.isSidebarCollapsed()"
       [class.justify-center]="layoutService.isSidebarCollapsed()">
-      @if (authStore.currentUser()?.AvatarUrl) {
-      <img [src]="authStore.currentUser()!.AvatarUrl" [alt]="authStore.currentUser()!.UserName"
-        [matTooltip]="layoutService.isSidebarCollapsed() ? (authStore.currentUser()?.UserName || 'Người dùng') : ''"
+      @if (authStore.currentUser()?.avatarUrl) {
+      <img [src]="authStore.currentUser()!.avatarUrl" [alt]="authStore.currentUser()!.userName"
+        [matTooltip]="layoutService.isSidebarCollapsed() ? (authStore.currentUser()?.userName || 'Người dùng') : ''"
         matTooltipPosition="right"
         class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0" />
       } @else {
-      <div [matTooltip]="layoutService.isSidebarCollapsed() ? (authStore.currentUser()?.UserName || 'Người dùng') : ''"
+      <div [matTooltip]="layoutService.isSidebarCollapsed() ? (authStore.currentUser()?.userName || 'Người dùng') : ''"
         matTooltipPosition="right"
         class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-        {{ (authStore.currentUser()?.UserName || 'U').charAt(0).toUpperCase() }}
+        {{ (authStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
       </div>
       }
       @if (!layoutService.isSidebarCollapsed()) {
       <div class="min-w-0">
         <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-          {{ authStore.currentUser()?.UserName || 'Người dùng' }}
+          {{ authStore.currentUser()?.userName || 'Người dùng' }}
         </p>
         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-          {{ authStore.currentUser()?.Email || '' }}
+          {{ authStore.currentUser()?.email || '' }}
         </p>
       </div>
       }

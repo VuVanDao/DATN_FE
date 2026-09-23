@@ -62,7 +62,7 @@ export class AdminHttpRepository extends AdminRepository {
   UpdateUserStatus(request: UpdateUserStatusRequest): Observable<boolean> {
     return this.http
       .patch<ApiResponse<boolean>>(`${this.API_URL}/users/${request.userId}/status`, {
-        isActive: request.IsActive,
+        isActive: request.isActive,
         reason: request.reason,
       })
       .pipe(map((res) => res.data));
@@ -76,11 +76,11 @@ export class AdminHttpRepository extends AdminRepository {
     return this.http.get<ApiResponse<Role[]>>(`${this.API_URL}/roles`).pipe(
       map((res) => {
         return (res.data || []).map((r: any) => ({
-          Id: r.id || r.Id,
-          Name: r.name || r.Name,
-          Description: r.description || r.Description,
-          Scope: r.scope || r.Scope,
-          IsSystemRole: r.isSystemRole ?? r.IsSystemRole ?? false,
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          scope: r.scope,
+          isSystemRole: r.isSystemRole ?? false,
         }));
       }),
     );

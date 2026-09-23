@@ -11,7 +11,7 @@ export class ForgotPasswordUseCase {
 
   execute(request: ForgotPasswordRequest): Observable<string> {
     const req: ForgotPasswordRequest = {
-      Email: request.Email.trim().toLocaleLowerCase(),
+      email: request.email.trim().toLocaleLowerCase(),
     };
     return this._authRepository.ForgotPassword(req);
   }

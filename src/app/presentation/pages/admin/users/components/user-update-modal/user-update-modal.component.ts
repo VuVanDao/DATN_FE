@@ -39,8 +39,8 @@ export class UserUpdateModalComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user'] && this.user) {
       this.updateUserForm.patchValue({
-        username: this.user.UserName,
-        bio: this.user.Bio || '',
+        username: this.user.userName,
+        bio: this.user.bio || '',
       });
       this.updateUserForm.markAsPristine();
       this.updateUserForm.markAsUntouched();
@@ -61,7 +61,7 @@ export class UserUpdateModalComponent implements OnChanges {
     const { username, bio } = this.updateUserForm.getRawValue();
 
     this.store.updateUser(
-      this.user.Id,
+      this.user.id,
       {
         username: username.trim(),
         bio: bio.trim() || undefined,

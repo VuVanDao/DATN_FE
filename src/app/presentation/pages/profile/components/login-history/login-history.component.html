@@ -49,11 +49,11 @@
       </div>
     } @else {
       <div class="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
-        @for (history of visibleHistories(); track history.Id) {
+        @for (history of visibleHistories(); track history.id) {
           <article class="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition">
             <div class="flex min-w-0 items-start gap-3">
-              <span class="mt-0.5 w-9 h-9 shrink-0 rounded-full flex items-center justify-center" [class.bg-emerald-50]="history.IsSuccess" [class.dark:bg-emerald-500/10]="history.IsSuccess" [class.text-emerald-600]="history.IsSuccess" [class.dark:text-emerald-400]="history.IsSuccess" [class.bg-rose-50]="!history.IsSuccess" [class.dark:bg-rose-500/10]="!history.IsSuccess" [class.text-rose-600]="!history.IsSuccess" [class.dark:text-rose-400]="!history.IsSuccess">
-                @if (history.IsSuccess) {
+              <span class="mt-0.5 w-9 h-9 shrink-0 rounded-full flex items-center justify-center" [class.bg-emerald-50]="history.isSuccess" [class.dark:bg-emerald-500/10]="history.isSuccess" [class.text-emerald-600]="history.isSuccess" [class.dark:text-emerald-400]="history.isSuccess" [class.bg-rose-50]="!history.isSuccess" [class.dark:bg-rose-500/10]="!history.isSuccess" [class.text-rose-600]="!history.isSuccess" [class.dark:text-rose-400]="!history.isSuccess">
+                @if (history.isSuccess) {
                   <mat-icon fontIcon="check" class="icon-sm"></mat-icon>
                 } @else {
                   <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
@@ -61,18 +61,18 @@
               </span>
               <div class="min-w-0">
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ deviceLabel(history.UserAgent) }}</p>
-                  <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold" [class.text-emerald-700]="history.IsSuccess" [class.dark:text-emerald-400]="history.IsSuccess" [class.bg-emerald-50]="history.IsSuccess" [class.dark:bg-emerald-500/10]="history.IsSuccess" [class.text-rose-700]="!history.IsSuccess" [class.dark:text-rose-400]="!history.IsSuccess" [class.bg-rose-50]="!history.IsSuccess" [class.dark:bg-rose-500/10]="!history.IsSuccess">{{ history.IsSuccess ? 'Đăng nhập thành công' : 'Đăng nhập thất bại' }}</span>
+                  <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ deviceLabel(history.userAgent) }}</p>
+                  <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold" [class.text-emerald-700]="history.isSuccess" [class.dark:text-emerald-400]="history.isSuccess" [class.bg-emerald-50]="history.isSuccess" [class.dark:bg-emerald-500/10]="history.isSuccess" [class.text-rose-700]="!history.isSuccess" [class.dark:text-rose-400]="!history.isSuccess" [class.bg-rose-50]="!history.isSuccess" [class.dark:bg-rose-500/10]="!history.isSuccess">{{ history.isSuccess ? 'Đăng nhập thành công' : 'Đăng nhập thất bại' }}</span>
                 </div>
-                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate">{{ platformLabel(history.UserAgent) }} · IP {{ history.IpAddress || 'Không xác định' }}</p>
-                @if (!history.IsSuccess && history.FailureReason) {
-                  <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ history.FailureReason }}</p>
+                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400 truncate">{{ platformLabel(history.userAgent) }} · IP {{ history.ipAddress || 'Không xác định' }}</p>
+                @if (!history.isSuccess && history.failureReason) {
+                  <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ history.failureReason }}</p>
                 }
               </div>
             </div>
-            <time class="sm:text-right shrink-0 text-xs text-slate-500 dark:text-slate-400" [attr.datetime]="history.CreatedAt">
-              <span class="block font-medium text-slate-700 dark:text-slate-300">{{ history.CreatedAt | date: 'dd/MM/yyyy' }}</span>
-              <span>{{ history.CreatedAt | date: 'HH:mm' }}</span>
+            <time class="sm:text-right shrink-0 text-xs text-slate-500 dark:text-slate-400" [attr.datetime]="history.createdAt">
+              <span class="block font-medium text-slate-700 dark:text-slate-300">{{ history.createdAt | date: 'dd/MM/yyyy' }}</span>
+              <span>{{ history.createdAt | date: 'HH:mm' }}</span>
             </time>
           </article>
         }

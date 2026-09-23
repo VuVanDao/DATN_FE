@@ -1,12 +1,12 @@
 export interface User {
-  Id: string;
-  Email: string;
-  UserName: string;
-  AvatarUrl?: string | null;
-  Bio?: string | null;
-  IsActive?: boolean;
-  CreatedAt?: string;
-  Role: string;
+  id: string;
+  email: string;
+  userName: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  isActive?: boolean;
+  createdAt?: string;
+  role: string;
 }
 export interface UserResponse {
   id: string;
@@ -19,24 +19,24 @@ export interface UserResponse {
   role: string;
 }
 export interface ChangePasswordRequest {
-  CurrentPassword: string;
-  NewPassword: string;
-  ConfirmNewPassword: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
 }
 export interface UpdateProfileRequest {
-  Username: string;
-  Bio?: string;
+  username: string;
+  bio?: string;
 }
 
 export interface LoginHistory {
-  Id: string;
-  UserId?: string | null;
-  EmailAttempted: string;
-  IpAddress?: string | null;
-  UserAgent?: string | null;
-  IsSuccess: boolean;
-  FailureReason?: string | null;
-  CreatedAt: string;
+  id: string;
+  userId?: string | null;
+  emailAttempted: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  isSuccess: boolean;
+  failureReason?: string | null;
+  createdAt: string;
 }
 
 export interface LoginHistoryResponse {

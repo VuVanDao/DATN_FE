@@ -334,7 +334,7 @@ export class WorkspaceStore {
     this._removeMemberFromWorkspaceUseCase.execute(workspaceId, memberId).subscribe({
       next: () => {
         this._isRemovingMember.set(false);
-        const currentUserId = this._authStore.currentUser()?.Id;
+        const currentUserId = this._authStore.currentUser()?.id;
         const isSelf = currentUserId && memberId.toString() === currentUserId.toString();
 
         if (isSelf) {
