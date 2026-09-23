@@ -21,6 +21,7 @@ import { toast } from 'ngx-sonner';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { UploadAvatarUseCase } from '../../application/user/upload-avatar.use-case';
+import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
 
 @Injectable({
   providedIn: 'root',
@@ -198,16 +199,7 @@ export class AuthStore {
         }
       },
       error: (err) => {
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
+        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
         if (onError) {
           onError();
         }
@@ -231,16 +223,7 @@ export class AuthStore {
       },
       error: (err) => {
         this._isPasswordChanging.set(false);
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
+        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
         if (onError) {
           onError();
         }
@@ -260,16 +243,7 @@ export class AuthStore {
         }
       },
       error: (err) => {
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
+        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
         if (onError) {
           onError();
         }
@@ -288,16 +262,7 @@ export class AuthStore {
         }
       },
       error: (err) => {
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
+        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
         if (onError) {
           onError();
         }
@@ -322,16 +287,7 @@ export class AuthStore {
       },
       error: (err) => {
         this._isAvatarUploading.set(false);
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-        toast.error(msg);
+        toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
       },
     });
   };

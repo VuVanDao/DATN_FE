@@ -23,6 +23,7 @@ import { RemoveMemberFromWorkspaceUseCase } from '../../application/workspace/re
 import { GetMemberRemovalImpactUseCase } from '../../application/workspace/get-member-removal-impact.use-case';
 import { CreateProjectUseCase } from '../../application/project/create-project.use-case';
 import { CreateProjectRequest } from '../../domain/models/project.model';
+import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
 
 @Injectable({
   providedIn: 'root',
@@ -151,18 +152,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isCreating.set(false);
-        const errorsList = err?.error?.errors;
-        let detailedMsg: string | null = null;
-        if (Array.isArray(errorsList) && errorsList.length > 0) {
-          detailedMsg = errorsList[0];
-        } else if (typeof errorsList === 'object' && errorsList !== null) {
-          const firstKey = Object.keys(errorsList)[0];
-          detailedMsg = errorsList[firstKey]?.[0];
-        }
-        const msg =
-          detailedMsg ||
-          err?.error?.message ||
-          'Tạo không gian làm việc thất bại. Vui lòng thử lại';
+        const msg = extractApiErrorMessage(err, 'Tạo không gian làm việc thất bại. Vui lòng thử lại');
         toast.error(msg);
         if (onError) {
           onError(msg);
@@ -184,7 +174,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isLoadingDetail.set(false);
-        const msg = this.extractErrorMessage(err, 'Không thể tải thông tin không gian làm việc');
+        const msg = extractApiErrorMessage(err, 'Không thể tải thông tin không gian làm việc');
         toast.error(msg);
       },
     });
@@ -223,7 +213,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isUpdating.set(false);
-        const msg = this.extractErrorMessage(err, 'Cập nhật không gian làm việc thất bại');
+        const msg = extractApiErrorMessage(err, 'Cập nhật không gian làm việc thất bại');
         toast.error(msg);
         if (onError) {
           onError(msg);
@@ -237,7 +227,7 @@ export class WorkspaceStore {
         this._workspaceRoles.set(roles);
       },
       error: (err) => {
-        const msg = this.extractErrorMessage(err, 'Không thể tải danh sách vai trò');
+        const msg = extractApiErrorMessage(err, 'Không thể tải danh sách vai trò');
         toast.error(msg);
       },
     });
@@ -279,7 +269,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isAddingMembers.set(false);
-        const msg = this.extractErrorMessage(err, 'Thêm thành viên thất bại');
+        const msg = extractApiErrorMessage(err, 'Thêm thành viên thất bại');
         toast.error(msg);
         if (onError) {
           onError(msg);
@@ -303,7 +293,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isDeletingWorkspace.set(false);
-        const msg = this.extractErrorMessage(err, 'Xóa không gian làm việc thất bại');
+        const msg = extractApiErrorMessage(err, 'Xóa không gian làm việc thất bại');
         toast.error(msg);
         if (onError) {
           onError(msg);
@@ -379,7 +369,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isRemovingMember.set(false);
-        const msg = this.extractErrorMessage(err, 'Xóa thành viên thất bại');
+        const msg = extractApiErrorMessage(err, 'Xóa thành viên thất bại');
         toast.error(msg);
         if (onError) {
           onError(msg);
@@ -408,7 +398,7 @@ export class WorkspaceStore {
       },
       error: (err) => {
         this._isLoadingMemberImpact.set(false);
-        const errorMsg = this.extractErrorMessage(
+        const errorMsg = extractApiErrorMessage(
           err,
           'Không thể kiểm tra thông tin ảnh hưởng của thành viên. Vui lòng thử lại sau.',
         );
@@ -441,17 +431,5 @@ export class WorkspaceStore {
     this._isCreatingProject.set(false);
     this._isRemovingMember.set(false);
     this.clearMemberRemovalImpact();
-  }
-  private extractErrorMessage(err: any, defaultMsg: string): string {
-    const errorsList = err?.error?.errors;
-    if (Array.isArray(errorsList) && errorsList.length > 0) {
-      return errorsList[0];
-    } else if (typeof errorsList === 'object' && errorsList !== null) {
-      const firstKey = Object.keys(errorsList)[0];
-      if (firstKey && errorsList[firstKey]?.[0]) {
-        return errorsList[firstKey][0];
-      }
-    }
-    return err?.error?.message || defaultMsg;
   }
 }

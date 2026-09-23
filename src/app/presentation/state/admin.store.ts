@@ -14,6 +14,7 @@ import { CreateUserUseCase } from '../../application/admin/create-user.use-case'
 import { DeleteUserUseCase } from '../../application/admin/delete-user.use-case';
 import { UpdateUserUseCase } from '../../application/admin/update-user.use-case';
 import { toast } from 'ngx-sonner';
+import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
 
 @Injectable({
   providedIn: 'root',
@@ -207,16 +208,7 @@ export class AdminStore {
   }
 
   // --- Private helper: Trích xuất và hiển thị lỗi từ API response ---
-  private _showError(err: any): void {
-    const errorsList = err?.error?.errors;
-    let detailedMsg: string | null = null;
-    if (Array.isArray(errorsList) && errorsList.length > 0) {
-      detailedMsg = errorsList[0];
-    } else if (typeof errorsList === 'object' && errorsList !== null) {
-      const firstKey = Object.keys(errorsList)[0];
-      detailedMsg = errorsList[firstKey]?.[0];
-    }
-    const msg = detailedMsg || err?.error?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-    toast.error(msg);
+  private _showError(err: unknown): void {
+    toast.error(extractApiErrorMessage(err, 'Có lỗi xảy ra, vui lòng thử lại'));
   }
 }
