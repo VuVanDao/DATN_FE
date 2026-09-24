@@ -63,7 +63,33 @@ export class WorkspaceDetailPage implements OnInit {
   readonly isSelfRemoval = computed(() => {
     const currentUserId = this.authStore.currentUser()?.id;
     const selected = this.selectedMemberToRemove();
-    return !!(currentUserId && selected && currentUserId.toString() === selected.userId.toString());
+    return !!(
+      currentUserId &&
+      selected &&
+      currentUserId.toString().toLowerCase() === selected.userId.toString().toLowerCase()
+    );
+  });
+
+  // Lấy thông tin WorkspaceMember của người dùng hiện tại đang đăng nhập
+  readonly currentWorkspaceMember = computed<WorkspaceMember | null>(() => {
+    const currUser = this.authStore.currentUser();
+    const ws = this.workspaceStore.currentWorkspace();
+    if (!currUser) return null;
+
+    const found = ws?.members?.find(
+      (m) => m.userId.toString().toLowerCase() === currUser.id.toString().toLowerCase(),
+    );
+    if (found) return found;
+
+    return {
+      userId: currUser.id,
+      username: currUser.userName || currUser.email,
+      email: currUser.email,
+      avatarUrl: currUser.avatarUrl,
+      roleId: '',
+      roleName: ws?.currentUserRole || 'WorkspaceMember',
+      joinAt: new Date().toISOString(),
+    };
   });
 
   // Kiểm tra quyền WorkspaceOwner
@@ -280,24 +306,22 @@ export class WorkspaceDetailPage implements OnInit {
     const ws = this.workspaceStore.currentWorkspace();
     const currUser = this.authStore.currentUser();
 
-    if (!ws || !currUser) {
+    if (!ws || !currUser || !this.isOwner()) {
       return false;
     }
-
-    if (member.userId.toString() === ws.ownerId.toString()) {
-      return false;
-    }
-
-    if (this.isOwner()) {
-      return true;
-    }
-
-    return member.userId.toString() === currUser.id.toString();
+    return member.userId.toString().toLowerCase() !== ws.ownerId.toString().toLowerCase();
   }
 
   openRemoveMemberModal(member: WorkspaceMember): void {
     this.selectedMemberToRemove.set(member);
     this.showMemberRemovalModal.set(true);
+  }
+
+  openLeaveWorkspaceModal(): void {
+    const member = this.currentWorkspaceMember();
+    if (member) {
+      this.openRemoveMemberModal(member);
+    }
   }
 
   closeRemoveMemberModal(): void {
@@ -308,7 +332,10 @@ export class WorkspaceDetailPage implements OnInit {
   onMemberRemoved(event: { memberId: string; workspaceId: string } | string): void {
     const removedUserId = typeof event === 'string' ? event : event.memberId;
     const currentUserId = this.authStore.currentUser()?.id;
-    if (currentUserId && removedUserId === currentUserId.toString()) {
+    if (
+      currentUserId &&
+      removedUserId.toString().toLowerCase() === currentUserId.toString().toLowerCase()
+    ) {
       this.router.navigate(['/workspaces']);
     }
   }
