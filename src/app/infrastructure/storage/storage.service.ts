@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { AuthTokens } from '../../domain/models/auth.model';
 import { User } from '../../domain/models/user.model';
 
 @Injectable({
@@ -16,8 +15,13 @@ export class StorageService {
 
   getUserData(): User | null {
     if (!this.IsBrowser()) return null;
-    const rawData = localStorage.getItem(this.USER_DATA_KEY);
-    return rawData ? JSON.parse(rawData) : null;
+    try {
+      const rawData = localStorage.getItem(this.USER_DATA_KEY);
+      return rawData ? JSON.parse(rawData) : null;
+    } catch {
+      localStorage.removeItem(this.USER_DATA_KEY);
+      return null;
+    }
   }
 
   private IsBrowser(): boolean {
