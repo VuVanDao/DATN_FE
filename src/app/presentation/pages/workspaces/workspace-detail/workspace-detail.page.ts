@@ -60,11 +60,6 @@ export class WorkspaceDetailPage implements OnInit {
 
   readonly showMemberRemovalModal = signal<boolean>(false);
 
-  readonly isSystemAdmin = computed(() => {
-    const role = this.authStore.currentUser()?.role;
-    return role === 'SystemAdmin' || role === 'Admin';
-  });
-
   readonly isSelfRemoval = computed(() => {
     const currentUserId = this.authStore.currentUser()?.id;
     const selected = this.selectedMemberToRemove();
@@ -76,9 +71,13 @@ export class WorkspaceDetailPage implements OnInit {
     const currUser = this.authStore.currentUser();
     const ws = this.workspaceStore.currentWorkspace();
 
+    if (!currUser || !ws) {
+      return false;
+    }
+
     if (
-      ws?.currentUserRole !== 'WorkspaceOwner' ||
-      ws?.ownerId.toString() !== currUser?.id.toString()
+      ws.currentUserRole !== 'WorkspaceOwner' ||
+      ws.ownerId?.toString().toLowerCase() !== currUser.id?.toString().toLowerCase()
     ) {
       return false;
     }
@@ -224,6 +223,9 @@ export class WorkspaceDetailPage implements OnInit {
     input.value = '';
   };
   saveUdpate = (): void => {
+    if (!this.isOwner()) {
+      return;
+    }
     const ws = this.workspaceStore.currentWorkspace();
     if (!ws || this.updateForm.invalid) {
       this.updateForm.markAllAsTouched();
@@ -286,7 +288,7 @@ export class WorkspaceDetailPage implements OnInit {
       return false;
     }
 
-    if (this.isOwner() || this.isSystemAdmin()) {
+    if (this.isOwner()) {
       return true;
     }
 

@@ -177,7 +177,6 @@
                 class="bg-[#131b2e] border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-3 flex flex-col justify-between transition-all duration-200 group shadow-xs cursor-pointer"
               >
                 <div>
-                  <!-- Icon màu gradient đại diện dự án -->
                   <div
                     [class]="p.color"
                     class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-xs"
@@ -197,8 +196,6 @@
                     {{ p.description || 'Chưa có mô tả cho dự án này.' }}
                   </p>
                 </div>
-
-                <!-- Hàng dưới: Avatar thành viên dự án & Số task (Không có progress bar) -->
                 <div class="flex items-center justify-between pt-3 border-t border-slate-800/60">
                   <div class="flex items-center -space-x-1.5 overflow-hidden">
                     @for (pm of p.members.slice(0, 3); track pm.userId) {
@@ -350,7 +347,8 @@
                   <input
                     type="text"
                     formControlName="name"
-                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all"
+                    [readonly]="!isOwner()"
+                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all read-only:bg-slate-900/40 read-only:border-slate-800/60 read-only:text-slate-400 read-only:focus:border-slate-800/60 read-only:cursor-default"
                     placeholder="Nhập tên workspace..."
                   />
                 </div>
@@ -360,7 +358,8 @@
                   <textarea
                     formControlName="description"
                     rows="3"
-                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all resize-none"
+                    [readonly]="!isOwner()"
+                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all resize-none read-only:bg-slate-900/40 read-only:border-slate-800/60 read-only:text-slate-400 read-only:focus:border-slate-800/60 read-only:cursor-default"
                     placeholder="Mô tả không gian làm việc..."
                   ></textarea>
                 </div>
@@ -380,26 +379,28 @@
                     <span class="text-2xl font-bold text-white">{{ ws.initial }}</span>
                   }
                 </div>
-                <div>
-                  <input
-                    #logoInput
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                    (click)="$any($event.target).value = null"
-                    (change)="onSelectLogoFunc($event)"
-                    class="hidden"
-                  />
-                  <button
-                    type="button"
-                    [disabled]="workspaceStore.isUpdating()"
-                    (click)="logoInput.click()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full justify-center"
-                  >
-                    <mat-icon fontIcon="upload" class="icon-xs"></mat-icon>
-                    <span>Đổi Logo</span>
-                  </button>
-                  <p class="text-[10px] text-slate-500 mt-1 text-center">JPG, PNG · Tối đa 2MB</p>
-                </div>
+                @if (isOwner()) {
+                  <div>
+                    <input
+                      #logoInput
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                      (click)="$any($event.target).value = null"
+                      (change)="onSelectLogoFunc($event)"
+                      class="hidden"
+                    />
+                    <button
+                      type="button"
+                      [disabled]="workspaceStore.isUpdating()"
+                      (click)="logoInput.click()"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full justify-center"
+                    >
+                      <mat-icon fontIcon="upload" class="icon-xs"></mat-icon>
+                      <span>Đổi Logo</span>
+                    </button>
+                    <p class="text-[10px] text-slate-500 mt-1 text-center">JPG, PNG · Tối đa 2MB</p>
+                  </div>
+                }
               </div>
             </div>
 
@@ -423,45 +424,47 @@
                   >
                 }
               </div>
-              <div>
-                <input
-                  #coverInput
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                  (click)="$any($event.target).value = null"
-                  (change)="onSelectCoverFunc($event)"
-                  class="hidden"
-                />
-                <button
-                  type="button"
-                  [disabled]="workspaceStore.isUpdating()"
-                  (click)="coverInput.click()"
-                  class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <mat-icon fontIcon="image" class="icon-xs"></mat-icon>
-                  <span>Thay đổi ảnh bìa</span>
-                </button>
-                <p class="text-[11px] text-slate-500 mt-1">
-                  Kích thước khuyến nghị 1200x300, tối đa 5MB.
-                </p>
-              </div>
+              @if (isOwner()) {
+                <div>
+                  <input
+                    #coverInput
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    (click)="$any($event.target).value = null"
+                    (change)="onSelectCoverFunc($event)"
+                    class="hidden"
+                  />
+                  <button
+                    type="button"
+                    [disabled]="workspaceStore.isUpdating()"
+                    (click)="coverInput.click()"
+                    class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <mat-icon fontIcon="image" class="icon-xs"></mat-icon>
+                    <span>Thay đổi ảnh bìa</span>
+                  </button>
+                  <p class="text-[11px] text-slate-500 mt-1">
+                    Kích thước khuyến nghị 1200x300, tối đa 5MB.
+                  </p>
+                </div>
+              }
             </div>
 
             <!-- Nút Hành động: Lưu thay đổi & Xóa Workspace -->
-            <div class="pt-4 border-t border-slate-800/80 flex items-center gap-3">
-              <button
-                type="submit"
-                [disabled]="workspaceStore.isUpdating()"
-                class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
-              >
-                @if (workspaceStore.isUpdating()) {
-                  <span>Đang lưu...</span>
-                } @else {
-                  <span>Lưu thay đổi</span>
-                }
-              </button>
+            @if (isOwner()) {
+              <div class="pt-4 border-t border-slate-800/80 flex items-center gap-3">
+                <button
+                  type="submit"
+                  [disabled]="workspaceStore.isUpdating()"
+                  class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                >
+                  @if (workspaceStore.isUpdating()) {
+                    <span>Đang lưu...</span>
+                  } @else {
+                    <span>Lưu thay đổi</span>
+                  }
+                </button>
 
-              @if (isOwner()) {
                 <button
                   type="button"
                   (click)="openDeleteWorkspaceModal()"
@@ -470,8 +473,8 @@
                   <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
                   <span>Xóa không gian làm việc</span>
                 </button>
-              }
-            </div>
+              </div>
+            }
           </form>
         </div>
       }
