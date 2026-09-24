@@ -1,79 +1,32 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable } from '@angular/core';
 import {
   AddWorkspaceMembersRequest,
   AddWorkspaceMembersResponse,
   CreateWorkspaceRequest,
+  MemberRemovalImpact,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
-  WorkspaceProject,
-  WorkspaceRole,
-  MemberRemovalImpact,
 } from '../../domain/models/workspace.model';
-import { GetUserWorkspacesUseCase } from '../../application/workspace/get-user-workspaces.use-case';
-import { CreateWorkspaceUseCase } from '../../application/workspace/create-workspace.use-case';
-import { AuthStore } from './auth.store';
-import { toast } from 'ngx-sonner';
-import { GetWorkspaceDetailUseCase } from '../../application/workspace/get-workspace-detail.use-case';
-import { UpdateWorkspaceUseCase } from '../../application/workspace/update-workspace.use-case';
-import { GetWorkspaceRolesUseCase } from '../../application/workspace/get-workspace-roles.use-case';
-import { AddMembersToWorkspaceUseCase } from '../../application/workspace/add-members-to-workspace.use-case';
-import { DeleteWorkspaceUseCase } from '../../application/workspace/delete-workspace.use-case';
-import { RemoveMemberFromWorkspaceUseCase } from '../../application/workspace/remove-member-from-workspace.use-case';
-import { GetMemberRemovalImpactUseCase } from '../../application/workspace/get-member-removal-impact.use-case';
-import { CreateProjectUseCase } from '../../application/project/create-project.use-case';
 import { CreateProjectRequest } from '../../domain/models/project.model';
-import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
+import { AuthStore } from './auth.store';
+import { WorkspaceListSlice } from './workspace/workspace-list.slice';
+import { WorkspaceDetailSlice } from './workspace/workspace-detail.slice';
+import { WorkspaceMemberSlice } from './workspace/workspace-member.slice';
+import { ProjectSlice } from './workspace/project.slice';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WorkspaceStore {
-  private readonly _getUserWorkspacesUseCase = inject(GetUserWorkspacesUseCase);
-  private readonly _createWorkspaceUseCase = inject(CreateWorkspaceUseCase);
-  private readonly _getWorkspaceDetailUseCase = inject(GetWorkspaceDetailUseCase);
-  private readonly _updateWorkspaceUseCase = inject(UpdateWorkspaceUseCase);
-  private readonly _getWorkspaceRolesUseCase = inject(GetWorkspaceRolesUseCase);
-  private readonly _addMembersToWorkspaceUseCase = inject(AddMembersToWorkspaceUseCase);
-  private readonly _deleteWorkspaceUseCase = inject(DeleteWorkspaceUseCase);
-  private readonly _removeMemberFromWorkspaceUseCase = inject(RemoveMemberFromWorkspaceUseCase);
-  private readonly _getMemberRemovalImpactUseCase = inject(GetMemberRemovalImpactUseCase);
-  //project
-  private readonly _createProjectUseCase = inject(CreateProjectUseCase);
+  private readonly _list = inject(WorkspaceListSlice);
+  private readonly _detail = inject(WorkspaceDetailSlice);
+  private readonly _members = inject(WorkspaceMemberSlice);
+  private readonly _project = inject(ProjectSlice);
   private readonly _authStore = inject(AuthStore);
 
-  // States
-  // danh sách các workspace hiện có
-  private readonly _workspaces = signal<Workspace[]>([]);
-  // state loading của loadWorkspace
-  private readonly _isLoading = signal<boolean>(false);
-  // state loading của create workspace
-  private readonly _isCreating = signal<boolean>(false);
-  private readonly _hasLoaded = signal<boolean>(false);
-  private readonly _selectedWorkspaceId = signal<string | null>(null);
-  // state cho workspace detail for workspaceDetail page
-  private readonly _currentWorkspace = signal<WorkspaceDetail | null>(null);
-  private readonly _isLoadingDetail = signal<boolean>(false);
-  private readonly _isUpdating = signal<boolean>(false);
-  // state danh sach casc role co scope la workspace
-  private readonly _workspaceRoles = signal<WorkspaceRole[]>([]);
-  // state loading cho viec add member
-  private readonly _isAddingMembers = signal<boolean>(false);
-  // state loading cho viec delete workspace
-  private readonly _isDeletingWorkspace = signal<boolean>(false);
-  // state loading cho viec create project
-  private readonly _isCreatingProject = signal<boolean>(false);
-  // State loading cho việc xoá thành viên khỏi workspace
-  private readonly _isRemovingMember = signal<boolean>(false);
-  // State loading khi đang kiểm tra ảnh hưởng xoá thành viên
-  private readonly _isLoadingMemberImpact = signal<boolean>(false);
-  // State lưu trữ dữ liệu thông tin ảnh hưởng khi xoá thành viên
-  private readonly _memberRemovalImpact = signal<MemberRemovalImpact | null>(null);
-  // State lưu thông báo lỗi khi kiểm tra ảnh hưởng xoá thành viên
-  private readonly _memberRemovalImpactError = signal<string | null>(null);
-
   constructor() {
-    // Tự động xóa danh sách workspace khi user đăng xuất
+    // Tự động xóa toàn bộ state workspace khi user đăng xuất
     effect(() => {
       if (!this._authStore.isAuthenticated()) {
         this.clear();
@@ -81,301 +34,97 @@ export class WorkspaceStore {
     });
   }
 
-  // Readonly states & Computed
-  readonly workspaces = this._workspaces.asReadonly();
-  readonly isLoading = this._isLoading.asReadonly();
-  readonly isCreating = this._isCreating.asReadonly();
-  readonly hasLoaded = this._hasLoaded.asReadonly();
-  readonly totalCount = computed(() => this._workspaces().length);
-  readonly displayedWorkspaces = computed(() => this._workspaces().slice(0, 3));
-  readonly selectedWorkspace = computed(
-    () =>
-      this._workspaces().find((w) => w.id === this._selectedWorkspaceId()) ??
-      this._workspaces()[0] ??
-      null,
-  );
-  readonly currentWorkspace = this._currentWorkspace.asReadonly();
-  readonly isLoadingDetail = this._isLoadingDetail.asReadonly();
-  readonly isUpdating = this._isUpdating.asReadonly();
-  readonly workspaceRoles = this._workspaceRoles.asReadonly();
-  readonly isAddingMembers = this._isAddingMembers.asReadonly();
-  readonly isDeletingWorkspace = this._isDeletingWorkspace.asReadonly();
-  readonly isCreatingProject = this._isCreatingProject.asReadonly();
-  readonly isRemovingMember = this._isRemovingMember.asReadonly();
-  readonly isLoadingMemberImpact = this._isLoadingMemberImpact.asReadonly();
-  readonly memberRemovalImpact = this._memberRemovalImpact.asReadonly();
-  readonly memberRemovalImpactError = this._memberRemovalImpactError.asReadonly();
+  // ===== Danh sách workspace =====
+  readonly workspaces = this._list.workspaces;
+  readonly isLoading = this._list.isLoading;
+  readonly isCreating = this._list.isCreating;
+  readonly isDeletingWorkspace = this._list.isDeletingWorkspace;
+  readonly hasLoaded = this._list.hasLoaded;
+  readonly totalCount = this._list.totalCount;
+  readonly displayedWorkspaces = this._list.displayedWorkspaces;
+  readonly selectedWorkspace = this._list.selectedWorkspace;
+
+  // ===== Chi tiết workspace đang mở =====
+  readonly currentWorkspace = this._detail.currentWorkspace;
+  readonly isLoadingDetail = this._detail.isLoadingDetail;
+  readonly isUpdating = this._detail.isUpdating;
+
+  // ===== Thành viên & vai trò =====
+  readonly workspaceRoles = this._members.workspaceRoles;
+  readonly isAddingMembers = this._members.isAddingMembers;
+  readonly isRemovingMember = this._members.isRemovingMember;
+  readonly isLoadingMemberImpact = this._members.isLoadingMemberImpact;
+  readonly memberRemovalImpact = this._members.memberRemovalImpact;
+  readonly memberRemovalImpactError = this._members.memberRemovalImpactError;
+
+  // ===== Dự án =====
+  readonly isCreatingProject = this._project.isCreatingProject;
 
   loadWorkspaces(forceRefresh = false): void {
-    if (this._isLoading()) {
-      return;
-    }
-    // Nếu đã tải danh sách workspace từ trước thì không tải lại trừ khi forceRefresh = true
-    if (this._hasLoaded() && !forceRefresh) {
-      return;
-    }
-
-    this._isLoading.set(true);
-
-    this._getUserWorkspacesUseCase.execute().subscribe({
-      next: (workspaces) => {
-        this._workspaces.set(workspaces);
-        this._hasLoaded.set(true);
-        this._isLoading.set(false);
-      },
-      error: () => {
-        this._isLoading.set(false);
-      },
-    });
+    this._list.loadWorkspaces(forceRefresh);
   }
 
-  /**
-   * Tạo mới Không gian làm việc
-   */
   createWorkspace(
     request: CreateWorkspaceRequest,
     onSuccess?: (workspace: Workspace) => void,
     onError?: (errorMsg: string) => void,
   ): void {
-    this._isCreating.set(true);
-
-    this._createWorkspaceUseCase.execute(request).subscribe({
-      next: (newWorkspace) => {
-        this._isCreating.set(false);
-        // Đưa workspace mới vừa tạo lên đầu danh sách ngay lập tức
-        this._workspaces.update((list) => [newWorkspace, ...list]);
-        this._selectedWorkspaceId.set(newWorkspace.id);
-        toast.success(`Tạo không gian làm việc "${newWorkspace.name}" thành công!`);
-        if (onSuccess) {
-          onSuccess(newWorkspace);
-        }
-      },
-      error: (err) => {
-        this._isCreating.set(false);
-        const msg = extractApiErrorMessage(err, 'Tạo không gian làm việc thất bại. Vui lòng thử lại');
-        toast.error(msg);
-        if (onError) {
-          onError(msg);
-        }
-      },
-    });
+    this._list.createWorkspace(request, onSuccess, onError);
   }
 
   selectWorkspace(id: string): void {
-    this._selectedWorkspaceId.set(id);
+    this._list.selectWorkspace(id);
   }
-  getWorkspaceDetail = (slug: string) => {
-    this._isLoadingDetail.set(true);
-    this._getWorkspaceDetailUseCase.execute(slug).subscribe({
-      next: (res) => {
-        this._currentWorkspace.set(res);
-        this._isLoadingDetail.set(false);
-        this._selectedWorkspaceId.set(res.id);
+
+  /**
+   * Xoá workspace và dọn luôn chi tiết đang mở nếu trùng id.
+   * Đây là luồng cắt ngang 2 slice nên đặt ở facade thay vì trong slice danh sách
+   * (slice danh sách không nên biết tới slice chi tiết).
+   */
+  deleteWorkspace(id: string, onSuccess?: () => void, onError?: (errorMsg: string) => void): void {
+    this._list.deleteWorkspace(
+      id,
+      () => {
+        this._detail.clearIfCurrent(id);
+        onSuccess?.();
       },
-      error: (err) => {
-        this._isLoadingDetail.set(false);
-        const msg = extractApiErrorMessage(err, 'Không thể tải thông tin không gian làm việc');
-        toast.error(msg);
-      },
-    });
-  };
-  updateWorkspace = (
+      onError,
+    );
+  }
+
+  getWorkspaceDetail(slug: string): void {
+    this._detail.getWorkspaceDetail(slug);
+  }
+
+  updateWorkspace(
     id: string,
     request: UpdateWorkspaceRequest,
     onSuccess?: (workspace: WorkspaceDetail) => void,
     onError?: (errorMsg: string) => void,
-  ) => {
-    this._isUpdating.set(true);
-    this._updateWorkspaceUseCase.execute(id, request).subscribe({
-      next: (res) => {
-        this._isUpdating.set(false);
-        this._currentWorkspace.set(res);
-        this._workspaces.update((list) => {
-          return list.map((w) =>
-            w.id === res.id
-              ? {
-                  ...w,
-                  name: res.name,
-                  slug: res.slug,
-                  description: res.description,
-                  logoUrl: res.logoUrl,
-                  coverImageUrl: res.coverImageUrl,
-                  initial: res.initial,
-                  color: res.color,
-                }
-              : w,
-          );
-        });
-        toast.success('Cập nhật không gian làm việc thành công');
-        if (onSuccess) {
-          onSuccess(res);
-        }
-      },
-      error: (err) => {
-        this._isUpdating.set(false);
-        const msg = extractApiErrorMessage(err, 'Cập nhật không gian làm việc thất bại');
-        toast.error(msg);
-        if (onError) {
-          onError(msg);
-        }
-      },
-    });
-  };
-  loadWorkspaceRoles(): void {
-    this._getWorkspaceRolesUseCase.execute().subscribe({
-      next: (roles) => {
-        this._workspaceRoles.set(roles);
-      },
-      error: (err) => {
-        const msg = extractApiErrorMessage(err, 'Không thể tải danh sách vai trò');
-        toast.error(msg);
-      },
-    });
+  ): void {
+    this._detail.updateWorkspace(id, request, onSuccess, onError);
   }
+
+  loadWorkspaceRoles(): void {
+    this._members.loadWorkspaceRoles();
+  }
+
   addMembers(
     workspaceId: string,
     request: AddWorkspaceMembersRequest,
     onSuccess?: (result: AddWorkspaceMembersResponse) => void,
     onError?: (errorMsg: string) => void,
   ): void {
-    this._isAddingMembers.set(true);
-    this._addMembersToWorkspaceUseCase.execute(workspaceId, request).subscribe({
-      next: (result) => {
-        this._isAddingMembers.set(false);
-        const newMembers = result.results
-          .filter((r) => r.success && r.member)
-          .map((r) => r.member!);
-        if (newMembers.length > 0) {
-          this._currentWorkspace.update((ws) => {
-            if (!ws) {
-              return ws;
-            }
-            return {
-              ...ws,
-              members: [...ws.members, ...newMembers],
-            };
-          });
-        }
-        if (result.totalFailed === 0) {
-          toast.success(`Đã thêm thành công ${result.totalSuccess} thành viên`);
-        } else {
-          toast.warning(
-            `Thêm thành công ${result.totalSuccess}/${result.totalRequested} thành viên (${result.totalFailed} thất bại)`,
-          );
-        }
-        if (onSuccess) {
-          onSuccess(result);
-        }
-      },
-      error: (err) => {
-        this._isAddingMembers.set(false);
-        const msg = extractApiErrorMessage(err, 'Thêm thành viên thất bại');
-        toast.error(msg);
-        if (onError) {
-          onError(msg);
-        }
-      },
-    });
+    this._members.addMembers(workspaceId, request, onSuccess, onError);
   }
-  deleteWorkspace(id: string, onSuccess?: () => void, onError?: (errorMsg: string) => void): void {
-    this._isDeletingWorkspace.set(true);
-    this._deleteWorkspaceUseCase.execute(id).subscribe({
-      next: () => {
-        this._isDeletingWorkspace.set(false);
-        this._workspaces.update((list) => list.filter((w) => w.id !== id));
-        if (this._currentWorkspace()?.id === id) {
-          this._currentWorkspace.set(null);
-        }
-        toast.success('Xóa không gian làm việc thành công');
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        this._isDeletingWorkspace.set(false);
-        const msg = extractApiErrorMessage(err, 'Xóa không gian làm việc thất bại');
-        toast.error(msg);
-        if (onError) {
-          onError(msg);
-        }
-      },
-    });
-  }
-  createProject(request: CreateProjectRequest, onSuccess?: () => void): void {
-    this._isCreatingProject.set(true);
-    this._createProjectUseCase.execute(request).subscribe({
-      next: (res) => {
-        this._isCreatingProject.set(false);
 
-        toast.success(`Dự án "${res.name}" đã được tạo thành công`);
-        const currWs = this.currentWorkspace();
-        if (currWs?.slug) {
-          this.getWorkspaceDetail(currWs.slug);
-        }
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        this._isCreatingProject.set(false);
-        const message = err?.error?.message || 'Tạo dự án thất bại, vui lòng thử lại.';
-        toast.error(message);
-      },
-    });
-  }
   removeMember(
     workspaceId: string,
     memberId: string,
     onSuccess?: () => void,
     onError?: (errorMsg: string) => void,
   ): void {
-    this._isRemovingMember.set(true);
-
-    this._removeMemberFromWorkspaceUseCase.execute(workspaceId, memberId).subscribe({
-      next: () => {
-        this._isRemovingMember.set(false);
-        const currentUserId = this._authStore.currentUser()?.id;
-        const isSelf = currentUserId && memberId.toString() === currentUserId.toString();
-
-        if (isSelf) {
-          this._workspaces.update((list) => list.filter((w) => w.id !== workspaceId));
-          if (this._currentWorkspace()?.id === workspaceId) {
-            this._currentWorkspace.set(null);
-          }
-          this.loadWorkspaces(true);
-        } else {
-          this._currentWorkspace.update((ws) => {
-            if (!ws) return ws;
-            return {
-              ...ws,
-              members: ws.members.filter((m) => m.userId !== memberId),
-            };
-          });
-          this._workspaces.update((list) =>
-            list.map((w) =>
-              w.id === workspaceId ? { ...w, membersCount: Math.max(0, w.membersCount - 1) } : w,
-            ),
-          );
-        }
-
-        toast.success(
-          isSelf
-            ? 'Bạn đã rời khỏi không gian làm việc thành công'
-            : 'Đã xoá thành viên khỏi không gian làm việc thành công',
-        );
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        this._isRemovingMember.set(false);
-        const msg = extractApiErrorMessage(err, 'Xóa thành viên thất bại');
-        toast.error(msg);
-        if (onError) {
-          onError(msg);
-        }
-      },
-    });
+    this._members.removeMember(workspaceId, memberId, onSuccess, onError);
   }
 
   getMemberRemovalImpact(
@@ -384,52 +133,21 @@ export class WorkspaceStore {
     onSuccess?: (impact: MemberRemovalImpact) => void,
     onError?: (errorMsg: string) => void,
   ): void {
-    this._isLoadingMemberImpact.set(true);
-    this._memberRemovalImpactError.set(null);
-    this._memberRemovalImpact.set(null);
-    this._getMemberRemovalImpactUseCase.execute(workspaceId, memberId).subscribe({
-      next: (data) => {
-        this._memberRemovalImpact.set(data);
-        this._isLoadingMemberImpact.set(false);
-
-        if (onSuccess) {
-          onSuccess(data);
-        }
-      },
-      error: (err) => {
-        this._isLoadingMemberImpact.set(false);
-        const errorMsg = extractApiErrorMessage(
-          err,
-          'Không thể kiểm tra thông tin ảnh hưởng của thành viên. Vui lòng thử lại sau.',
-        );
-        this._memberRemovalImpactError.set(errorMsg);
-        if (onError) {
-          onError(errorMsg);
-        }
-      },
-    });
+    this._members.getMemberRemovalImpact(workspaceId, memberId, onSuccess, onError);
   }
 
   clearMemberRemovalImpact(): void {
-    this._memberRemovalImpact.set(null);
-    this._isLoadingMemberImpact.set(false);
-    this._memberRemovalImpactError.set(null);
+    this._members.clearMemberRemovalImpact();
+  }
+
+  createProject(request: CreateProjectRequest, onSuccess?: () => void): void {
+    this._project.createProject(request, onSuccess);
   }
 
   clear(): void {
-    this._workspaces.set([]);
-    this._hasLoaded.set(false);
-    this._selectedWorkspaceId.set(null);
-    this._isLoading.set(false);
-    this._isCreating.set(false);
-    this._currentWorkspace.set(null);
-    this._isLoadingDetail.set(false);
-    this._isUpdating.set(false);
-    this._workspaceRoles.set([]);
-    this._isAddingMembers.set(false);
-    this._isDeletingWorkspace.set(false);
-    this._isCreatingProject.set(false);
-    this._isRemovingMember.set(false);
-    this.clearMemberRemovalImpact();
+    this._list.clear();
+    this._detail.clear();
+    this._members.clear();
+    this._project.clear();
   }
 }
