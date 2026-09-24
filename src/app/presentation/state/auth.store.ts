@@ -6,9 +6,15 @@ import { LogoutUseCase } from '../../application/auth/logout.use-case';
 import { StorageService } from '../../infrastructure/storage/storage.service';
 import { TokenService } from '../../infrastructure/storage/token.service';
 import { AuthRepository } from '../../domain/repositories/auth.repository';
+import { UserRepository } from '../../domain/repositories/user.repository';
 import { Router } from '@angular/router';
 import { User } from '../../domain/models/user.model';
-import { ForgotPasswordRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from '../../domain/models/auth.model';
+import {
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+} from '../../domain/models/auth.model';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { toast } from 'ngx-sonner';
@@ -30,6 +36,8 @@ export class AuthStore {
   private readonly _platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
 
+  private readonly _userRepository = inject(UserRepository);
+
   // States
   private readonly _currentUser = signal<User | null>(this._storageService.getUserData());
   private readonly _isLoading = signal<boolean>(false);
@@ -47,10 +55,13 @@ export class AuthStore {
     if (!isPlatformBrowser(this._platformId)) {
       return Promise.resolve();
     }
-
-    // Nếu trong sessionStorage đã có sẵn Access Token (khi F5 tab hiện tại)
-    // và đã có thông tin User -> Dùng lại ngay, HOÀN TOÀN KHÔNG GỌI API /refresh-token
     if (this._tokenService.hasToken() && this._currentUser()) {
+      // Gọi ngầm /users/me để làm mới thông tin user (không block render).
+      // Nếu BE đã đổi role/profile, FE sẽ cập nhật ngay sau khi API trả về.
+      this._userRepository.GetCurrentUser().subscribe({
+        next: (freshUser) => this.updateCurrentUser(freshUser),
+        error: () => {},
+      });
       return Promise.resolve();
     }
 
@@ -164,11 +175,7 @@ export class AuthStore {
     });
   }
 
-  resetPassword(
-    request: ResetPasswordRequest,
-    onSuccess?: () => void,
-    onError?: () => void,
-  ): void {
+  resetPassword(request: ResetPasswordRequest, onSuccess?: () => void, onError?: () => void): void {
     this._resetPasswordUseCase.execute(request).subscribe({
       next: () => {
         if (onSuccess) {
