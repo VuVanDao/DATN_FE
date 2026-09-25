@@ -1,14 +1,13 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, shareReplay, switchMap, throwError } from 'rxjs';
 import { TokenService } from '../storage/token.service';
 import { AuthRepository } from '../../domain/repositories/auth.repository';
 import { AuthStore } from '../../presentation/state/auth.store';
 import { toast } from 'ngx-sonner';
 
-let isRefreshing = false;
-const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+let refreshInFlight$: Observable<string> | null = null;
 
 export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenService = inject(TokenService);
@@ -48,31 +47,18 @@ function handle401Error(
   tokenService: TokenService,
   injector: Injector,
   router: Router,
-  originalError: HttpErrorResponse,
+  _originalError: HttpErrorResponse,
 ) {
-  if (!isRefreshing) {
-    isRefreshing = true;
-    refreshTokenSubject.next(null);
+  const authRepo = injector.get(AuthRepository);
 
-    const authRepo = injector.get(AuthRepository);
-
-    return authRepo.RefreshToken().pipe(
-      switchMap((response) => {
-        isRefreshing = false;
+  if (!refreshInFlight$) {
+    refreshInFlight$ = authRepo.RefreshToken().pipe(
+      map((response) => {
         const newToken = response.tokens.accessToken;
         tokenService.setAccessToken(newToken);
-        refreshTokenSubject.next(newToken);
-
-        return next(
-          req.clone({
-            setHeaders: { Authorization: `Bearer ${newToken}` },
-            withCredentials: true,
-          }),
-        );
+        return newToken;
       }),
       catchError((refreshError) => {
-        isRefreshing = false;
-        refreshTokenSubject.next(null);
         tokenService.clear();
 
         try {
@@ -85,21 +71,22 @@ function handle401Error(
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         return throwError(() => refreshError);
       }),
-    );
-  } else {
-    // Đang có một request khác thực hiện refresh token -> chờ token mới
-    return refreshTokenSubject.pipe(
-      filter((newToken): newToken is string => newToken !== null),
-      take(1),
-      switchMap((newToken) => {
-        return next(
-          req.clone({
-            setHeaders: { Authorization: `Bearer ${newToken}` },
-            withCredentials: true,
-          }),
-        );
+      finalize(() => {
+        refreshInFlight$ = null;
       }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
   }
+
+  return refreshInFlight$.pipe(
+    switchMap((newToken) =>
+      next(
+        req.clone({
+          setHeaders: { Authorization: `Bearer ${newToken}` },
+          withCredentials: true,
+        }),
+      ),
+    ),
+  );
 }
 

@@ -14,7 +14,7 @@ import {
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ApiResponse } from '../dtos/auth.dto';
-import { AdminMapper } from '../mappers/admin.mapper';
+import { AdminMapper } from '../mappers/Admin.mapper';
 
 @Injectable({
   providedIn: 'root',
