@@ -15,6 +15,8 @@ import { DeleteUserUseCase } from '../../application/admin/delete-user.use-case'
 import { UpdateUserUseCase } from '../../application/admin/update-user.use-case';
 import { toast } from 'ngx-sonner';
 import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
+import { Subject, takeUntil } from 'rxjs';
+import { runStoreRequest } from './store-request.util';
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +41,7 @@ export class AdminStore {
   private readonly _statusFilter = signal<'all' | 'active' | 'inactive'>('all'); // Bộ lọc trạng thái
   private readonly _isLoading = signal<boolean>(false); // Đang tải dữ liệu hay không
   private readonly _isSubmitting = signal<boolean>(false); // Đang gửi lệnh cập nhật hay không
+  private readonly _usersRequestCancel$ = new Subject<void>();
 
   readonly users = this._users.asReadonly();
   readonly roles = this._roles.asReadonly();
@@ -61,30 +64,26 @@ export class AdminStore {
   });
 
   loadUsers = (): void => {
+    this._usersRequestCancel$.next();
     this._isLoading.set(true);
     let isActiveParam: boolean | undefined = undefined;
     if (this._statusFilter() === 'active') isActiveParam = true;
     if (this._statusFilter() === 'inactive') isActiveParam = false;
-    this._getUsersUseCase
-      .execute({
+    runStoreRequest({
+      loading: this._isLoading,
+      request$: this._getUsersUseCase.execute({
         isActive: isActiveParam,
         pageIndex: this._pageIndex(),
         pageSize: this._pageSize(),
         search: this._searchQuery() || undefined,
-      })
-      .subscribe({
-        next: (result) => {
-          // Lưu nguyên vẹn danh sách người dùng từ BE về signal _users
-          this._users.set(result.items);
-          this._totalCount.set(result.totalCount);
-          this._totalPages.set(result.totalPages);
-          this._isLoading.set(false);
-        },
-        error: (err) => {
-          this._isLoading.set(false);
-          this._showError(err);
-        },
-      });
+      }).pipe(takeUntil(this._usersRequestCancel$)),
+      fallbackErrorMessage: 'Không thể tải danh sách người dùng',
+      onSuccess: (result) => {
+        this._users.set(result.items);
+        this._totalCount.set(result.totalCount);
+        this._totalPages.set(result.totalPages);
+      },
+    });
   };
 
   loadRoles(): void {

@@ -1,5 +1,5 @@
 import { WritableSignal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, finalize } from 'rxjs';
 import { toast } from 'ngx-sonner';
 import { extractApiErrorMessage } from '../../shared/utils/api-error.util';
 
@@ -28,9 +28,8 @@ export function runStoreRequest<T>(config: StoreRequestConfig<T>): void {
 
   loading.set(true);
 
-  request$.subscribe({
+  request$.pipe(finalize(() => loading.set(false))).subscribe({
     next: (result) => {
-      loading.set(false);
       onSuccess?.(result);
       /**onSuccess?.(result);
       * là viết tắt của
@@ -40,7 +39,6 @@ export function runStoreRequest<T>(config: StoreRequestConfig<T>): void {
        */
     },
     error: (err) => {
-      loading.set(false);
       const message = extractApiErrorMessage(err, fallbackErrorMessage);
       if (toastOnError) {
         toast.error(message);
