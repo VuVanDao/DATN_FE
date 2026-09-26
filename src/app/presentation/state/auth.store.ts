@@ -7,7 +7,7 @@ import { StorageService } from '../../infrastructure/storage/storage.service';
 import { TokenService } from '../../infrastructure/storage/token.service';
 import { AuthRepository } from '../../domain/repositories/auth.repository';
 import { UserRepository } from '../../domain/repositories/user.repository';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { User } from '../../domain/models/user.model';
 import {
   ForgotPasswordRequest,
@@ -35,6 +35,7 @@ export class AuthStore {
   private readonly _tokenService = inject(TokenService);
   private readonly _platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   private readonly _userRepository = inject(UserRepository);
 
@@ -90,13 +91,17 @@ export class AuthStore {
   login(request: LoginRequest): void {
     this._isLoading.set(true);
     this._errorMessage.set(null);
-
+    let urlToNavigateAfterLogin = '/';
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (returnUrl) {
+      urlToNavigateAfterLogin = returnUrl;
+    }
     this._loginUseCase.execute(request).subscribe({
       next: (response) => {
         this._tokenService.setAccessToken(response.tokens.accessToken);
         this.updateCurrentUser(response.user);
         this._isLoading.set(false);
-        this.router.navigate(['/']);
+        this.router.navigate([urlToNavigateAfterLogin]);
       },
       error: (err) => {
         this._isLoading.set(false);
