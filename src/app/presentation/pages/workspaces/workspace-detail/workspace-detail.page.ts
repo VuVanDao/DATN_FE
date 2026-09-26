@@ -1,37 +1,34 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceStore } from '../../../state/workspace.store';
-import { AuthStore } from '../../../state/auth.store';
-import { LayoutService } from '../../../../application/layout/layout.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { WorkspaceMember } from '../../../../domain/models/workspace.model';
-import { toast } from 'ngx-sonner';
 import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
 import { WorkspaceDeleteModalComponent } from './components/workspace-delete-modal/workspace-delete-modal.component';
 import { CreateProjectModalComponent } from './components/create-project-modal/create-project-modal.component';
 import { MemberRemovalModalComponent } from './components/member-removal-modal/member-removal-modal.component';
+import { WorkspaceMembersTabComponent } from './components/workspace-members-tab/workspace-members-tab.component';
+import { WorkspaceProjectsTabComponent } from './components/workspace-projects-tab/workspace-projects-tab.component';
+import { WorkspaceSettingsTabComponent } from './components/workspace-settings-tab/workspace-settings-tab.component';
+import { LayoutService } from '../../../../application/layout/layout.service';
+import { WorkspaceDetail, WorkspaceMember } from '../../../../domain/models/workspace.model';
+import { AuthStore } from '../../../state/auth.store';
+import { WorkspaceStore } from '../../../state/workspace.store';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
+
 @Component({
   selector: 'app-workspace-detail-page',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
     MatIconModule,
     InviteMembersModalComponent,
     WorkspaceDeleteModalComponent,
     CreateProjectModalComponent,
     MemberRemovalModalComponent,
+    WorkspaceProjectsTabComponent,
+    WorkspaceMembersTabComponent,
+    WorkspaceSettingsTabComponent,
   ],
   templateUrl: './workspace-detail.page.html',
 })
@@ -42,259 +39,51 @@ export class WorkspaceDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  // tab dang mo
   readonly activeTab = signal<WorkspaceTab>('projects');
-  // Quản lý file upload cho Tab Cài đặt
-  readonly logoFile = signal<File | null>(null);
-  readonly logoPreview = signal<string | null>(null);
-  readonly coverFile = signal<File | null>(null);
-  readonly coverPreview = signal<string | null>(null);
-  // Modal mời thành viên
-  readonly showInviteModal = signal<boolean>(false);
-  // Modal xác nhận xóa Workspace
-  readonly showDeleteModal = signal<boolean>(false);
-  // state modal create project
-  readonly showCreateProjectModal = signal<boolean>(false);
 
+  readonly showInviteModal = signal(false);
+  readonly showDeleteModal = signal(false);
+  readonly showCreateProjectModal = signal(false);
   readonly selectedMemberToRemove = signal<WorkspaceMember | null>(null);
+  readonly showMemberRemovalModal = signal(false);
 
-  readonly showMemberRemovalModal = signal<boolean>(false);
+  readonly isOwner = computed(() => {
+    const user = this.authStore.currentUser();
+    const workspace = this.workspaceStore.currentWorkspace();
+    return (
+      !!user &&
+      !!workspace &&
+      workspace.currentUserRole === 'WorkspaceOwner' &&
+      workspace.ownerId.toLowerCase() === user.id.toLowerCase()
+    );
+  });
 
   readonly isSelfRemoval = computed(() => {
-    const currentUserId = this.authStore.currentUser()?.id;
-    const selected = this.selectedMemberToRemove();
-    return !!(
-      currentUserId &&
-      selected &&
-      currentUserId.toString().toLowerCase() === selected.userId.toString().toLowerCase()
-    );
+    const userId = this.authStore.currentUser()?.id;
+    const memberId = this.selectedMemberToRemove()?.userId;
+    return !!userId && !!memberId && userId.toLowerCase() === memberId.toLowerCase();
   });
 
-  // Lấy thông tin WorkspaceMember của người dùng hiện tại đang đăng nhập
-  readonly currentWorkspaceMember = computed<WorkspaceMember | null>(() => {
-    const currUser = this.authStore.currentUser();
-    const ws = this.workspaceStore.currentWorkspace();
-    if (!currUser) return null;
-
-    const found = ws?.members?.find(
-      (m) => m.userId.toString().toLowerCase() === currUser.id.toString().toLowerCase(),
-    );
-    if (found) return found;
-
-    return {
-      userId: currUser.id,
-      username: currUser.userName || currUser.email,
-      email: currUser.email,
-      avatarUrl: currUser.avatarUrl,
-      roleId: '',
-      roleName: ws?.currentUserRole || 'WorkspaceMember',
-      joinAt: new Date().toISOString(),
-    };
-  });
-
-  // Kiểm tra quyền WorkspaceOwner
-  readonly isOwner = computed(() => {
-    const currUser = this.authStore.currentUser();
-    const ws = this.workspaceStore.currentWorkspace();
-
-    if (!currUser || !ws) {
-      return false;
-    }
-
-    if (
-      ws.currentUserRole !== 'WorkspaceOwner' ||
-      ws.ownerId?.toString().toLowerCase() !== currUser.id?.toString().toLowerCase()
-    ) {
-      return false;
-    }
-    return true;
-  });
-
-  //Form update
-  readonly updateForm = new FormGroup({
-    name: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.minLength(3), Validators.maxLength(100)],
-    }),
-    description: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.maxLength(500)],
-    }),
-  });
-
-  constructor() {
-    // Tự động điền dữ liệu vào form cài đặt khi thông tin Workspace được load
-    effect(() => {
-      const ws = this.workspaceStore.currentWorkspace();
-      if (ws) {
-        this.updateForm.patchValue({
-          name: ws.name,
-          description: ws.description ?? '',
-        });
-      }
-    });
-  }
   ngOnInit(): void {
     this.layoutService.setSidebar('main');
-    // Lấy slug từ URL và tải chi tiết Workspace
     this.route.paramMap.subscribe((params) => {
       const slug = params.get('slug');
-      if (slug) {
-        this.workspaceStore.getWorkspaceDetail(slug);
-      }
+      if (slug) this.workspaceStore.getWorkspaceDetail(slug);
     });
   }
-  // Lấy danh sách 4 avatar đầu tiên để hiển thị trên Header
-  get displayHeaderMember(): WorkspaceMember[] {
-    const members = this.workspaceStore.currentWorkspace()?.members ?? [];
-    return members.slice(0, 4);
-  }
+
   openInviteModal(): void {
     this.showInviteModal.set(true);
   }
   closeInviteModal(): void {
     this.showInviteModal.set(false);
   }
-  get extraHeaderMembersCount(): number {
-    const total = this.workspaceStore.currentWorkspace()?.members?.length ?? 0;
-    return Math.max(0, total - 4);
-  }
-  formatRoleFunc(roleName?: string | null): string {
-    switch (roleName) {
-      case 'WorkspaceOwner':
-        return 'Chủ sở hữu';
-      case 'WorkspaceAdmin':
-        return 'Quản trị viên';
-      case 'WorkspaceMember':
-        return 'Thành viên';
-      case 'ProjectLeader':
-        return 'Trưởng dự án';
-      case 'ProjectMember':
-        return 'Thành viên dự án';
-      default:
-        return roleName || 'Thành viên';
-    }
-  }
-  // Định dạng ngày tham gia / hoạt động
-  formatActivityDateFunc(dateStr?: string | null): string {
-    if (!dateStr) return 'Đang hoạt động';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 3600 * 24));
-    if (diffDays === 0) return 'Đang hoạt động';
-    if (diffDays === 1) return 'Hôm qua';
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
-  }
-  onSelectLogoFunc = (event: Event): void => {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) {
-      input.value = '';
-      return;
-    }
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Chỉ hỗ trợ ảnh JPG, JPEG, PNG hoặc WEBP');
-      input.value = '';
-      return;
-    }
-
-    const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
-    if (file.size > maxSizeInBytes) {
-      toast.error('Ảnh logo không được vượt quá 2 MB');
-      input.value = '';
-      return;
-    }
-
-    this.logoFile.set(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.logoPreview.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  };
-
-  // Xử lý chọn Ảnh bìa (Cover)
-  onSelectCoverFunc = (event: Event): void => {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) {
-      input.value = '';
-      return;
-    }
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Chỉ hỗ trợ ảnh JPG, JPEG, PNG hoặc WEBP');
-      input.value = '';
-      return;
-    }
-
-    const maxSizeInBytes = 5 * 1024 * 1024; // 5 MB
-    if (file.size > maxSizeInBytes) {
-      toast.error('Ảnh bìa không được vượt quá 5 MB');
-      input.value = '';
-      return;
-    }
-
-    this.coverFile.set(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.coverPreview.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  };
-  saveUdpate = (): void => {
-    if (!this.isOwner()) {
-      return;
-    }
-    const ws = this.workspaceStore.currentWorkspace();
-    if (!ws || this.updateForm.invalid) {
-      this.updateForm.markAllAsTouched();
-      return;
-    }
-    const { name, description } = this.updateForm.getRawValue();
-    this.workspaceStore.updateWorkspace(
-      ws.id,
-      {
-        name: name,
-        description: description,
-        logo: this.logoFile(),
-        coverImage: this.coverFile(),
-      },
-      (res) => {
-        this.logoFile.set(null);
-        this.logoPreview.set(null);
-        this.coverFile.set(null);
-        this.coverPreview.set(null);
-        // Nếu slug thay đổi do đổi tên, cập nhật lại URL trên thanh địa chỉ mà không reload trang
-        if (res.slug !== ws.slug) {
-          this.router.navigate(['/workspaces', res.slug], { replaceUrl: true });
-        }
-      },
-    );
-  };
-
-  openDeleteWorkspaceModal = (): void => {
+  openDeleteWorkspaceModal(): void {
     this.showDeleteModal.set(true);
-  };
-
-  closeDeleteWorkspaceModal = (): void => {
+  }
+  closeDeleteWorkspaceModal(): void {
     this.showDeleteModal.set(false);
-  };
-
-  onConfirmDelete = (): void => {
-    const ws = this.workspaceStore.currentWorkspace();
-    if (!ws) return;
-    this.workspaceStore.deleteWorkspace(ws.id, () => {
-      this.closeDeleteWorkspaceModal();
-      this.router.navigate(['/workspaces']);
-    });
-  };
+  }
   openCreateProjectModal(): void {
     this.showCreateProjectModal.set(true);
   }
@@ -302,26 +91,9 @@ export class WorkspaceDetailPage implements OnInit {
     this.showCreateProjectModal.set(false);
   }
 
-  canRemoveMember(member: WorkspaceMember): boolean {
-    const ws = this.workspaceStore.currentWorkspace();
-    const currUser = this.authStore.currentUser();
-
-    if (!ws || !currUser || !this.isOwner()) {
-      return false;
-    }
-    return member.userId.toString().toLowerCase() !== ws.ownerId.toString().toLowerCase();
-  }
-
   openRemoveMemberModal(member: WorkspaceMember): void {
     this.selectedMemberToRemove.set(member);
     this.showMemberRemovalModal.set(true);
-  }
-
-  openLeaveWorkspaceModal(): void {
-    const member = this.currentWorkspaceMember();
-    if (member) {
-      this.openRemoveMemberModal(member);
-    }
   }
 
   closeRemoveMemberModal(): void {
@@ -329,14 +101,38 @@ export class WorkspaceDetailPage implements OnInit {
     this.selectedMemberToRemove.set(null);
   }
 
-  onMemberRemoved(event: { memberId: string; workspaceId: string } | string): void {
-    const removedUserId = typeof event === 'string' ? event : event.memberId;
-    const currentUserId = this.authStore.currentUser()?.id;
-    if (
-      currentUserId &&
-      removedUserId.toString().toLowerCase() === currentUserId.toString().toLowerCase()
-    ) {
+  onConfirmDelete(): void {
+    const workspace = this.workspaceStore.currentWorkspace();
+    if (!workspace) return;
+    this.workspaceStore.deleteWorkspace(workspace.id, () => {
+      this.closeDeleteWorkspaceModal();
       this.router.navigate(['/workspaces']);
-    }
+    });
+  }
+
+  openLeaveWorkspaceModal(): void {
+    const workspace = this.workspaceStore.currentWorkspace();
+    const userId = this.authStore.currentUser()?.id;
+    const user = this.authStore.currentUser();
+    if (!workspace || !user) return;
+
+    const member = workspace.members.find(
+      (item) => item.userId.toLowerCase() === userId?.toLowerCase(),
+    ) ?? {
+      userId: user.id,
+      username: user.userName || user.email,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      roleId: '',
+      roleName: workspace.currentUserRole || 'WorkspaceMember',
+      joinAt: new Date().toISOString(),
+    };
+    if (member) this.openRemoveMemberModal(member);
+  }
+
+  onMemberRemoved(event: { memberId: string; workspaceId: string } | string): void {
+    const removedId = typeof event === 'string' ? event : event.memberId;
+    if (removedId.toLowerCase() === this.authStore.currentUser()?.id.toLowerCase())
+      this.router.navigate(['/workspaces']);
   }
 }

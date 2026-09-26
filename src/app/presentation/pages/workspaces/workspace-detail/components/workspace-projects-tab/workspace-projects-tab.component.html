@@ -1,0 +1,85 @@
+<div class="pt-4">
+  <div class="flex items-center justify-between pb-1">
+    <div class="flex items-center gap-2.5">
+      <span class="text-sm font-semibold text-slate-200">Danh sách dự án</span>
+      <span
+        class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-medium border border-slate-700/60"
+      >
+        {{ workspace.projects.length }}
+      </span>
+    </div>
+    @if (isOwner) {
+      <button
+        type="button"
+        (click)="openModalForCreateProject()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 cursor-pointer"
+      >
+        <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+        <span>Tạo dự án mới</span>
+      </button>
+    }
+  </div>
+
+  @if (workspace.projects.length > 0) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
+      @for (project of workspace.projects; track project.id) {
+        <div
+          class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-3 flex flex-col justify-between"
+        >
+          <div>
+            <div
+              [class]="project.color"
+              class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold"
+            >
+              {{ project.initial }}
+            </div>
+            <h3 class="text-[15px] font-semibold text-white mt-3 truncate" [title]="project.name">
+              {{ project.name }}
+            </h3>
+            <p class="text-xs text-slate-400 mt-1 line-clamp-2 min-h-8">
+              {{ project.description || 'Chưa có mô tả cho dự án này.' }}
+            </p>
+          </div>
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-slate-800/60">
+            <div class="flex items-center -space-x-1.5 overflow-hidden">
+              @for (member of project.members.slice(0, 3); track member.userId) {
+                @if (member.avatarUrl) {
+                  <img
+                    [src]="member.avatarUrl"
+                    [alt]="member.username"
+                    class="h-6 w-6 rounded-full ring-2 ring-[#131b2e] object-cover"
+                  />
+                } @else {
+                  <div
+                    class="h-6 w-6 rounded-full ring-2 ring-[#131b2e] bg-slate-700 flex items-center justify-center text-[10px] text-white"
+                  >
+                    {{ member.username.charAt(0).toUpperCase() }}
+                  </div>
+                }
+              }
+            </div>
+            <span class="text-xs text-slate-500 font-medium">{{ project.tasksCount }} task</span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div
+      class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-12 text-center mt-4 space-y-3"
+    >
+      <mat-icon fontIcon="folder_open" class="icon-lg text-slate-400"></mat-icon>
+      <h3 class="text-base font-semibold text-slate-200">Chưa có dự án nào</h3>
+      <p class="text-sm text-slate-400">Không gian làm việc này hiện chưa có dự án nào được tạo.</p>
+      @if (isOwner) {
+        <button
+          type="button"
+          (click)="openModalForCreateProject()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 cursor-pointer"
+        >
+          <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+          <span>Tạo dự án đầu tiên</span>
+        </button>
+      }
+    </div>
+  }
+</div>

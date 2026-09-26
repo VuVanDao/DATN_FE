@@ -1,5 +1,4 @@
 <div class="max-w-7xl mx-auto space-y-6 pb-12 w-full min-w-0">
-  <!-- Trạng thái Loading chi tiết -->
   @if (workspaceStore.isLoadingDetail()) {
     <div class="animate-pulse space-y-6">
       <div class="h-44 md:h-52 w-full rounded-2xl bg-slate-200 dark:bg-slate-800"></div>
@@ -11,511 +10,151 @@
         </div>
       </div>
     </div>
-  } @else if (workspaceStore.currentWorkspace(); as ws) {
-    <!-- 1. VÙNG ẢNH BÌA (COVER BANNER) -->
+  } @else if (workspaceStore.currentWorkspace(); as workspace) {
     <div
       class="relative w-full h-44 md:h-52 rounded-2xl overflow-hidden bg-linear-to-r from-purple-700 via-indigo-600 to-purple-500 shadow-md border border-slate-800/80"
     >
-      @if (ws.coverImageUrl) {
-        <img [src]="ws.coverImageUrl" class="w-full h-full object-cover" alt="Workspace Cover" />
-      } @else {
-        <div
-          class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-size-[16px_16px]"
-        ></div>
+      @if (workspace.coverImageUrl) {
+        <img
+          [src]="workspace.coverImageUrl"
+          class="w-full h-full object-cover"
+          alt="Workspace cover"
+        />
       }
     </div>
-
-    <!-- 2. VÙNG THÔNG TIN WORKSPACE & AVATAR THÀNH VIÊN -->
     <div
       class="relative px-2 md:px-4 -mt-10 md:-mt-12 flex flex-col md:flex-row md:items-end justify-between gap-4"
     >
-      <!-- Logo + Tên + Mô tả -->
       <div class="flex items-end gap-3.5 md:gap-4 flex-1 min-w-0">
-        <!-- Logo Vuông góc bo tròn -->
         <div
-          class="w-20 h-20 md:w-24 md:h-24 rounded-2xl p-1 bg-slate-900 shrink-0 shadow-xl border border-slate-800"
+          class="w-20 h-20 md:w-24 md:h-24 rounded-2xl p-1 bg-slate-900 shrink-0 border border-slate-800"
         >
-          @if (ws.logoUrl) {
-            <img [src]="ws.logoUrl" class="w-full h-full object-cover rounded-xl" alt="Logo" />
+          @if (workspace.logoUrl) {
+            <img
+              [src]="workspace.logoUrl"
+              class="w-full h-full object-cover rounded-xl"
+              alt="Logo"
+            />
           } @else {
             <div
-              class="w-full h-full rounded-xl flex items-center justify-center text-white text-2xl font-bold bg-linear-to-br from-amber-500 to-rose-600 shadow-inner"
+              class="w-full h-full rounded-xl flex items-center justify-center text-white text-2xl font-bold bg-linear-to-br from-amber-500 to-rose-600"
             >
-              {{ ws.initial }}
+              {{ workspace.initial }}
             </div>
           }
         </div>
-
         <div class="space-y-1 mb-1 min-w-0 flex-1">
-          <h1
-            class="text-xl md:text-2xl font-bold text-white tracking-tight truncate"
-            [title]="ws.name"
-          >
-            {{ ws.name }}
+          <h1 class="text-xl md:text-2xl font-bold text-white truncate" [title]="workspace.name">
+            {{ workspace.name }}
           </h1>
           <p
-            class="text-xs md:text-sm text-slate-400 max-w-xl line-clamp-2 break-words [overflow-wrap:anywhere]"
-            [title]="ws.description || ''"
+            class="text-xs md:text-sm text-slate-400 max-w-xl line-clamp-2"
+            [title]="workspace.description || ''"
           >
-            {{ ws.description || 'Không gian làm việc sản phẩm & kỹ thuật' }}
+            {{ workspace.description?.slice(0, 80) + '...' || 'Chưa có mô tả chi tiết....' }}
           </p>
         </div>
       </div>
-
-      <!-- Thành viên + Nút Mời -->
       <div
         class="flex items-center justify-between sm:justify-end gap-3 md:gap-4 shrink-0 w-full md:w-auto mb-1"
       >
-        <!-- Chồng Avatar các thành viên -->
         <div class="flex items-center -space-x-2 overflow-hidden shrink-0">
-          @for (m of displayHeaderMember; track m.userId) {
-            @if (m.avatarUrl) {
+          @for (member of workspace.members.slice(0, 4); track member.userId) {
+            @if (member.avatarUrl) {
               <img
-                [src]="m.avatarUrl"
-                [alt]="m.username"
-                class="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 object-cover"
+                [src]="member.avatarUrl"
+                [alt]="member.username"
+                class="h-8 w-8 rounded-full ring-2 ring-slate-900 object-cover"
               />
             } @else {
               <div
                 class="inline-flex h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-700 items-center justify-center text-xs font-semibold text-white"
               >
-                {{ m.username.charAt(0).toUpperCase() }}
+                {{ member.username.charAt(0).toUpperCase() }}
               </div>
             }
           }
-          @if (extraHeaderMembersCount > 0) {
+          @if (workspace.members.length > 4) {
             <div
               class="inline-flex h-8 w-8 rounded-full ring-2 ring-slate-900 bg-slate-800 items-center justify-center text-[11px] font-bold text-slate-300"
             >
-              +{{ extraHeaderMembersCount }}
+              +{{ workspace.members.length - 4 }}
             </div>
           }
         </div>
-
-        <!-- Nút Mời thành viên (Placeholder) -->
         <button
           type="button"
           (click)="openInviteModal()"
-          class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all shadow-sm shadow-indigo-500/20 cursor-pointer shrink-0"
+          class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 cursor-pointer"
         >
-          <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
-          <span>Mời thành viên</span>
+          <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon><span>Mời thành viên</span>
         </button>
       </div>
     </div>
-
-    <!-- 3. THANH TABS ĐIỀU HƯỚNG -->
     <div class="border-b border-slate-800/80 flex gap-8 px-2 md:px-4 mt-4">
-      <button
-        type="button"
-        (click)="activeTab.set('projects')"
-        class="pb-3 text-sm font-medium transition-colors relative cursor-pointer"
-        [class]="
-          activeTab() === 'projects'
-            ? 'text-white font-semibold border-b-2 border-blue-500'
-            : 'text-slate-400 hover:text-slate-200'
-        "
-      >
-        Dự án
-      </button>
-      <button
-        type="button"
-        (click)="activeTab.set('members')"
-        class="pb-3 text-sm font-medium transition-colors relative cursor-pointer"
-        [class]="
-          activeTab() === 'members'
-            ? 'text-white font-semibold border-b-2 border-blue-500'
-            : 'text-slate-400 hover:text-slate-200'
-        "
-      >
-        Thành viên
-      </button>
-      <button
-        type="button"
-        (click)="activeTab.set('settings')"
-        class="pb-3 text-sm font-medium transition-colors relative cursor-pointer"
-        [class]="
-          activeTab() === 'settings'
-            ? 'text-white font-semibold border-b-2 border-blue-500'
-            : 'text-slate-400 hover:text-slate-200'
-        "
-      >
-        Cài đặt
-      </button>
+      @for (
+        tab of [
+          { id: 'projects', label: 'Dự án' },
+          { id: 'members', label: 'Thành viên' },
+          { id: 'settings', label: 'Cài đặt' },
+        ];
+        track tab.id
+      ) {
+        <button
+          type="button"
+          (click)="activeTab.set($any(tab.id))"
+          class="pb-3 text-sm font-medium cursor-pointer"
+          [class]="
+            activeTab() === tab.id
+              ? 'text-white font-semibold border-b-2 border-blue-500'
+              : 'text-slate-400 hover:text-slate-200'
+          "
+        >
+          {{ tab.label }}
+        </button>
+      }
     </div>
-
-    <!-- 4. NỘI DUNG TỪNG TAB -->
     @switch (activeTab()) {
-      <!-- ================= TAB 1: DỰ ÁN (ẢNH 1) ================= -->
       @case ('projects') {
-        @if (ws.projects.length > 0) {
-          <!-- Header thanh công cụ Tab Dự án -->
-          <div class="flex items-center justify-between pt-4 pb-1">
-            <div class="flex items-center gap-2.5">
-              <span class="text-sm font-semibold text-slate-200">Danh sách dự án</span>
-              <span
-                class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-medium border border-slate-700/60"
-              >
-                {{ ws.projects.length }}
-              </span>
-            </div>
-            @if (isOwner()) {
-              <button
-                type="button"
-                (click)="openCreateProjectModal()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
-              >
-                <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
-                <span>Tạo dự án mới</span>
-              </button>
-            }
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
-            @for (p of ws.projects; track p.id) {
-              <div
-                class="bg-[#131b2e] border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-3 flex flex-col justify-between transition-all duration-200 group shadow-xs cursor-pointer"
-              >
-                <div>
-                  <div
-                    [class]="p.color"
-                    class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-xs"
-                  >
-                    {{ p.initial }}
-                  </div>
-                  <h3
-                    class="text-[15px] font-semibold text-white group-hover:text-blue-400 transition-colors mt-3 truncate"
-                    [title]="p.name"
-                  >
-                    {{ p.name }}
-                  </h3>
-                  <p
-                    class="text-xs text-slate-400 mt-1 line-clamp-2 min-h-8 break-words [overflow-wrap:anywhere]"
-                    [title]="p.description || ''"
-                  >
-                    {{ p.description || 'Chưa có mô tả cho dự án này.' }}
-                  </p>
-                </div>
-                <div class="flex items-center justify-between pt-3 border-t border-slate-800/60">
-                  <div class="flex items-center -space-x-1.5 overflow-hidden">
-                    @for (pm of p.members.slice(0, 3); track pm.userId) {
-                      @if (pm.avatarUrl) {
-                        <img
-                          [src]="pm.avatarUrl"
-                          [alt]="pm.username"
-                          class="h-6 w-6 rounded-full ring-2 ring-[#131b2e] object-cover"
-                        />
-                      } @else {
-                        <div
-                          class="h-6 w-6 rounded-full ring-2 ring-[#131b2e] bg-slate-700 flex items-center justify-center text-[10px] font-medium text-white"
-                        >
-                          {{ pm.username.charAt(0).toUpperCase() }}
-                        </div>
-                      }
-                    }
-                  </div>
-                  <span class="text-xs text-slate-500 font-medium"> {{ p.tasksCount }} task </span>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <!-- Empty State khi chưa có project -->
-          <div
-            class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-12 text-center mt-4 space-y-3"
-          >
-            <div
-              class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto text-slate-400"
-            >
-              <mat-icon fontIcon="folder_open" class="icon-lg"></mat-icon>
-            </div>
-            <h3 class="text-base font-semibold text-slate-200">Chưa có dự án nào</h3>
-            <p class="text-sm text-slate-400">
-              Không gian làm việc này hiện chưa có dự án nào được tạo.
-            </p>
-            @if (isOwner()) {
-              <button
-                type="button"
-                (click)="openCreateProjectModal()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm shadow-blue-500/20 cursor-pointer"
-              >
-                <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
-                <span>Tạo dự án đầu tiên</span>
-              </button>
-            }
-          </div>
-        }
+        <app-workspace-projects-tab
+          [workspace]="workspace"
+          [isOwner]="isOwner()"
+          (createProject)="openCreateProjectModal()"
+        />
       }
-
-      <!-- ================= TAB 2: THÀNH VIÊN (ẢNH 2) ================= -->
       @case ('members') {
-        <div
-          class="bg-[#131b2e] border border-slate-800/80 rounded-2xl overflow-hidden mt-4 shadow-xs"
-        >
-          <div class="overflow-x-auto">
-            <div class="min-w-[640px]">
-              <!-- Table Header -->
-              <div
-                class="grid grid-cols-12 px-6 py-3.5 border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase tracking-wider"
-              >
-                <div class="col-span-5">Thành viên</div>
-                <div class="col-span-3">Vai trò</div>
-                <div [class]="isOwner() ? 'col-span-3' : 'col-span-4'">Tham gia vào</div>
-                @if (isOwner()) {
-                  <div class="col-span-1 text-right"></div>
-                }
-              </div>
-
-              <!-- Table Rows -->
-              <div class="divide-y divide-slate-800/60">
-                @for (m of ws.members; track m.userId) {
-                  <div
-                    class="grid grid-cols-12 px-6 py-4 items-center text-sm hover:bg-slate-800/30 transition-colors"
-                  >
-                    <!-- Cột 1: Thông tin thành viên -->
-                    <div class="col-span-5 flex items-center gap-3 min-w-0">
-                      @if (m.avatarUrl) {
-                        <img
-                          [src]="m.avatarUrl"
-                          class="w-10 h-10 rounded-full object-cover ring-1 ring-slate-700 shrink-0"
-                          alt=""
-                        />
-                      } @else {
-                        <div
-                          class="w-10 h-10 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-sm ring-1 ring-slate-700 shrink-0"
-                        >
-                          {{ m.username.charAt(0).toUpperCase() }}
-                        </div>
-                      }
-                      <div class="truncate min-w-0">
-                        <div class="font-medium text-white truncate" [title]="m.username">
-                          {{ m.username }}
-                        </div>
-                        <div class="text-xs text-slate-400 truncate" [title]="m.email">
-                          {{ m.email }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Cột 2: Vai trò (Chỉ hiển thị, không đổi ở workspace level) -->
-                    <div class="col-span-3">
-                      <span
-                        class="inline-flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-300 w-36 select-none"
-                      >
-                        <span>{{ formatRoleFunc(m.roleName) }}</span>
-                        <mat-icon fontIcon="expand_more" class="icon-xs text-slate-500"></mat-icon>
-                      </span>
-                    </div>
-
-                    <!-- Cột 3: Tham gia vào -->
-                    <div
-                      [class]="isOwner() ? 'col-span-3' : 'col-span-4'"
-                      class="text-xs text-slate-400"
-                    >
-                      {{ formatActivityDateFunc(m.joinAt) }}
-                    </div>
-
-                    <!-- Cột 4: Thao tác (Icon xoá thành viên) -->
-                    @if (isOwner()) {
-                      <div class="col-span-1 text-right">
-                        @if (canRemoveMember(m)) {
-                          <button
-                            type="button"
-                            (click)="openRemoveMemberModal(m)"
-                            title="Xóa thành viên khỏi không gian làm việc"
-                            class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1.5 rounded-lg cursor-pointer inline-flex items-center justify-center"
-                          >
-                            <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-workspace-members-tab
+          [workspace]="workspace"
+          [isOwner]="isOwner()"
+          (removeMember)="openRemoveMemberModal($event)"
+        />
       }
-
-      <!-- ================= TAB 3: CÀI ĐẶT (ẢNH 3 + UPLOAD LOGO & COVER) ================= -->
       @case ('settings') {
-        <div
-          class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-6 max-w-4xl mx-auto mt-4 space-y-6 shadow-xs"
-        >
-          <form [formGroup]="updateForm" (ngSubmit)="saveUdpate()" class="space-y-5">
-            <!-- Hàng trên: Tên & Mô tả bên trái + Logo bên phải -->
-            <div class="flex flex-col sm:flex-row gap-6">
-              <!-- Tên + Mô tả (bên trái) -->
-              <div class="flex-1 space-y-4">
-                <div class="space-y-1.5">
-                  <label class="block text-xs font-medium text-slate-300"
-                    >Tên không gian làm việc</label
-                  >
-                  <input
-                    type="text"
-                    formControlName="name"
-                    [readonly]="!isOwner()"
-                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all read-only:bg-slate-900/40 read-only:border-slate-800/60 read-only:text-slate-400 read-only:focus:border-slate-800/60 read-only:cursor-default"
-                    placeholder="Nhập tên workspace..."
-                  />
-                </div>
-
-                <div class="space-y-1.5">
-                  <label class="block text-xs font-medium text-slate-300">Mô tả</label>
-                  <textarea
-                    formControlName="description"
-                    rows="3"
-                    [readonly]="!isOwner()"
-                    class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all resize-none read-only:bg-slate-900/40 read-only:border-slate-800/60 read-only:text-slate-400 read-only:focus:border-slate-800/60 read-only:cursor-default"
-                    placeholder="Mô tả không gian làm việc..."
-                  ></textarea>
-                </div>
-              </div>
-
-              <!-- Logo Workspace (bên phải) -->
-              <div class="shrink-0 space-y-2.5">
-                <label class="block text-xs font-medium text-slate-300">Logo</label>
-                <div
-                  class="w-24 h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 flex items-center justify-center"
-                >
-                  @if (logoPreview()) {
-                    <img [src]="logoPreview()" class="w-full h-full object-cover" alt="Preview" />
-                  } @else if (ws.logoUrl) {
-                    <img [src]="ws.logoUrl" class="w-full h-full object-cover" alt="Logo" />
-                  } @else {
-                    <span class="text-2xl font-bold text-white">{{ ws.initial }}</span>
-                  }
-                </div>
-                @if (isOwner()) {
-                  <div>
-                    <input
-                      #logoInput
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                      (click)="$any($event.target).value = null"
-                      (change)="onSelectLogoFunc($event)"
-                      class="hidden"
-                    />
-                    <button
-                      type="button"
-                      [disabled]="workspaceStore.isUpdating()"
-                      (click)="logoInput.click()"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full justify-center"
-                    >
-                      <mat-icon fontIcon="upload" class="icon-xs"></mat-icon>
-                      <span>Đổi Logo</span>
-                    </button>
-                    <p class="text-[10px] text-slate-500 mt-1 text-center">JPG, PNG · Tối đa 2MB</p>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Upload Ảnh bìa (Cover Banner) -->
-            <div class="space-y-2 pt-3 border-t border-slate-800/80">
-              <label class="block text-xs font-medium text-slate-300">Ảnh bìa (Cover Banner)</label>
-              <div
-                class="w-full h-28 rounded-xl overflow-hidden bg-linear-to-r from-purple-700 to-indigo-600 border border-slate-700 relative flex items-center justify-center"
-              >
-                @if (coverPreview()) {
-                  <img
-                    [src]="coverPreview()"
-                    class="w-full h-full object-cover"
-                    alt="Cover preview"
-                  />
-                } @else if (ws.coverImageUrl) {
-                  <img [src]="ws.coverImageUrl" class="w-full h-full object-cover" alt="Cover" />
-                } @else {
-                  <span class="text-xs text-slate-300 font-medium"
-                    >Ảnh bìa mặc định dạng Gradient</span
-                  >
-                }
-              </div>
-              @if (isOwner()) {
-                <div>
-                  <input
-                    #coverInput
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                    (click)="$any($event.target).value = null"
-                    (change)="onSelectCoverFunc($event)"
-                    class="hidden"
-                  />
-                  <button
-                    type="button"
-                    [disabled]="workspaceStore.isUpdating()"
-                    (click)="coverInput.click()"
-                    class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <mat-icon fontIcon="image" class="icon-xs"></mat-icon>
-                    <span>Thay đổi ảnh bìa</span>
-                  </button>
-                  <p class="text-[11px] text-slate-500 mt-1">
-                    Kích thước khuyến nghị 1200x300, tối đa 5MB.
-                  </p>
-                </div>
-              }
-            </div>
-
-            <!-- Nút Hành động: Lưu thay đổi & Xóa Workspace -->
-
-            <div class="pt-4 border-t border-slate-800/80 flex items-center gap-3">
-              @if (isOwner()) {
-                <button
-                  type="submit"
-                  [disabled]="workspaceStore.isUpdating()"
-                  class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2 cursor-pointer"
-                >
-                  @if (workspaceStore.isUpdating()) {
-                    <span>Đang lưu...</span>
-                  } @else {
-                    <span>Lưu thay đổi</span>
-                  }
-                </button>
-
-                <button
-                  type="button"
-                  (click)="openDeleteWorkspaceModal()"
-                  class="px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 hover:border-rose-600 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
-                  <span>Xóa không gian làm việc</span>
-                </button>
-              } @else {
-                <button
-                  type="button"
-                  (click)="openLeaveWorkspaceModal()"
-                  class="px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-500 hover:text-white bg-rose-500/10 hover:bg-rose-600 border border-rose-500/20 hover:border-rose-600 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
-                  <span>Rời khỏi không gian làm việc</span>
-                </button>
-              }
-            </div>
-          </form>
-        </div>
+        <app-workspace-settings-tab
+          [workspace]="workspace"
+          [isOwner]="isOwner()"
+          (deleteWorkspace)="openDeleteWorkspaceModal()"
+          (leaveWorkspace)="openLeaveWorkspaceModal()"
+        />
       }
     }
   }
   <app-invite-members-modal
-    (closed)="closeInviteModal()"
     [isOpen]="showInviteModal()"
     [workspaceId]="workspaceStore.currentWorkspace()?.id ?? ''"
-  ></app-invite-members-modal>
-
+    (closed)="closeInviteModal()"
+  />
   <app-workspace-delete-modal
     [isOpen]="showDeleteModal()"
     [workspace]="workspaceStore.currentWorkspace()"
     (closed)="closeDeleteWorkspaceModal()"
     (confirmed)="onConfirmDelete()"
-  ></app-workspace-delete-modal>
+  />
   <app-create-project-modal
     [isOpen]="showCreateProjectModal()"
     [workspaceId]="workspaceStore.currentWorkspace()?.id ?? ''"
     (closed)="closeCreateProjectModal()"
-  ></app-create-project-modal>
-
+  />
   <app-member-removal-modal
     [isOpen]="showMemberRemovalModal()"
     [workspaceId]="workspaceStore.currentWorkspace()?.id ?? ''"
@@ -523,5 +162,5 @@
     [isSelf]="isSelfRemoval()"
     (closed)="closeRemoveMemberModal()"
     (memberRemoved)="onMemberRemoved($event)"
-  ></app-member-removal-modal>
+  />
 </div>
