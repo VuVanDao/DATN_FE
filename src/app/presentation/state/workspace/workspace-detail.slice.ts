@@ -10,6 +10,7 @@ import { toast } from 'ngx-sonner';
 import { runStoreRequest } from '../store-request.util';
 import { LoadingFlags } from '../loading-flags.util';
 import { WorkspaceListSlice } from './workspace-list.slice';
+import { Subject, takeUntil } from 'rxjs';
 
 /**
  * Concern: chi tiết của workspace đang mở (tab Dự án / Thành viên / Cài đặt).
@@ -24,6 +25,7 @@ export class WorkspaceDetailSlice {
   private readonly _list = inject(WorkspaceListSlice);
 
   private readonly _loading = new LoadingFlags();
+  private readonly _detailRequestCancel$ = new Subject<void>();
 
   private readonly _currentWorkspace = signal<WorkspaceDetail | null>(null);
 
@@ -35,9 +37,13 @@ export class WorkspaceDetailSlice {
   readonly isUpdating = this._isUpdating.asReadonly();
 
   getWorkspaceDetail(slug: string): void {
+    this._detailRequestCancel$.next();
+
     runStoreRequest({
       loading: this._isLoadingDetail,
-      request$: this._getWorkspaceDetailUseCase.execute(slug),
+      request$: this._getWorkspaceDetailUseCase.execute(slug).pipe(
+        takeUntil(this._detailRequestCancel$),
+      ),
       fallbackErrorMessage: 'Không thể tải thông tin không gian làm việc',
       onSuccess: (res) => {
         this._currentWorkspace.set(res);
@@ -89,6 +95,7 @@ export class WorkspaceDetailSlice {
   }
 
   clear(): void {
+    this._detailRequestCancel$.next();
     this._currentWorkspace.set(null);
     this._loading.resetAll();
   }
