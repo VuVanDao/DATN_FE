@@ -51,7 +51,11 @@
             class="text-xs md:text-sm text-slate-400 max-w-xl line-clamp-2"
             [title]="workspace.description || ''"
           >
-            {{ workspace.description?.slice(0, 80) + '...' || 'Chưa có mô tả chi tiết....' }}
+            @if (workspace.description?.length) {
+              {{ workspace.description?.slice(0, 80) + '...' }}
+            } @else {
+              {{ 'Chưa có mô tả chi tiết....' }}
+            }
           </p>
         </div>
       </div>
