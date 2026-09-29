@@ -28,8 +28,8 @@
         <div
           class="w-24 h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 flex items-center justify-center"
         >
-          @if (logoPreview.value) {
-            <img [src]="logoPreview.value" class="w-full h-full object-cover" alt="Preview" />
+          @if (logoPreview()) {
+            <img [src]="logoPreview()" class="w-full h-full object-cover" alt="Preview" />
           } @else if (workspace.logoUrl) {
             <img [src]="workspace.logoUrl" class="w-full h-full object-cover" alt="Logo" />
           } @else {
@@ -59,8 +59,8 @@
       <div
         class="w-full h-28 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 flex items-center justify-center"
       >
-        @if (coverPreview.value) {
-          <img [src]="coverPreview.value" class="w-full h-full object-cover" alt="Preview" />
+        @if (coverPreview()) {
+          <img [src]="coverPreview()" class="w-full h-full object-cover" alt="Preview" />
         } @else if (workspace.coverImageUrl) {
           <img [src]="workspace.coverImageUrl" class="w-full h-full object-cover" alt="Cover" />
         } @else {

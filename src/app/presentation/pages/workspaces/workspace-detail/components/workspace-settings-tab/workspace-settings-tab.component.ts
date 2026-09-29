@@ -6,6 +6,7 @@ import {
   Input,
   OnChanges,
   Output,
+  signal,
   SimpleChanges,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -34,8 +35,8 @@ export class WorkspaceSettingsTabComponent implements OnChanges {
 
   readonly logoFile = new FormControl<File | null>(null);
   readonly coverFile = new FormControl<File | null>(null);
-  readonly logoPreview = new FormControl<string | null>(null);
-  readonly coverPreview = new FormControl<string | null>(null);
+  readonly logoPreview = signal<string | null>(null);
+  readonly coverPreview = signal<string | null>(null);
   readonly form = new FormGroup({
     name: new FormControl('', {
       nonNullable: true,
@@ -73,8 +74,8 @@ export class WorkspaceSettingsTabComponent implements OnChanges {
     const reader = new FileReader();
     reader.onload = () =>
       type === 'logo'
-        ? this.logoPreview.setValue(reader.result as string)
-        : this.coverPreview.setValue(reader.result as string);
+        ? this.logoPreview.set(reader.result as string)
+        : this.coverPreview.set(reader.result as string);
     reader.readAsDataURL(file);
     type === 'logo' ? this.logoFile.setValue(file) : this.coverFile.setValue(file);
   }
@@ -96,8 +97,8 @@ export class WorkspaceSettingsTabComponent implements OnChanges {
       (updated) => {
         this.logoFile.setValue(null);
         this.coverFile.setValue(null);
-        this.logoPreview.setValue(null);
-        this.coverPreview.setValue(null);
+        this.logoPreview.set(null);
+        this.coverPreview.set(null);
         if (updated.slug !== this.workspace.slug)
           this.router.navigate(['/workspaces', updated.slug], { replaceUrl: true });
       },
