@@ -9,7 +9,7 @@ import { NotificationService } from '../../shared/notification.service';
 import { CreateWorkspaceUseCase } from '../../workspace/create-workspace.use-case';
 import { DeleteWorkspaceUseCase } from '../../workspace/delete-workspace.use-case';
 import { GetUserWorkspacesUseCase } from '../../workspace/get-user-workspaces.use-case';
-import { LoadingFlags } from '../loading-flags.util';
+import { LoadingFlags } from '../../../shared/utils/loading-flags.util';
 import { StoreRequestRunner } from '../store-request.util';
 
 /**

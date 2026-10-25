@@ -1,7 +1,7 @@
 import { signal, WritableSignal } from '@angular/core';
 
 /**
- * Nhóm các cờ loading boolean của một slice state vào một chỗ.
+ * Nhóm các cờ loading của một store hoặc component; mỗi instance quản lý state riêng.
  */
 export class LoadingFlags {
   private readonly _flags = new Map<string, WritableSignal<boolean>>();

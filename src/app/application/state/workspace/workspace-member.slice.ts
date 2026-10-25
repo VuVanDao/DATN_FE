@@ -10,7 +10,7 @@ import { InviteWorkspaceMembersUseCase } from '../../workspace/invite-workspace-
 import { GetMemberRemovalImpactUseCase } from '../../workspace/get-member-removal-impact.use-case';
 import { GetWorkspaceRolesUseCase } from '../../workspace/get-workspace-roles.use-case';
 import { RemoveMemberFromWorkspaceUseCase } from '../../workspace/remove-member-from-workspace.use-case';
-import { LoadingFlags } from '../loading-flags.util';
+import { LoadingFlags } from '../../../shared/utils/loading-flags.util';
 import { StoreRequestRunner } from '../store-request.util';
 
 @Injectable({ providedIn: 'root' })
