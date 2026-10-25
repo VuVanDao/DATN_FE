@@ -20,6 +20,7 @@ export class WorkspaceMemberSlice {
   private readonly add = inject(InviteWorkspaceMembersUseCase);
   private readonly remove = inject(RemoveMemberFromWorkspaceUseCase);
   private readonly getImpact = inject(GetMemberRemovalImpactUseCase);
+
   private readonly cancel$ = new Subject<void>();
   private readonly impactCancel$ = new Subject<void>();
   private readonly loading = new LoadingFlags();

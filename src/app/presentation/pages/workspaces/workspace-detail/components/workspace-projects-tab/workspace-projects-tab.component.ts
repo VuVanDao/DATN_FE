@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { WorkspaceDetailView } from '../../../../../view-models/workspace.view-model';
 
@@ -9,7 +9,10 @@ import { WorkspaceDetailView } from '../../../../../view-models/workspace.view-m
   imports: [CommonModule, MatIconModule],
   templateUrl: './workspace-projects-tab.component.html',
 })
-export class WorkspaceProjectsTabComponent {
+export class WorkspaceProjectsTabComponent implements OnInit {
+  ngOnInit(): void {
+    // alert('OnInit');
+  }
   @Input() workspace!: WorkspaceDetailView;
   @Input() isOwner = false;
   @Output() createProject = new EventEmitter<void>();

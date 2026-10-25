@@ -21,10 +21,10 @@ import { WorkspaceMemberSlice } from './workspace/workspace-member.slice';
   providedIn: 'root',
 })
 export class WorkspaceStore {
-  private readonly _list = inject(WorkspaceListSlice);
-  private readonly _detail = inject(WorkspaceDetailSlice);
-  private readonly _members = inject(WorkspaceMemberSlice);
-  private readonly _project = inject(ProjectSlice);
+  private readonly _list = inject(WorkspaceListSlice); // danh sách workspace
+  private readonly _detail = inject(WorkspaceDetailSlice); // thông tin chi tiết workspace đang mở
+  private readonly _members = inject(WorkspaceMemberSlice); // danh sách thành viên và vai trò trong workspace
+  private readonly _project = inject(ProjectSlice); // quản lý dự án trong workspace
   private readonly _session = inject(SessionService);
   private readonly _notifications = inject(NotificationService);
 
