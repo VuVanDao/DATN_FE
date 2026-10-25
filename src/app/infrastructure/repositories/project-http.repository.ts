@@ -1,10 +1,10 @@
-import { inject, Injectable } from '@angular/core';
-import { ProjectRepository } from '../../domain/repositories/project.repository';
-import { map, Observable } from 'rxjs';
-import { CreateProjectRequest, Project } from '../../domain/models/project.model';
 import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../dtos/auth.dto';
+import { CreateProjectRequest, Project } from '../../domain/models/project.model';
+import { ProjectRepository } from '../../domain/repositories/project.repository';
+import { ApiResponse } from '../dtos/api-response.dto';
 
 @Injectable({
   providedIn: 'root',

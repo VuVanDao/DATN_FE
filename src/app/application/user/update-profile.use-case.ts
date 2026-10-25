@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { UserRepository } from '../../domain/repositories/user.repository';
 import { Observable } from 'rxjs';
 import { UpdateProfileRequest, User } from '../../domain/models/user.model';
+import { UserRepository } from '../../domain/repositories/user.repository';
 
 @Injectable({
   providedIn: 'root',
@@ -9,6 +9,6 @@ import { UpdateProfileRequest, User } from '../../domain/models/user.model';
 export class UpdateProfileUseCase {
   private readonly _userRepository = inject(UserRepository);
   execute(request: UpdateProfileRequest): Observable<User> {
-    return this._userRepository.UpdateProfile(request);
+    return this._userRepository.updateProfile(request);
   }
 }

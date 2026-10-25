@@ -8,6 +8,6 @@ export class GetMyLoginHistoryUseCase {
   private readonly securityRepository = inject(SecurityRepository);
 
   execute(limit = 20): Observable<LoginHistory[]> {
-    return this.securityRepository.GetMyLoginHistory(limit);
+    return this.securityRepository.getMyLoginHistory(limit);
   }
 }

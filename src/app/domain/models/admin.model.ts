@@ -3,26 +3,6 @@ import { User } from './user.model';
 export interface UserManagement extends User {
   isDeleted: boolean;
 }
-export interface UserManagementResponse {
-  id: string;
-  email: string;
-  username: string;
-  avatarUrl?: string | null;
-  bio?: string | null;
-  isActive?: boolean;
-  createdAt?: string;
-  role: string;
-  isDeleted: boolean;
-}
-export interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  pageIndex: number;
-  pageSize: number;
-  totalPages: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
-}
 export interface GetUserManagementParams {
   search?: string; // Từ khóa tìm kiếm (email hoặc username)
   isActive?: boolean; // Lọc theo trạng thái tài khoản: true (hoạt động), false (bị khóa), undefined (tất cả)

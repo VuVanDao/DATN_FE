@@ -4,11 +4,12 @@ import {
   FormControl,
   FormGroup,
   FormsModule,
-  Validators,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { AdminStore } from '../../../../../state/admin.store';
+import { AdminStore } from '../../../../../../application/state/admin.store';
+import { accountPasswordValidators } from '../../../../../../shared/validators/password.validators';
 
 @Component({
   selector: 'app-user-create-modal',
@@ -33,27 +34,22 @@ export class UserCreateModalComponent {
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.minLength(6),
-        Validators.maxLength(50),
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/),
-      ],
+      validators: accountPasswordValidators,
     }),
     bio: new FormControl('', {
       nonNullable: true,
     }),
   });
-  get EmailControl() {
+  get emailControl() {
     return this.createUserForm.controls.email;
   }
-  get UsernameControl() {
+  get usernameControl() {
     return this.createUserForm.controls.username;
   }
-  get PasswordControl() {
+  get passwordControl() {
     return this.createUserForm.controls.password;
   }
-  get BioControl() {
+  get bioControl() {
     return this.createUserForm.controls.bio;
   }
   readonly showPassword = signal<boolean>(false);
@@ -77,7 +73,7 @@ export class UserCreateModalComponent {
       {
         email: email.trim(),
         username: username.trim(),
-        password: password.trim(),
+        password,
         bio: bio.trim() || undefined,
       },
       () => this.close(),

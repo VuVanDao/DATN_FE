@@ -69,7 +69,7 @@
         <button
           type="button"
           (click)="close()"
-          [disabled]="workspaceStore.isDeletingWorkspace()"
+          [disabled]="isDeleting"
           class="px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 rounded-xl transition cursor-pointer disabled:opacity-50"
         >
           Hủy
@@ -77,10 +77,10 @@
         <button
           type="button"
           (click)="confirm()"
-          [disabled]="!isNameMatched() || workspaceStore.isDeletingWorkspace()"
+          [disabled]="!isNameMatched() || isDeleting"
           class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 rounded-xl shadow-sm transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-rose-600 flex items-center gap-1.5"
         >
-          @if (workspaceStore.isDeletingWorkspace()) {
+          @if (isDeleting) {
             <span>Đang xóa...</span>
           } @else {
             <mat-icon fontIcon="delete" class="icon-xs"></mat-icon>

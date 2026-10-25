@@ -1,13 +1,13 @@
 import { Observable } from 'rxjs';
 import {
   AddWorkspaceMembersRequest,
-  AddWorkspaceMembersResponse,
+  AddWorkspaceMembersResult,
   CreateWorkspaceRequest,
+  MemberRemovalImpact,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
   WorkspaceRole,
-  MemberRemovalImpact,
 } from '../models/workspace.model';
 
 export abstract class WorkspaceRepository {
@@ -22,7 +22,7 @@ export abstract class WorkspaceRepository {
   abstract addMembers(
     workspaceId: string,
     request: AddWorkspaceMembersRequest,
-  ): Observable<AddWorkspaceMembersResponse>;
+  ): Observable<AddWorkspaceMembersResult>;
   abstract deleteWorkspace(id: string): Observable<boolean>;
 
   abstract getMemberRemovalImpact(

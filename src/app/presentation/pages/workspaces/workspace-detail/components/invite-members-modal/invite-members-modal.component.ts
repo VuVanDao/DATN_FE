@@ -11,8 +11,11 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceStore } from '../../../../../state/workspace.store';
-import { AddWorkspaceMembersResponse, WorkspaceRole } from '../../../../../../domain/models/workspace.model';
+import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
+import {
+  AddWorkspaceMembersResult,
+  WorkspaceRole,
+} from '../../../../../../domain/models/workspace.model';
 interface MemberRow {
   email: string;
   roleId: string | null;
@@ -29,15 +32,15 @@ export class InviteMembersModalComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() workspaceId = '';
   @Output() closed = new EventEmitter<void>();
-  @Output() membersAdded = new EventEmitter<AddWorkspaceMembersResponse>();
+  @Output() membersAdded = new EventEmitter<AddWorkspaceMembersResult>();
 
   // Danh sách rows nhập email + role
   readonly rows = signal<MemberRow[]>([{ email: '', roleId: null }]);
   // Kết quả sau khi gửi API
-  readonly addResult = signal<AddWorkspaceMembersResponse | null>(null);
+  readonly addResult = signal<AddWorkspaceMembersResult | null>(null);
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen']?.currentValue === true) {
+    if (changes['isOpen']?.currentValue === true || changes['workspaceId']) {
       this.workspaceStore.loadWorkspaceRoles();
       this.resetState();
     }
@@ -90,17 +93,19 @@ export class InviteMembersModalComponent implements OnChanges {
     return valid;
   }
   submit(): void {
-    if (!this.validateRows()) return;
+    if (!this.isOpen || this.workspaceStore.isAddingMembers() || !this.validateRows()) return;
+    const workspaceId = this.workspaceId;
     const members = this.rows().map((row) => ({
       email: row.email.trim(),
       roleId: row.roleId || null,
     }));
-    this.workspaceStore.addMembers(this.workspaceId, { members: members }, (result) => {
+    this.workspaceStore.addMembers(workspaceId, { members: members }, (result) => {
+      if (!this.isOpen || this.workspaceId !== workspaceId) return;
       this.addResult.set(result);
       this.membersAdded.emit(result);
-      // Nếu tất cả đều thành công thì tự đóng modal sau 1.5s
+      // Đóng ngay sau khi thành công để không giữ timer của lần mở trước.
       if (result.totalFailed === 0) {
-        setTimeout(() => this.close(), 1500);
+        this.close();
       }
     });
   }

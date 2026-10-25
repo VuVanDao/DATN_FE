@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { LayoutService } from '../../../application/layout/layout.service';
-import { WorkspaceStore } from '../../state/workspace.store';
-import { Workspace } from '../../../domain/models/workspace.model';
-import { toast } from 'ngx-sonner';
 import { Router } from '@angular/router';
+import { toast } from 'ngx-sonner';
+import { LayoutService } from '../../../application/layout/layout.service';
+import { WorkspaceStore } from '../../../application/state/workspace.store';
+import { Workspace } from '../../../domain/models/workspace.model';
+import { toWorkspaceView } from '../../view-models/workspace.view-model';
 
 @Component({
   selector: 'app-workspaces-page',
@@ -15,6 +16,7 @@ import { Router } from '@angular/router';
 })
 export class WorkspacesPage implements OnInit {
   readonly workspaceStore = inject(WorkspaceStore);
+  readonly workspaces = computed(() => this.workspaceStore.workspaces().map(toWorkspaceView));
   private readonly layoutService = inject(LayoutService);
   private readonly router = inject(Router);
 

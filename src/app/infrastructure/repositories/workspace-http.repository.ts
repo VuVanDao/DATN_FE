@@ -1,21 +1,20 @@
-import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { WorkspaceRepository } from '../../domain/repositories/workspace.repository';
+import { environment } from '../../../environments/environment';
 import {
   AddWorkspaceMembersRequest,
-  AddWorkspaceMembersResponse,
+  AddWorkspaceMembersResult,
   CreateWorkspaceRequest,
+  MemberRemovalImpact,
   UpdateWorkspaceRequest,
   Workspace,
   WorkspaceDetail,
-  WorkspaceDetailResponse,
-  WorkspaceResponse,
   WorkspaceRole,
-  MemberRemovalImpact,
 } from '../../domain/models/workspace.model';
-import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../dtos/auth.dto';
+import { WorkspaceRepository } from '../../domain/repositories/workspace.repository';
+import { ApiResponse } from '../dtos/api-response.dto';
+import { WorkspaceDetailResponse, WorkspaceResponse } from '../dtos/workspace.dto';
 import { WorkspaceMapper } from '../mappers/workspace.mapper';
 
 @Injectable({
@@ -72,9 +71,9 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
   addMembers(
     workspaceId: string,
     request: AddWorkspaceMembersRequest,
-  ): Observable<AddWorkspaceMembersResponse> {
+  ): Observable<AddWorkspaceMembersResult> {
     return this.http
-      .post<ApiResponse<AddWorkspaceMembersResponse>>(
+      .post<ApiResponse<AddWorkspaceMembersResult>>(
         `${this.API_URL}/${workspaceId}/members`,
         request,
       )

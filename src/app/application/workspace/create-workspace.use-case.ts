@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { WorkspaceRepository } from '../../domain/repositories/workspace.repository';
 import { CreateWorkspaceRequest, Workspace } from '../../domain/models/workspace.model';
+import { WorkspaceRepository } from '../../domain/repositories/workspace.repository';
 
 @Injectable({
   providedIn: 'root',

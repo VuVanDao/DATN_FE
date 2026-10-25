@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { ProfileStore } from '../../../../state/profile.store';
+import { ProfileStore } from '../../../../../application/state/profile.store';
 
 @Component({
   selector: 'app-profile-details',
@@ -20,7 +20,7 @@ export class ProfileDetailsComponent {
   readonly profileStore = inject(ProfileStore);
 
   readonly isEditMode = signal<boolean>(false);
-  readonly isSaving = signal<boolean>(false);
+  readonly isSaving = this.profileStore.isProfileSaving;
 
   readonly form = new FormGroup({
     username: new FormControl('', {
@@ -63,18 +63,10 @@ export class ProfileDetailsComponent {
       this.form.markAllAsTouched();
       return;
     }
-    this.isSaving.set(true);
     const { username, bio } = this.form.getRawValue();
-    this.profileStore.updateProfile(
-      { username: username, bio: bio },
-      () => {
-        this.isEditMode.set(false);
-        this.isSaving.set(false);
-        this.form.markAsPristine();
-      },
-      () => {
-        this.isSaving.set(false);
-      },
-    );
+    this.profileStore.updateProfile({ username: username, bio: bio }, () => {
+      this.isEditMode.set(false);
+      this.form.markAsPristine();
+    });
   }
 }

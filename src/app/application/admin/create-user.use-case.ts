@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { AdminRepository } from '../../domain/repositories/admin.repository';
-import { CreateUserRequest } from '../../domain/models/admin.model';
 import { Observable } from 'rxjs';
+import { CreateUserRequest } from '../../domain/models/admin.model';
+import { AdminRepository } from '../../domain/repositories/admin.repository';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +16,6 @@ export class CreateUserUseCase {
       username: request.username.trim(),
       bio: request.bio?.trim(),
     };
-    return this._adminRepository.CreateUser(normalizedRequest);
+    return this._adminRepository.createUser(normalizedRequest);
   }
 }

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { AdminStore } from '../../../../../../application/state/admin.store';
 import { UserManagement } from '../../../../../../domain/models/admin.model';
-import { AdminStore } from '../../../../../state/admin.store';
 
 @Component({
   selector: 'app-user-delete-modal',
@@ -23,9 +23,11 @@ export class UserDeleteModalComponent {
   }
 
   confirmDelete(): void {
-    if (!this.user) return;
-    this.store.deleteUser(this.user.id, () => {
-      this.deleted.emit(this.user!);
+    if (!this.user || !this.isOpen || this.store.isSubmitting()) return;
+    const user = this.user;
+    this.store.deleteUser(user.id, () => {
+      if (!this.isOpen || this.user?.id !== user.id) return;
+      this.deleted.emit(user);
       this.close();
     });
   }

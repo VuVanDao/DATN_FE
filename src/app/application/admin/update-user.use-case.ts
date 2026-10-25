@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { AdminRepository } from '../../domain/repositories/admin.repository';
-import { AdminUpdateUserRequest, UserManagement } from '../../domain/models/admin.model';
 import { Observable } from 'rxjs';
+import { AdminUpdateUserRequest, UserManagement } from '../../domain/models/admin.model';
+import { AdminRepository } from '../../domain/repositories/admin.repository';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +14,6 @@ export class UpdateUserUseCase {
       username: request.username.trim(),
       bio: request.bio?.trim(),
     };
-    return this._adminRepository.UpdateUser(userId, normalizedRequest);
+    return this._adminRepository.updateUser(userId, normalizedRequest);
   }
 }

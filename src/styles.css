@@ -95,7 +95,9 @@ html.light body {
   min-width: 14.5rem !important;
   background-color: #ffffff !important;
   border: 1px solid #e2e8f0 !important; /* border-slate-200 */
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
 }
 
 /* Loại bỏ padding-top/bottom mặc định (8px) của Material để cân đối padding X và Y */
@@ -223,49 +225,49 @@ html.dark .custom-user-menu .admin-item mat-icon {
 
 /* ===== TIỆN ÍCH CUSTOM KÍCH THƯỚC MAT-ICON TOÀN DỰ ÁN ===== */
 mat-icon.icon-xxs {
-  width: 0.875rem !important;  /* 14px */
+  width: 0.875rem !important; /* 14px */
   height: 0.875rem !important;
   font-size: 0.875rem !important;
   line-height: 0.875rem !important;
 }
 
 mat-icon.icon-xs {
-  width: 1rem !important;      /* 16px */
+  width: 1rem !important; /* 16px */
   height: 1rem !important;
   font-size: 1rem !important;
   line-height: 1rem !important;
 }
 
 mat-icon.icon-sm {
-  width: 1.125rem !important;  /* 18px */
+  width: 1.125rem !important; /* 18px */
   height: 1.125rem !important;
   font-size: 1.125rem !important;
   line-height: 1.125rem !important;
 }
 
 mat-icon.icon-md {
-  width: 1.25rem !important;   /* 20px */
+  width: 1.25rem !important; /* 20px */
   height: 1.25rem !important;
   font-size: 1.25rem !important;
   line-height: 1.25rem !important;
 }
 
 mat-icon.icon-lg {
-  width: 1.5rem !important;    /* 24px */
+  width: 1.5rem !important; /* 24px */
   height: 1.5rem !important;
   font-size: 1.5rem !important;
   line-height: 1.5rem !important;
 }
 
 mat-icon.icon-xl {
-  width: 2rem !important;      /* 32px */
+  width: 2rem !important; /* 32px */
   height: 2rem !important;
   font-size: 2rem !important;
   line-height: 2rem !important;
 }
 
 mat-icon.icon-2xl {
-  width: 2.25rem !important;   /* 36px */
+  width: 2.25rem !important; /* 36px */
   height: 2.25rem !important;
   font-size: 2.25rem !important;
   line-height: 2.25rem !important;
@@ -278,7 +280,9 @@ mat-icon.icon-2xl {
   min-width: 11rem !important;
   background-color: #ffffff !important;
   border: 1px solid #e2e8f0 !important; /* border-slate-200 */
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
 }
 
 .custom-dropdown-menu .mat-mdc-menu-content {
@@ -369,5 +373,3 @@ html.dark select option {
   background-color: #0f172a;
   color: #f8fafc;
 }
-
-

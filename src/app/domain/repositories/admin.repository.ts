@@ -1,25 +1,24 @@
 import { Observable } from 'rxjs';
+import { PagedResult } from '../../shared/models/paged-result.model';
 import {
-  UserManagement,
-  UserManagementResponse,
+  AdminUpdateUserRequest,
+  CreateUserRequest,
   GetUserManagementParams,
-  PagedResult,
   Role,
   UpdateUserStatusRequest,
-  CreateUserRequest,
-  AdminUpdateUserRequest,
+  UserManagement,
 } from '../models/admin.model';
 
 export abstract class AdminRepository {
-  abstract GetUsers(params: GetUserManagementParams): Observable<PagedResult<UserManagement>>;
-  abstract UpdateUserStatus(request: UpdateUserStatusRequest): Observable<boolean>;
+  abstract getUsers(params: GetUserManagementParams): Observable<PagedResult<UserManagement>>;
+  abstract updateUserStatus(request: UpdateUserStatusRequest): Observable<boolean>;
   // Gán vai trò cho một người dùng
-  abstract AssignUserRole(userId: string, roleId: string): Observable<boolean>;
-  abstract GetRoles(): Observable<Role[]>;
+  abstract assignUserRole(userId: string, roleId: string): Observable<boolean>;
+  abstract getRoles(): Observable<Role[]>;
   // Tạo mới người dùng (Admin)
-  abstract CreateUser(request: CreateUserRequest): Observable<string>;
+  abstract createUser(request: CreateUserRequest): Observable<string>;
   // Cập nhật thông tin người dùng (Admin)
-  abstract UpdateUser(userId: string, request: AdminUpdateUserRequest): Observable<UserManagement>;
+  abstract updateUser(userId: string, request: AdminUpdateUserRequest): Observable<UserManagement>;
   // Xóa mềm người dùng (Admin)
-  abstract DeleteUser(userId: string): Observable<boolean>;
+  abstract deleteUser(userId: string): Observable<boolean>;
 }

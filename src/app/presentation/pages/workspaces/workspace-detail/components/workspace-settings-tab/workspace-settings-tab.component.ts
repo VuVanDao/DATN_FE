@@ -2,20 +2,19 @@ import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
-  inject,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   signal,
   SimpleChanges,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+
 import { toast } from 'ngx-sonner';
-import { WorkspaceDetail, WorkspaceMember } from '../../../../../../domain/models/workspace.model';
-import { AuthStore } from '../../../../../state/auth.store';
-import { WorkspaceStore } from '../../../../../state/workspace.store';
+import { UpdateWorkspaceRequest } from '../../../../../../domain/models/workspace.model';
+import { WorkspaceDetailView } from '../../../../../view-models/workspace.view-model';
 
 @Component({
   selector: 'app-workspace-settings-tab',
@@ -23,15 +22,15 @@ import { WorkspaceStore } from '../../../../../state/workspace.store';
   imports: [CommonModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './workspace-settings-tab.component.html',
 })
-export class WorkspaceSettingsTabComponent implements OnChanges {
-  readonly workspaceStore = inject(WorkspaceStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly router = inject(Router);
-
-  @Input() workspace!: WorkspaceDetail;
+export class WorkspaceSettingsTabComponent implements OnChanges, OnDestroy {
+  @Input() workspace!: WorkspaceDetailView;
   @Input() isOwner = false;
+  @Input() isSaving = false;
+  @Output() saveWorkspace = new EventEmitter<UpdateWorkspaceRequest>();
   @Output() deleteWorkspace = new EventEmitter<void>();
   @Output() leaveWorkspace = new EventEmitter<void>();
+
+  private readonly readers = new Map<'logo' | 'cover', FileReader>();
 
   readonly logoFile = new FormControl<File | null>(null);
   readonly coverFile = new FormControl<File | null>(null);
@@ -49,11 +48,24 @@ export class WorkspaceSettingsTabComponent implements OnChanges {
   });
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['workspace']?.currentValue) {
-      this.form.patchValue({
-        name: this.workspace.name,
-        description: this.workspace.description ?? '',
-      });
+    const change = changes['workspace'];
+    if (!change?.currentValue) return;
+    const previous = change.previousValue as WorkspaceDetailView | undefined;
+    const current = this.workspace;
+    if (
+      !previous ||
+      previous.id !== current.id ||
+      previous.name !== current.name ||
+      previous.description !== current.description ||
+      previous.logoUrl !== current.logoUrl ||
+      previous.coverImageUrl !== current.coverImageUrl
+    ) {
+      this.cancelImageReaders();
+      this.form.reset({ name: current.name, description: current.description ?? '' });
+      this.logoFile.setValue(null);
+      this.coverFile.setValue(null);
+      this.logoPreview.set(null);
+      this.coverPreview.set(null);
     }
   }
 
@@ -71,37 +83,50 @@ export class WorkspaceSettingsTabComponent implements OnChanges {
       toast.error(`Ảnh không được vượt quá ${maxSize} MB`);
       return;
     }
+    this.readers.get(type)?.abort();
+    const targetWorkspaceId = this.workspace.id;
     const reader = new FileReader();
+    this.readers.set(type, reader);
     reader.onload = () =>
-      type === 'logo'
+      this.readers.get(type) === reader &&
+      this.workspace.id === targetWorkspaceId &&
+      (type === 'logo'
         ? this.logoPreview.set(reader.result as string)
-        : this.coverPreview.set(reader.result as string);
+        : this.coverPreview.set(reader.result as string));
     reader.readAsDataURL(file);
     type === 'logo' ? this.logoFile.setValue(file) : this.coverFile.setValue(file);
   }
 
+  ngOnDestroy(): void {
+    this.cancelImageReaders();
+  }
+
+  private cancelImageReaders(): void {
+    for (const reader of this.readers.values()) reader.abort();
+    this.readers.clear();
+  }
+
+  resetSavedForm(): void {
+    this.cancelImageReaders();
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
+    this.logoFile.setValue(null);
+    this.coverFile.setValue(null);
+    this.logoPreview.set(null);
+    this.coverPreview.set(null);
+  }
+
   submitUpdateForm(): void {
-    if (!this.isOwner || this.form.invalid) {
+    if (!this.isOwner || this.isSaving || this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     const { name, description } = this.form.getRawValue();
-    this.workspaceStore.updateWorkspace(
-      this.workspace.id,
-      {
-        name: name,
-        description: description,
-        logo: this.logoFile.value,
-        coverImage: this.coverFile.value,
-      },
-      (updated) => {
-        this.logoFile.setValue(null);
-        this.coverFile.setValue(null);
-        this.logoPreview.set(null);
-        this.coverPreview.set(null);
-        if (updated.slug !== this.workspace.slug)
-          this.router.navigate(['/workspaces', updated.slug], { replaceUrl: true });
-      },
-    );
+    this.saveWorkspace.emit({
+      name,
+      description,
+      logo: this.logoFile.value,
+      coverImage: this.coverFile.value,
+    });
   }
 }

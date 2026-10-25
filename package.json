@@ -7,7 +7,14 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:DATN_FE": "node dist/DATN_FE/server/server.mjs"
+    "serve:ssr:DATN_FE": "node dist/DATN_FE/server/server.mjs",
+    "build:dev": "ng build --configuration development",
+    "test:ci": "ng test --watch=false",
+    "typecheck": "ngc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
+    "lint": "node scripts/check-architecture.mjs && npm run typecheck",
+    "format": "prettier --write src scripts docs package.json tsconfig*.json angular.json",
+    "format:check": "prettier --check src scripts docs package.json tsconfig*.json angular.json",
+    "check": "npm run lint && npm run format:check && npm run test:ci"
   },
   "private": true,
   "packageManager": "npm@10.9.8",

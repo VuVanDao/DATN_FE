@@ -1,13 +1,13 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './presentation/guards/auth.guards';
-import { guestGuard } from './presentation/guards/guest.guards';
-import { adminGuard } from './presentation/guards/admin.guards';
+import { adminGuard } from './presentation/guards/admin.guard';
+import { authGuard } from './presentation/guards/auth.guard';
+import { guestGuard } from './presentation/guards/guest.guard';
 
 export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./presentation/layouts/main-layout/main-layout').then((m) => m.MainLayout),
+      import('./presentation/layouts/main-layout/main.layout').then((m) => m.MainLayout),
     canActivate: [authGuard],
     children: [
       {
@@ -17,17 +17,17 @@ export const routes: Routes = [
       },
       {
         path: 'home-page',
-        loadComponent: () => import('./presentation/pages/home/home').then((m) => m.HomePage),
+        loadComponent: () => import('./presentation/pages/home/home.page').then((m) => m.HomePage),
       },
       {
         path: 'profile',
         loadComponent: () =>
-          import('./presentation/pages/profile/profile').then((m) => m.ProfilePage),
+          import('./presentation/pages/profile/profile.page').then((m) => m.ProfilePage),
       },
       {
         path: 'change-password',
         loadComponent: () =>
-          import('./presentation/pages/change-password/change-password-page').then(
+          import('./presentation/pages/change-password/change-password.page').then(
             (m) => m.ChangePasswordPage,
           ),
       },
@@ -66,7 +66,7 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./presentation/layouts/auth-layout/auth-layout').then((m) => m.AuthLayout),
+      import('./presentation/layouts/auth-layout/auth.layout').then((m) => m.AuthLayout),
     canActivate: [guestGuard],
     children: [
       {
@@ -77,22 +77,24 @@ export const routes: Routes = [
       {
         path: 'login',
         loadComponent: () =>
-          import('./presentation/pages/auth/login').then((m) => m.LoginPage),
+          import('./presentation/pages/auth/login.page').then((m) => m.LoginPage),
       },
       {
         path: 'register',
         loadComponent: () =>
-          import('./presentation/pages/auth/register').then((m) => m.RegisterPage),
+          import('./presentation/pages/auth/register.page').then((m) => m.RegisterPage),
       },
       {
         path: 'forgot-password',
         loadComponent: () =>
-          import('./presentation/pages/auth/forgot-password').then((m) => m.ForgotPasswordPage),
+          import('./presentation/pages/auth/forgot-password.page').then(
+            (m) => m.ForgotPasswordPage,
+          ),
       },
       {
         path: 'reset-password',
         loadComponent: () =>
-          import('./presentation/pages/auth/reset-password').then((m) => m.ResetPasswordPage),
+          import('./presentation/pages/auth/reset-password.page').then((m) => m.ResetPasswordPage),
       },
     ],
   },

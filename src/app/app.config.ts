@@ -1,30 +1,36 @@
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import {
   ApplicationConfig,
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
+import { provideClientHydration } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideClientHydration } from '@angular/platform-browser';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { AuthStore } from './presentation/state/auth.store';
-import { AuthRepository } from './domain/repositories/auth.repository';
-import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repository';
-import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
-import { UserRepository } from './domain/repositories/user.repository';
-import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
-import { SecurityRepository } from './domain/repositories/security.repository';
-import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
+import { NotificationService } from './application/shared/notification.service';
+import { AuthStore } from './application/state/auth.store';
 import { AdminRepository } from './domain/repositories/admin.repository';
-import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
-import { WorkspaceRepository } from './domain/repositories/workspace.repository';
-import { WorkspaceHttpRepository } from './infrastructure/repositories/workspace-http.repository';
+import { AiRepository } from './domain/repositories/ai.repository';
+import { AuthRepository } from './domain/repositories/auth.repository';
 import { ProjectRepository } from './domain/repositories/project.repository';
+import { SecurityRepository } from './domain/repositories/security.repository';
+import { UserRepository } from './domain/repositories/user.repository';
+import { WorkspaceRepository } from './domain/repositories/workspace.repository';
+import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
+import { MockAiAssistantService } from './infrastructure/mocks/mock-ai-assistant.service';
+import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
+import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repository';
 import { ProjectHttpRepository } from './infrastructure/repositories/project-http.repository';
+import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
+import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
+import { WorkspaceHttpRepository } from './infrastructure/repositories/workspace-http.repository';
+import { ToastNotificationService } from './presentation/services/toast-notification.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: AiRepository, useClass: MockAiAssistantService },
+    { provide: NotificationService, useClass: ToastNotificationService },
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(),

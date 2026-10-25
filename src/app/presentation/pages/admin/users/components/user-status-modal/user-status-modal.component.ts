@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { AdminStore } from '../../../../../../application/state/admin.store';
 import { UserManagement } from '../../../../../../domain/models/admin.model';
-import { AdminStore } from '../../../../../state/admin.store';
 
 @Component({
   selector: 'app-user-status-modal',
@@ -28,16 +28,17 @@ export class UserStatusModalComponent {
   }
 
   confirmStatusChange(): void {
-    if (!this.user) return;
+    if (!this.user || !this.isOpen || this.store.isSubmitting()) return;
+    const userId = this.user.id;
 
     this.store.updateUserStatus(
       {
-        userId: this.user.id,
+        userId,
         isActive: this.targetStatus,
         reason: this.statusReason().trim() || undefined,
       },
       () => {
-        this.close();
+        if (this.isOpen && this.user?.id === userId) this.close();
       },
     );
   }

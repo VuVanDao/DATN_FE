@@ -5,12 +5,13 @@ import {
   inject,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   SimpleChanges,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
 import { WorkspaceMember } from '../../../../../../domain/models/workspace.model';
-import { WorkspaceStore } from '../../../../../state/workspace.store';
 
 @Component({
   selector: 'app-member-removal-modal',
@@ -18,7 +19,7 @@ import { WorkspaceStore } from '../../../../../state/workspace.store';
   imports: [CommonModule, MatIconModule],
   templateUrl: './member-removal-modal.component.html',
 })
-export class MemberRemovalModalComponent implements OnChanges {
+export class MemberRemovalModalComponent implements OnChanges, OnDestroy {
   readonly workspaceStore = inject(WorkspaceStore);
 
   @Input() isOpen = false;
@@ -35,11 +36,16 @@ export class MemberRemovalModalComponent implements OnChanges {
   @Output() memberRemoved = new EventEmitter<{ memberId: string; workspaceId: string }>();
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen']?.currentValue === false) this.workspaceStore.clearMemberRemovalImpact();
     if (this.isOpen && this.workspaceId && this.member) {
-      if (changes['isOpen']?.currentValue === true || changes['member']) {
+      if (changes['isOpen']?.currentValue === true || changes['member'] || changes['workspaceId']) {
         this.loadImpact();
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.workspaceStore.clearMemberRemovalImpact();
   }
 
   loadImpact(): void {
@@ -61,17 +67,32 @@ export class MemberRemovalModalComponent implements OnChanges {
       return;
     }
 
-    if (this.workspaceStore.memberRemovalImpact()?.isProjectLeader) {
+    const impact = this.workspaceStore.memberRemovalImpact();
+    if (
+      !this.isOpen ||
+      this.workspaceStore.isRemovingMember() ||
+      this.workspaceStore.isLoadingMemberImpact() ||
+      !impact ||
+      impact.memberId !== this.member.userId ||
+      impact.isProjectLeader
+    ) {
       return;
     }
 
     const targetUserId = this.member.userId;
+    const workspaceId = this.workspaceId;
 
     this.workspaceStore.removeMember(
-      this.workspaceId,
+      workspaceId,
       targetUserId,
       () => {
-        this.memberRemoved.emit({ memberId: targetUserId, workspaceId: this.workspaceId });
+        if (
+          !this.isOpen ||
+          this.workspaceId !== workspaceId ||
+          this.member?.userId !== targetUserId
+        )
+          return;
+        this.memberRemoved.emit({ memberId: targetUserId, workspaceId });
 
         this.close();
       },

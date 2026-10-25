@@ -8,16 +8,7 @@ export interface User {
   createdAt?: string;
   role: string;
 }
-export interface UserResponse {
-  id: string;
-  email: string;
-  username: string;
-  avatarUrl?: string;
-  bio?: string;
-  isActive?: boolean;
-  createdAt?: string;
-  role: string;
-}
+
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
@@ -29,17 +20,6 @@ export interface UpdateProfileRequest {
 }
 
 export interface LoginHistory {
-  id: string;
-  userId?: string | null;
-  emailAttempted: string;
-  ipAddress?: string | null;
-  userAgent?: string | null;
-  isSuccess: boolean;
-  failureReason?: string | null;
-  createdAt: string;
-}
-
-export interface LoginHistoryResponse {
   id: string;
   userId?: string | null;
   emailAttempted: string;

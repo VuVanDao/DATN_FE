@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceStore } from '../../../../../state/workspace.store';
+import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
 
 @Component({
   selector: 'app-create-project-modal',

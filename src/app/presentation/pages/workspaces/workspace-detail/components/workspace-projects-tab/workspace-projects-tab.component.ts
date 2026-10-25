@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { WorkspaceDetail } from '../../../../../../domain/models/workspace.model';
+import { WorkspaceDetailView } from '../../../../../view-models/workspace.view-model';
 
 @Component({
   selector: 'app-workspace-projects-tab',
@@ -10,7 +10,7 @@ import { WorkspaceDetail } from '../../../../../../domain/models/workspace.model
   templateUrl: './workspace-projects-tab.component.html',
 })
 export class WorkspaceProjectsTabComponent {
-  @Input() workspace!: WorkspaceDetail;
+  @Input() workspace!: WorkspaceDetailView;
   @Input() isOwner = false;
   @Output() createProject = new EventEmitter<void>();
   openModalForCreateProject(): void {

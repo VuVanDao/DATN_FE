@@ -1,18 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
-import { WorkspaceDeleteModalComponent } from './components/workspace-delete-modal/workspace-delete-modal.component';
+import { LayoutService } from '../../../../application/layout/layout.service';
+import { AuthStore } from '../../../../application/state/auth.store';
+import { WorkspaceStore } from '../../../../application/state/workspace.store';
+import { UpdateWorkspaceRequest, WorkspaceMember } from '../../../../domain/models/workspace.model';
+import { toWorkspaceDetailView } from '../../../view-models/workspace.view-model';
 import { CreateProjectModalComponent } from './components/create-project-modal/create-project-modal.component';
+import { InviteMembersModalComponent } from './components/invite-members-modal/invite-members-modal.component';
 import { MemberRemovalModalComponent } from './components/member-removal-modal/member-removal-modal.component';
+import { WorkspaceDeleteModalComponent } from './components/workspace-delete-modal/workspace-delete-modal.component';
 import { WorkspaceMembersTabComponent } from './components/workspace-members-tab/workspace-members-tab.component';
 import { WorkspaceProjectsTabComponent } from './components/workspace-projects-tab/workspace-projects-tab.component';
 import { WorkspaceSettingsTabComponent } from './components/workspace-settings-tab/workspace-settings-tab.component';
-import { LayoutService } from '../../../../application/layout/layout.service';
-import { WorkspaceDetail, WorkspaceMember } from '../../../../domain/models/workspace.model';
-import { AuthStore } from '../../../state/auth.store';
-import { WorkspaceStore } from '../../../state/workspace.store';
 
 type WorkspaceTab = 'projects' | 'members' | 'settings';
 
@@ -39,7 +41,19 @@ export class WorkspaceDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
+  private readonly destroyRef = inject(DestroyRef);
+  readonly workspace = computed(() => {
+    const workspace = this.workspaceStore.currentWorkspace();
+    return workspace ? toWorkspaceDetailView(workspace) : null;
+  });
+  readonly tabs: { id: WorkspaceTab; label: string }[] = [
+    { id: 'projects', label: 'Dự án' },
+    { id: 'members', label: 'Thành viên' },
+    { id: 'settings', label: 'Cài đặt' },
+  ];
   readonly activeTab = signal<WorkspaceTab>('projects');
+  readonly routeSlug = signal('');
+  @ViewChild(WorkspaceSettingsTabComponent) private settingsTab?: WorkspaceSettingsTabComponent;
 
   readonly showInviteModal = signal(false);
   readonly showDeleteModal = signal(false);
@@ -66,8 +80,16 @@ export class WorkspaceDetailPage implements OnInit {
 
   ngOnInit(): void {
     this.layoutService.setSidebar('main');
-    this.route.paramMap.subscribe((params) => {
+    this.destroyRef.onDestroy(() => this.workspaceStore.clearDetail());
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.closeInviteModal();
+      this.closeDeleteWorkspaceModal();
+      this.closeCreateProjectModal();
+      this.closeRemoveMemberModal();
+
       const slug = params.get('slug');
+      if (this.workspaceStore.currentWorkspace()?.slug !== slug) this.activeTab.set('projects');
+      this.routeSlug.set(slug ?? '');
       if (slug) this.workspaceStore.getWorkspaceDetail(slug);
     });
   }
@@ -99,6 +121,19 @@ export class WorkspaceDetailPage implements OnInit {
   closeRemoveMemberModal(): void {
     this.showMemberRemovalModal.set(false);
     this.selectedMemberToRemove.set(null);
+    this.workspaceStore.clearMemberRemovalImpact();
+  }
+
+  saveWorkspace(request: UpdateWorkspaceRequest): void {
+    const workspace = this.workspaceStore.currentWorkspace();
+    if (!workspace || !this.isOwner()) return;
+    const originalSlug = workspace.slug;
+    this.workspaceStore.updateWorkspace(workspace.id, request, (updated) => {
+      this.settingsTab?.resetSavedForm();
+      if (this.routeSlug() === originalSlug && updated.slug !== originalSlug) {
+        void this.router.navigate(['/workspaces', updated.slug], { replaceUrl: true });
+      }
+    });
   }
 
   onConfirmDelete(): void {

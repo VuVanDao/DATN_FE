@@ -1,18 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LayoutService } from '../../../../application/layout/layout.service';
-import { AuthStore } from '../../../state/auth.store';
-import { AdminStore } from '../../../state/admin.store';
-import { UserManagement } from '../../../../domain/models/admin.model';
 import { toast } from 'ngx-sonner';
-import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
+import { LayoutService } from '../../../../application/layout/layout.service';
+import { AdminStore } from '../../../../application/state/admin.store';
+import { AuthStore } from '../../../../application/state/auth.store';
+import { UserManagement } from '../../../../domain/models/admin.model';
 import { UserCreateModalComponent } from './components/user-create-modal/user-create-modal.component';
 import { UserDeleteModalComponent } from './components/user-delete-modal/user-delete-modal.component';
+import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
+import { UserRoleModalComponent } from './components/user-role-modal/user-role-modal.component';
 import { UserStatusModalComponent } from './components/user-status-modal/user-status-modal.component';
 import { UserUpdateModalComponent } from './components/user-update-modal/user-update-modal.component';
+import { UsersFiltersComponent } from './components/users-filters/users-filters.component';
+import { UsersPaginationComponent } from './components/users-pagination/users-pagination.component';
+import { UsersTableComponent } from './components/users-table/users-table.component';
 
 @Component({
   selector: 'app-admin-users',
@@ -22,6 +26,10 @@ import { UserUpdateModalComponent } from './components/user-update-modal/user-up
     FormsModule,
     MatIconModule,
     MatTooltipModule,
+    UsersFiltersComponent,
+    UsersTableComponent,
+    UsersPaginationComponent,
+    UserRoleModalComponent,
     UserDetailModalComponent,
     UserCreateModalComponent,
     UserDeleteModalComponent,
@@ -35,17 +43,11 @@ export class AdminManageUserPage implements OnInit {
   readonly authStore = inject(AuthStore);
   readonly layoutService = inject(LayoutService);
 
-  readonly searchInput = signal<string>('');
+  readonly searchInput = signal(this.store.searchQuery());
 
   // State mở Modal Phân quyền
   readonly isRoleModalOpen = signal<boolean>(false);
   readonly selectedUserForRoles = signal<UserManagement | null>(null);
-  readonly selectedRoleId = signal<string>('');
-
-  // Chỉ lấy danh sách Role toàn cục (Scope = Global) áp dụng cho tài khoản người dùng
-  readonly globalRoles = computed(() => {
-    return this.store.roles().filter((r) => r.scope === 'Global');
-  });
 
   // State mở Modal status
   readonly isStatusModalOpen = signal<boolean>(false);
@@ -90,30 +92,18 @@ export class AdminManageUserPage implements OnInit {
   // set role cho các tài khoản
   openRoleModal(user: UserManagement): void {
     this.selectedUserForRoles.set(user);
-    // Lấy ID Role hiện tại của User
-    const allRoles = this.store.roles();
-    const currentRole = allRoles.find((r) => r.name === user.role);
-    this.selectedRoleId.set(currentRole ? currentRole.id : '');
     this.isRoleModalOpen.set(true);
   }
   closeRoleModal(): void {
     this.isRoleModalOpen.set(false);
     this.selectedUserForRoles.set(null);
-    this.selectedRoleId.set('');
   }
-  selectRole(roleId: string): void {
-    this.selectedRoleId.set(roleId);
-  }
-  saveRoles(): void {
+  saveRoles(roleId: string): void {
     const user = this.selectedUserForRoles();
-    if (!user) return;
-    if (!this.selectedRoleId()) {
-      toast.error('Vui lòng chọn vai trò cho người dùng!');
-      return;
-    }
-    this.store.assignRole(user.id, this.selectedRoleId(), () => {
-      this.closeRoleModal();
-    });
+    if (user)
+      this.store.assignRole(user.id, roleId, () => {
+        if (this.selectedUserForRoles()?.id === user.id) this.closeRoleModal();
+      });
   }
   // update user'status
   openStatusModal(user: UserManagement, newStatus: boolean): void {
@@ -168,27 +158,5 @@ export class AdminManageUserPage implements OnInit {
   closeUpdateModal(): void {
     this.isUpdateModalOpen.set(false);
     this.selectedUserForUpdate.set(null);
-  }
-  // thiết lập pageSize cho table
-  onPageSizeChangeFunc = (event: Event): void => {
-    const selectedElement = event.target as HTMLSelectElement;
-    this.store.setPageSize(Number(selectedElement.value));
-  };
-  getRoleBadgeClass(role: string): string {
-    switch (role) {
-      case 'SystemAdmin':
-      case 'Admin':
-        return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800';
-      case 'User':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800';
-      case 'WorkspaceOwner':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800';
-      case 'ProjectOwner':
-        return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800';
-      case 'Developer':
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
-      default:
-        return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-    }
   }
 }

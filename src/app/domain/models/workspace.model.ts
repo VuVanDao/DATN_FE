@@ -11,25 +11,8 @@ export interface Workspace {
   projectsCount: number;
   currentUserRole?: string | null;
   createdAt: string;
-  // Các trường bổ trợ hiển thị trên giao diện (UI)
-  initial: string;
-  color: string;
 }
 
-export interface WorkspaceResponse {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  logoUrl?: string | null;
-  coverImageUrl?: string | null;
-  ownerId: string;
-  ownerName: string;
-  membersCount: number;
-  projectsCount: number;
-  currentUserRole?: string | null;
-  createdAt: string;
-}
 // endpoint tao workspace moi
 export interface CreateWorkspaceRequest {
   name: string;
@@ -64,39 +47,9 @@ export interface WorkspaceProject {
   tasksCount: number;
   members: ProjectMemberAvatar[];
   createdAt: string;
-  initial: string;
-  color: string;
 }
 
-// Response  danh sách các project thuộc workspace từ Backend cho từng Project
-export interface WorkspaceProjectResponse {
-  id: string;
-  name: string;
-  projectKey: string;
-  description?: string | null;
-  membersCount: number;
-  tasksCount: number;
-  members: ProjectMemberAvatar[];
-  createdAt: string;
-}
-
-// Response chi tiết Workspace từ API GET/PUT
-export interface WorkspaceDetailResponse {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  logoUrl?: string | null;
-  coverImageUrl?: string | null;
-  ownerId: string;
-  ownerName: string;
-  currentUserRole?: string | null;
-  createdAt: string;
-  members: WorkspaceMember[];
-  projects: WorkspaceProjectResponse[];
-}
-
-// Model chi tiết Workspace dùng cho UI
+// Chi tiết workspace được repository trả về.
 export interface WorkspaceDetail {
   id: string;
   name: string;
@@ -110,11 +63,9 @@ export interface WorkspaceDetail {
   createdAt: string;
   members: WorkspaceMember[];
   projects: WorkspaceProject[];
-  initial: string;
-  color: string;
 }
 
-// Request cập nhật thông tin cài đặt Workspace \
+// Input cập nhật thông tin và tệp upload của workspace.
 export interface UpdateWorkspaceRequest {
   name?: string;
   description?: string | null;
@@ -145,7 +96,7 @@ export interface MemberAddResult {
   member?: WorkspaceMember | null;
 }
 // Response tổng hợp từ Backend
-export interface AddWorkspaceMembersResponse {
+export interface AddWorkspaceMembersResult {
   totalRequested: number;
   totalSuccess: number;
   totalFailed: number;

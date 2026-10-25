@@ -27,10 +27,21 @@
         </div>
       }
     </div>
-  } @else if (workspaceStore.workspaces().length > 0) {
+  } @else if (workspaceStore.listError(); as message) {
+    <div role="alert" class="p-8 text-center text-slate-500">
+      <p>{{ message }}</p>
+      <button
+        type="button"
+        (click)="workspaceStore.loadWorkspaces(true)"
+        class="mt-3 text-blue-500 cursor-pointer"
+      >
+        Thử lại
+      </button>
+    </div>
+  } @else if (workspaces().length > 0) {
     <!-- Danh sách Workspace dạng thẻ lưới (Grid) chuẩn theo Ảnh 1 -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      @for (ws of workspaceStore.workspaces(); track ws.id) {
+      @for (ws of workspaces(); track ws.id) {
         <div
           role="button"
           tabindex="0"

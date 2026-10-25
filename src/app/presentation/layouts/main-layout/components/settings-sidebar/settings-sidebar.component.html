@@ -1,104 +1,147 @@
 <!-- ===== SETTINGS SIDEBAR ===== -->
 <aside
   class="h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-30 select-none overflow-hidden transition-all duration-200"
-  [class.w-60]="!layoutService.isSidebarCollapsed()" [class.w-18]="layoutService.isSidebarCollapsed()">
+  [class.w-60]="!layoutService.isSidebarCollapsed()"
+  [class.w-18]="layoutService.isSidebarCollapsed()"
+>
   <!-- Header: Tiêu đề cài đặt + nút quay về -->
-  <div class="pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/80 transition-all duration-200"
-    [class.px-4]="!layoutService.isSidebarCollapsed()" [class.px-2]="layoutService.isSidebarCollapsed()">
+  <div
+    class="pt-5 pb-4 border-b border-slate-100 dark:border-slate-800/80 transition-all duration-200"
+    [class.px-4]="!layoutService.isSidebarCollapsed()"
+    [class.px-2]="layoutService.isSidebarCollapsed()"
+  >
     <!-- Nút Quay lại -->
-    <div class="flex items-center mb-4" [class.gap-2]="!layoutService.isSidebarCollapsed()"
-      [class.justify-center]="layoutService.isSidebarCollapsed()">
-      <button type="button" (click)="navigateBack()" matTooltip="Quay lại trang chủ"
+    <div
+      class="flex items-center mb-4"
+      [class.gap-2]="!layoutService.isSidebarCollapsed()"
+      [class.justify-center]="layoutService.isSidebarCollapsed()"
+    >
+      <button
+        type="button"
+        (click)="navigateBack()"
+        matTooltip="Quay lại trang chủ"
         [matTooltipPosition]="layoutService.isSidebarCollapsed() ? 'right' : 'above'"
-        class="h-7 rounded-lg flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer shrink-0">
+        class="h-7 rounded-lg flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer shrink-0"
+      >
         <mat-icon fontIcon="arrow_back" class="icon-xs"></mat-icon>
-        @if(!layoutService.isSidebarCollapsed()){
-        <span class="text-sm font-medium">Quay lại</span>
+        @if (!layoutService.isSidebarCollapsed()) {
+          <span class="text-sm font-medium">Quay lại</span>
         }
       </button>
     </div>
 
     <!-- User mini info -->
-    <div class="flex items-center" [class.gap-3]="!layoutService.isSidebarCollapsed()"
-      [class.justify-center]="layoutService.isSidebarCollapsed()">
+    <div
+      class="flex items-center"
+      [class.gap-3]="!layoutService.isSidebarCollapsed()"
+      [class.justify-center]="layoutService.isSidebarCollapsed()"
+    >
       @if (authStore.currentUser()?.avatarUrl) {
-      <img [src]="authStore.currentUser()!.avatarUrl" [alt]="authStore.currentUser()!.userName"
-        [matTooltip]="layoutService.isSidebarCollapsed() ? (authStore.currentUser()?.userName || 'Người dùng') : ''"
-        matTooltipPosition="right"
-        class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0" />
+        <img
+          [src]="authStore.currentUser()!.avatarUrl"
+          [alt]="authStore.currentUser()!.userName"
+          [matTooltip]="
+            layoutService.isSidebarCollapsed()
+              ? authStore.currentUser()?.userName || 'Người dùng'
+              : ''
+          "
+          matTooltipPosition="right"
+          class="w-9 h-9 rounded-xl object-cover ring-2 ring-slate-200 dark:ring-slate-700 shrink-0"
+        />
       } @else {
-      <div [matTooltip]="layoutService.isSidebarCollapsed() ? (authStore.currentUser()?.userName || 'Người dùng') : ''"
-        matTooltipPosition="right"
-        class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-        {{ (authStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
-      </div>
+        <div
+          [matTooltip]="
+            layoutService.isSidebarCollapsed()
+              ? authStore.currentUser()?.userName || 'Người dùng'
+              : ''
+          "
+          matTooltipPosition="right"
+          class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0"
+        >
+          {{ (authStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
+        </div>
       }
       @if (!layoutService.isSidebarCollapsed()) {
-      <div class="min-w-0">
-        <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-          {{ authStore.currentUser()?.userName || 'Người dùng' }}
-        </p>
-        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-          {{ authStore.currentUser()?.email || '' }}
-        </p>
-      </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+            {{ authStore.currentUser()?.userName || 'Người dùng' }}
+          </p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+            {{ authStore.currentUser()?.email || '' }}
+          </p>
+        </div>
       }
     </div>
   </div>
 
   <!-- Tiêu đề section -->
   @if (!layoutService.isSidebarCollapsed()) {
-  <div class="px-4 pt-4 pb-2">
-    <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-      Cài đặt
-    </p>
-  </div>
+    <div class="px-4 pt-4 pb-2">
+      <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+        Cài đặt
+      </p>
+    </div>
   } @else {
-  <div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+    <div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>
   }
 
   <!-- Navigation Tabs -->
-  <nav class="space-y-1 flex-1" [class.px-3]="!layoutService.isSidebarCollapsed()"
-    [class.px-2]="layoutService.isSidebarCollapsed()">
+  <nav
+    class="space-y-1 flex-1"
+    [class.px-3]="!layoutService.isSidebarCollapsed()"
+    [class.px-2]="layoutService.isSidebarCollapsed()"
+  >
     <!-- Hồ sơ cá nhân -->
-    <a routerLink="/profile"
+    <a
+      routerLink="/profile"
       routerLinkActive="bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/25 font-semibold"
-      [routerLinkActiveOptions]="{ exact: true }" [matTooltip]="layoutService.isSidebarCollapsed() ? 'Hồ sơ' : ''"
+      [routerLinkActiveOptions]="{ exact: true }"
+      [matTooltip]="layoutService.isSidebarCollapsed() ? 'Hồ sơ' : ''"
       matTooltipPosition="right"
       class="w-full flex items-center gap-3 py-2.5 rounded-xl text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition cursor-pointer"
-      [class.px-3.5]="!layoutService.isSidebarCollapsed()" [class.px-0]="layoutService.isSidebarCollapsed()"
-      [class.justify-center]="layoutService.isSidebarCollapsed()">
+      [class.px-3.5]="!layoutService.isSidebarCollapsed()"
+      [class.px-0]="layoutService.isSidebarCollapsed()"
+      [class.justify-center]="layoutService.isSidebarCollapsed()"
+    >
       <mat-icon fontIcon="person" class="icon-sm"></mat-icon>
       @if (!layoutService.isSidebarCollapsed()) {
-      <span class="truncate">Hồ sơ</span>
+        <span class="truncate">Hồ sơ</span>
       }
     </a>
 
     <!-- Bảo mật -->
-    <a routerLink="/change-password"
+    <a
+      routerLink="/change-password"
       routerLinkActive="bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/25 font-semibold"
-      [routerLinkActiveOptions]="{ exact: true }" [matTooltip]="layoutService.isSidebarCollapsed() ? 'Bảo mật' : ''"
+      [routerLinkActiveOptions]="{ exact: true }"
+      [matTooltip]="layoutService.isSidebarCollapsed() ? 'Bảo mật' : ''"
       matTooltipPosition="right"
       class="w-full flex items-center gap-3 py-2.5 rounded-xl text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition cursor-pointer"
-      [class.px-3.5]="!layoutService.isSidebarCollapsed()" [class.px-0]="layoutService.isSidebarCollapsed()"
-      [class.justify-center]="layoutService.isSidebarCollapsed()">
+      [class.px-3.5]="!layoutService.isSidebarCollapsed()"
+      [class.px-0]="layoutService.isSidebarCollapsed()"
+      [class.justify-center]="layoutService.isSidebarCollapsed()"
+    >
       <mat-icon fontIcon="lock" class="icon-sm"></mat-icon>
       @if (!layoutService.isSidebarCollapsed()) {
-      <span class="truncate">Bảo mật</span>
+        <span class="truncate">Bảo mật</span>
       }
     </a>
 
     <!-- Thông báo -->
-    <a routerLink="/notifications"
+    <a
+      routerLink="/notifications"
       routerLinkActive="bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/25 font-semibold"
-      [routerLinkActiveOptions]="{ exact: true }" [matTooltip]="layoutService.isSidebarCollapsed() ? 'Thông báo' : ''"
+      [routerLinkActiveOptions]="{ exact: true }"
+      [matTooltip]="layoutService.isSidebarCollapsed() ? 'Thông báo' : ''"
       matTooltipPosition="right"
       class="w-full flex items-center gap-3 py-2.5 rounded-xl text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition cursor-pointer"
-      [class.px-3.5]="!layoutService.isSidebarCollapsed()" [class.px-0]="layoutService.isSidebarCollapsed()"
-      [class.justify-center]="layoutService.isSidebarCollapsed()">
+      [class.px-3.5]="!layoutService.isSidebarCollapsed()"
+      [class.px-0]="layoutService.isSidebarCollapsed()"
+      [class.justify-center]="layoutService.isSidebarCollapsed()"
+    >
       <mat-icon fontIcon="notifications" class="icon-sm"></mat-icon>
       @if (!layoutService.isSidebarCollapsed()) {
-      <span class="truncate">Thông báo</span>
+        <span class="truncate">Thông báo</span>
       }
     </a>
   </nav>

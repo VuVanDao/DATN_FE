@@ -1,9 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { AdminStore } from '../../../../../../application/state/admin.store';
 import { UserManagement } from '../../../../../../domain/models/admin.model';
-import { AdminStore } from '../../../../../state/admin.store';
 
 @Component({
   selector: 'app-user-update-modal',
@@ -37,7 +45,7 @@ export class UserUpdateModalComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['user'] && this.user) {
+    if ((changes['user'] || changes['isOpen']?.currentValue === true) && this.user) {
       this.updateUserForm.patchValue({
         username: this.user.userName,
         bio: this.user.bio || '',
@@ -53,20 +61,23 @@ export class UserUpdateModalComponent implements OnChanges {
   }
 
   submit(): void {
-    if (this.updateUserForm.invalid || !this.user) {
+    if (this.updateUserForm.invalid || !this.user || !this.isOpen || this.store.isSubmitting()) {
       this.updateUserForm.markAllAsTouched();
       return;
     }
 
+    const userId = this.user.id;
     const { username, bio } = this.updateUserForm.getRawValue();
 
     this.store.updateUser(
-      this.user.id,
+      userId,
       {
         username: username.trim(),
         bio: bio.trim() || undefined,
       },
-      () => this.close(),
+      () => {
+        if (this.isOpen && this.user?.id === userId) this.close();
+      },
     );
   }
 }

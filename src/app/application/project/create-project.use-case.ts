@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { ProjectRepository } from '../../domain/repositories/project.repository';
 import { Observable } from 'rxjs';
 import { CreateProjectRequest, Project } from '../../domain/models/project.model';
+import { ProjectRepository } from '../../domain/repositories/project.repository';
 
 @Injectable({
   providedIn: 'root',

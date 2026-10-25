@@ -1,9 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
-import { AiAssistantService, AiMessage } from '../../../../../application/ai/ai-assistant.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { AiAssistantService } from '../../../../../application/ai/ai-assistant.service';
 import { LayoutService } from '../../../../../application/layout/layout.service';
+import { AiMessage } from '../../../../../domain/models/ai.model';
 
 @Component({
   selector: 'app-ai-drawer',
@@ -13,6 +15,7 @@ import { LayoutService } from '../../../../../application/layout/layout.service'
 })
 export class AiDrawerComponent {
   private readonly aiService = inject(AiAssistantService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly layoutService = inject(LayoutService);
 
   readonly aiMessages = signal<AiMessage[]>(this.aiService.getInitialMessages());
@@ -42,14 +45,17 @@ export class AiDrawerComponent {
     this.currentAiInput.set('');
     this.isAiThinking.set(true);
 
-    this.aiService.sendMessage(text).subscribe({
-      next: (aiReply) => {
-        this.aiMessages.update((msgs) => [...msgs, aiReply]);
-        this.isAiThinking.set(false);
-      },
-      error: () => {
-        this.isAiThinking.set(false);
-      },
-    });
+    this.aiService
+      .sendMessage(text)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (aiReply) => {
+          this.aiMessages.update((msgs) => [...msgs, aiReply]);
+          this.isAiThinking.set(false);
+        },
+        error: () => {
+          this.isAiThinking.set(false);
+        },
+      });
   }
 }

@@ -1,92 +1,59 @@
-import { HttpErrorResponse, HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { inject, Injector } from '@angular/core';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, finalize, map, shareReplay, switchMap, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { SessionRefreshService } from '../../application/auth/session-refresh.service';
+import { SessionService } from '../../application/auth/session.service';
+import { NotificationService } from '../../application/shared/notification.service';
 import { TokenService } from '../storage/token.service';
-import { AuthRepository } from '../../domain/repositories/auth.repository';
-import { AuthStore } from '../../presentation/state/auth.store';
-import { toast } from 'ngx-sonner';
-
-let refreshInFlight$: Observable<string> | null = null;
 
 export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
-  const tokenService = inject(TokenService);
+  // Credentials and access tokens belong only to our API.
+  if (req.url !== environment.apiUrl && !req.url.startsWith(environment.apiUrl + '/'))
+    return next(req);
+  const tokens = inject(TokenService);
+  const session = inject(SessionService);
+  const refresh = inject(SessionRefreshService);
   const router = inject(Router);
-  const injector = inject(Injector);
-
-  const token = tokenService.getAccessToken();
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
+  const notifications = inject(NotificationService);
+  const token = tokens.getAccessToken();
   const authReq = req.clone({
     withCredentials: true,
-    setHeaders: headers,
+    setHeaders: token ? { Authorization: 'Bearer ' + token } : {},
   });
+  const isPublicAuth = [
+    '/auth/login',
+    '/auth/register',
+    '/auth/refresh-token',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/revoke-token',
+  ].some((endpoint) => req.url.split('?')[0].endsWith(endpoint));
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      const isAuthEndpoint =
-        req.url.includes('/auth/login') ||
-        req.url.includes('/auth/register') ||
-        req.url.includes('/auth/refresh-token');
-
-      if (error.status === 401 && !isAuthEndpoint) {
-        return handle401Error(req, next, tokenService, injector, router, error);
+      if (error.status !== 401 || isPublicAuth) return throwError(() => error);
+      const currentToken = tokens.getAccessToken();
+      // A late 401 may belong to the token already replaced by another request.
+      if (currentToken && currentToken !== token) {
+        return next(authReq.clone({ setHeaders: { Authorization: 'Bearer ' + currentToken } }));
       }
-
-      return throwError(() => error);
+      return refresh
+        .refresh(() => {
+          session.clear();
+          void router.navigate(['/login']);
+          notifications.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        })
+        .pipe(
+          switchMap((response) =>
+            next(
+              authReq.clone({
+                setHeaders: { Authorization: 'Bearer ' + response.tokens.accessToken },
+              }),
+            ),
+          ),
+        );
     }),
   );
 };
-
-function handle401Error(
-  req: HttpRequest<unknown>,
-  next: HttpHandlerFn,
-  tokenService: TokenService,
-  injector: Injector,
-  router: Router,
-  _originalError: HttpErrorResponse,
-) {
-  const authRepo = injector.get(AuthRepository);
-
-  if (!refreshInFlight$) {
-    refreshInFlight$ = authRepo.RefreshToken().pipe(
-      map((response) => {
-        const newToken = response.tokens.accessToken;
-        tokenService.setAccessToken(newToken);
-        return newToken;
-      }),
-      catchError((refreshError) => {
-        tokenService.clear();
-
-        try {
-          const authStore = injector.get(AuthStore);
-          authStore.clearSession();
-        } catch {
-          router.navigate(['/login']);
-        }
-
-        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        return throwError(() => refreshError);
-      }),
-      finalize(() => {
-        refreshInFlight$ = null;
-      }),
-      shareReplay({ bufferSize: 1, refCount: false }),
-    );
-  }
-
-  return refreshInFlight$.pipe(
-    switchMap((newToken) =>
-      next(
-        req.clone({
-          setHeaders: { Authorization: `Bearer ${newToken}` },
-          withCredentials: true,
-        }),
-      ),
-    ),
-  );
-}
-

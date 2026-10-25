@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
-import { ProfileStore } from '../../../../state/profile.store';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { toast } from 'ngx-sonner';
+import { ProfileStore } from '../../../../../application/state/profile.store';
 
 @Component({
   selector: 'app-profile-overview',

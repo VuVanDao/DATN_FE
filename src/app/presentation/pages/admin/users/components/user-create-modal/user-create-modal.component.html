@@ -41,14 +41,14 @@
             placeholder="example@email.com"
             class="w-full bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-1 transition"
             [style.borderColor]="
-              EmailControl.invalid && EmailControl.touched ? 'rgba(239,68,68,.7)' : ''
+              emailControl.invalid && emailControl.touched ? 'rgba(239,68,68,.7)' : ''
             "
           />
-          @if (EmailControl.invalid && EmailControl.touched) {
+          @if (emailControl.invalid && emailControl.touched) {
             <p class="text-xs mt-1" style="color: #f87171">
-              @if (EmailControl.hasError('required')) {
+              @if (emailControl.hasError('required')) {
                 Email không được để trống.
-              } @else if (EmailControl.hasError('email')) {
+              } @else if (emailControl.hasError('email')) {
                 Định dạng email không hợp lệ.
               }
             </p>
@@ -66,14 +66,14 @@
             placeholder="Nhập tên người dùng (3-100 ký tự)"
             class="w-full bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-1 transition"
             [style.borderColor]="
-              UsernameControl.invalid && UsernameControl.touched ? 'rgba(239,68,68,.7)' : ''
+              usernameControl.invalid && usernameControl.touched ? 'rgba(239,68,68,.7)' : ''
             "
           />
-          @if (UsernameControl.invalid && UsernameControl.touched) {
+          @if (usernameControl.invalid && usernameControl.touched) {
             <p class="text-xs mt-1" style="color: #f87171">
-              @if (UsernameControl.hasError('required')) {
+              @if (usernameControl.hasError('required')) {
                 Username không được để trống.
-              } @else if (UsernameControl.hasError('minlength')) {
+              } @else if (usernameControl.hasError('minlength')) {
                 Username tối thiểu 3 kí tự
               }
             </p>
@@ -92,7 +92,7 @@
               placeholder="Nhập mật khẩu (6-50 ký tự)"
               class="w-full bg-slate-50 dark:bg-slate-800/60 border rounded-xl px-3.5 py-2.5 pr-10 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-1 transition"
               [style.borderColor]="
-                PasswordControl.invalid && PasswordControl.touched ? 'rgba(239,68,68,.7)' : ''
+                passwordControl.invalid && passwordControl.touched ? 'rgba(239,68,68,.7)' : ''
               "
             />
             <button
@@ -106,16 +106,14 @@
               ></mat-icon>
             </button>
           </div>
-          @if (PasswordControl.invalid && PasswordControl.touched) {
+          @if (passwordControl.invalid && passwordControl.touched) {
             <p class="text-xs mt-1" style="color: #f87171">
-              @if (PasswordControl.hasError('required')) {
-                Username không được để trống.
-              } @else if (PasswordControl.hasError('minlength')) {
-                Username tối thiểu 3 kí tự
-              } @else if (PasswordControl.hasError('maxlength')) {
-                Username tối đa 50 kí tự
-              } @else if (PasswordControl.hasError('pattern')) {
-                Username không hợp định dạng phải có ít nhất 1 chữ hoa, 1 số và 1 kí tự đặc biệt
+              @if (passwordControl.hasError('required')) {
+                Mật khẩu không được để trống.
+              } @else if (passwordControl.hasError('minlength')) {
+                Mật khẩu tối thiểu 6 kí tự
+              } @else if (passwordControl.hasError('maxlength')) {
+                Mật khẩu tối đa 50 kí tự
               }
             </p>
           }

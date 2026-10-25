@@ -1,4 +1,5 @@
-import { User, UserResponse } from '../../domain/models/user.model';
+import { User } from '../../domain/models/user.model';
+import { UserResponse } from '../dtos/user.dto';
 
 export class UserMapper {
   static toUser(data: UserResponse): User {

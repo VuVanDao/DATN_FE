@@ -3,7 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LayoutService } from '../../../../../application/layout/layout.service';
-import { AuthStore } from '../../../../state/auth.store';
+import { AuthStore } from '../../../../../application/state/auth.store';
 
 @Component({
   selector: 'app-admin-sidebar',

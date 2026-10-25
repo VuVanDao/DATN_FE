@@ -1,15 +1,11 @@
-import { inject, Injectable } from '@angular/core';
-import { UserRepository } from '../../domain/repositories/user.repository';
-import { map, Observable } from 'rxjs';
-import {
-  ChangePasswordRequest,
-  UpdateProfileRequest,
-  User,
-  UserResponse,
-} from '../../domain/models/user.model';
 import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../dtos/auth.dto';
+import { ChangePasswordRequest, UpdateProfileRequest, User } from '../../domain/models/user.model';
+import { UserRepository } from '../../domain/repositories/user.repository';
+import { ApiResponse } from '../dtos/api-response.dto';
+import { UserResponse } from '../dtos/user.dto';
 import { UserMapper } from '../mappers/user.mapper';
 
 @Injectable({
@@ -19,7 +15,7 @@ export class UserHttpRepository implements UserRepository {
   private readonly API_URL = `${environment.apiUrl}/users`;
   private readonly http = inject(HttpClient);
 
-  ChangePassword(request: ChangePasswordRequest): Observable<boolean> {
+  changePassword(request: ChangePasswordRequest): Observable<boolean> {
     return this.http
       .post<ApiResponse<boolean>>(`${this.API_URL}/change-password`, {
         ...request,
@@ -27,19 +23,19 @@ export class UserHttpRepository implements UserRepository {
       .pipe(map((res) => res.data));
   }
 
-  GetCurrentUser(): Observable<User> {
+  getCurrentUser(): Observable<User> {
     return this.http
       .get<ApiResponse<UserResponse>>(`${this.API_URL}/me`)
       .pipe(map((res) => UserMapper.toUser(res.data)));
   }
 
-  UpdateProfile(request: UpdateProfileRequest): Observable<User> {
+  updateProfile(request: UpdateProfileRequest): Observable<User> {
     return this.http
       .put<ApiResponse<UserResponse>>(`${this.API_URL}/me`, { ...request })
       .pipe(map((res) => UserMapper.toUser(res.data)));
   }
 
-  UploadAvatar(file: File): Observable<string> {
+  uploadAvatar(file: File): Observable<string> {
     const formData = new FormData();
     // Command bên BE đang để là File
     formData.append('File', file, file.name);

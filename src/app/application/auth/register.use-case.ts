@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { AuthRepository } from '../../domain/repositories/auth.repository';
-import { RegisterRequest, RegisterResponse } from '../../domain/models/auth.model';
 import { Observable } from 'rxjs';
+import { RegisterRequest, RegisterResponse } from '../../domain/models/auth.model';
+import { AuthRepository } from '../../domain/repositories/auth.repository';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +14,6 @@ export class RegisterUseCase {
       email: request.email.trim().toLocaleLowerCase(),
       username: request.username.trim(),
     };
-    return this._authRepository.Register(normalizeRequest);
+    return this._authRepository.register(normalizeRequest);
   }
 }

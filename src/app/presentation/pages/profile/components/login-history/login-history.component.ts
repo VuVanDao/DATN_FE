@@ -1,8 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { GetMyLoginHistoryUseCase } from '../../../../../application/security/get-my-login-history.use-case';
-import { LoginHistory } from '../../../../../domain/models/user.model';
+import { LoginHistoryStore } from '../../../../../application/state/login-history.store';
 
 type HistoryFilter = 'all' | 'success' | 'failed';
 
@@ -11,13 +10,14 @@ type HistoryFilter = 'all' | 'success' | 'failed';
   standalone: true,
   imports: [DatePipe, MatIconModule],
   templateUrl: './login-history.component.html',
+  providers: [LoginHistoryStore],
 })
 export class LoginHistoryComponent {
-  private readonly getMyLoginHistoryUseCase = inject(GetMyLoginHistoryUseCase);
+  private readonly store = inject(LoginHistoryStore);
 
-  readonly histories = signal<LoginHistory[]>([]);
-  readonly isLoading = signal(true);
-  readonly hasError = signal(false);
+  readonly histories = this.store.histories;
+  readonly isLoading = this.store.isLoading;
+  readonly hasError = this.store.hasError;
   readonly filter = signal<HistoryFilter>('all');
   readonly showAll = signal(false);
   readonly visibleHistories = computed(() => {
@@ -32,8 +32,9 @@ export class LoginHistoryComponent {
   readonly filteredCount = computed(() => {
     const selected = this.filter();
     if (selected === 'all') return this.histories().length;
-    return this.histories().filter((item) => (selected === 'success' ? item.isSuccess : !item.isSuccess))
-      .length;
+    return this.histories().filter((item) =>
+      selected === 'success' ? item.isSuccess : !item.isSuccess,
+    ).length;
   });
 
   constructor() {
@@ -41,18 +42,7 @@ export class LoginHistoryComponent {
   }
 
   loadHistory(): void {
-    this.isLoading.set(true);
-    this.hasError.set(false);
-    this.getMyLoginHistoryUseCase.execute().subscribe({
-      next: (histories) => {
-        this.histories.set(histories);
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.hasError.set(true);
-        this.isLoading.set(false);
-      },
-    });
+    this.store.load();
   }
 
   setFilter(filter: HistoryFilter): void {
