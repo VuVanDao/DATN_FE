@@ -10,8 +10,8 @@ const workspace: WorkspaceDetail = {
   ownerId: 'owner',
   ownerName: 'Owner',
   createdAt: '',
-  members: [],
-  projects: [],
+  memberPreview: [],
+  membersCount: 0,
 };
 
 describe('Workspace deletion confirmation', () => {

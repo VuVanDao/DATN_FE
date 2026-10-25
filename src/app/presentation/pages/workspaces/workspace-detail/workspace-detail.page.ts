@@ -44,7 +44,9 @@ export class WorkspaceDetailPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   readonly workspace = computed(() => {
     const workspace = this.workspaceStore.currentWorkspace();
-    return workspace ? toWorkspaceDetailView(workspace) : null;
+    return workspace
+      ? toWorkspaceDetailView(workspace, this.workspaceStore.projects.items())
+      : null;
   });
   readonly tabs: { id: WorkspaceTab; label: string }[] = [
     { id: 'projects', label: 'Dự án' },
@@ -88,10 +90,15 @@ export class WorkspaceDetailPage implements OnInit {
       this.closeRemoveMemberModal();
 
       const slug = params.get('slug');
-      if (this.workspaceStore.currentWorkspace()?.slug !== slug) this.activeTab.set('projects');
+      this.activeTab.set('projects');
       this.routeSlug.set(slug ?? '');
       if (slug) this.workspaceStore.getWorkspaceDetail(slug);
     });
+  }
+
+  selectTab(tab: WorkspaceTab): void {
+    this.activeTab.set(tab);
+    this.workspaceStore.selectTab(tab);
   }
 
   openInviteModal(): void {
@@ -151,9 +158,9 @@ export class WorkspaceDetailPage implements OnInit {
     const user = this.authStore.currentUser();
     if (!workspace || !user) return;
 
-    const member = workspace.members.find(
-      (item) => item.userId.toLowerCase() === userId?.toLowerCase(),
-    ) ?? {
+    const member = this.workspaceStore.members
+      .items()
+      .find((item) => item.userId.toLowerCase() === userId?.toLowerCase()) ?? {
       userId: user.id,
       username: user.userName || user.email,
       email: user.email,

@@ -1,4 +1,4 @@
-import { ProjectMemberAvatar, WorkspaceMember } from '../../domain/models/workspace.model';
+import { ProjectMemberAvatar } from '../../domain/models/workspace.model';
 
 export interface WorkspaceResponse {
   id: string;
@@ -35,6 +35,6 @@ export interface WorkspaceDetailResponse {
   ownerName: string;
   currentUserRole?: string | null;
   createdAt: string;
-  members: WorkspaceMember[];
-  projects: WorkspaceProjectResponse[];
+  membersCount: number;
+  memberPreview: ProjectMemberAvatar[];
 }

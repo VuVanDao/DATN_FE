@@ -1,5 +1,7 @@
+import { WorkspaceProject } from '../../../../../../domain/models/workspace.model';
+import { WorkspaceTabState } from '../../../../../../application/state/workspace/workspace-content.slice';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { WorkspaceDetailView } from '../../../../../view-models/workspace.view-model';
 
@@ -9,10 +11,13 @@ import { WorkspaceDetailView } from '../../../../../view-models/workspace.view-m
   imports: [CommonModule, MatIconModule],
   templateUrl: './workspace-projects-tab.component.html',
 })
-export class WorkspaceProjectsTabComponent implements OnInit {
+export class WorkspaceProjectsTabComponent {
   ngOnInit(): void {
     // alert('OnInit');
   }
+  @Input() state!: WorkspaceTabState<WorkspaceProject>;
+  @Output() retry = new EventEmitter<void>();
+  @Output() loadMore = new EventEmitter<void>();
   @Input() workspace!: WorkspaceDetailView;
   @Input() isOwner = false;
   @Output() createProject = new EventEmitter<void>();

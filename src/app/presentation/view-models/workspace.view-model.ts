@@ -6,7 +6,7 @@ export interface WorkspaceAppearance {
 }
 export type WorkspaceView = Workspace & WorkspaceAppearance;
 export type WorkspaceProjectView = WorkspaceProject & WorkspaceAppearance;
-export type WorkspaceDetailView = Omit<WorkspaceDetail, 'projects'> &
+export type WorkspaceDetailView = WorkspaceDetail &
   WorkspaceAppearance & { projects: WorkspaceProjectView[] };
 
 const GRADIENT_PALETTES = [
@@ -34,10 +34,13 @@ export function toWorkspaceView(workspace: Workspace): WorkspaceView {
   return { ...workspace, ...appearance(workspace) };
 }
 
-export function toWorkspaceDetailView(workspace: WorkspaceDetail): WorkspaceDetailView {
+export function toWorkspaceDetailView(
+  workspace: WorkspaceDetail,
+  projects: WorkspaceProject[] = [],
+): WorkspaceDetailView {
   return {
     ...workspace,
     ...appearance(workspace),
-    projects: workspace.projects.map((project) => ({ ...project, ...appearance(project) })),
+    projects: projects.map((project) => ({ ...project, ...appearance(project) })),
   };
 }

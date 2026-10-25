@@ -1,3 +1,18 @@
+@if (state.loading()) {
+  <p role="status" class="py-4 text-sm text-slate-400">Đang tải danh sách…</p>
+}
+@if (state.error()) {
+  <div role="alert" class="py-4 text-sm text-rose-400">
+    {{ state.error() }}
+    <button
+      type="button"
+      class="ml-3 underline cursor-pointer"
+      (click)="state.loaded() ? loadMore.emit() : retry.emit()"
+    >
+      Thử lại
+    </button>
+  </div>
+}
 <div class="pt-4">
   <div class="flex items-center justify-between pb-1">
     <div class="flex items-center gap-2.5">
@@ -5,7 +20,7 @@
       <span
         class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-medium border border-slate-700/60"
       >
-        {{ workspace.projects.length }}
+        {{ state.totalCount() }}
       </span>
     </div>
     @if (isOwner) {
@@ -63,7 +78,7 @@
         </div>
       }
     </div>
-  } @else {
+  } @else if (state.loaded() && !state.error()) {
     <div
       class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-12 text-center mt-4 space-y-3"
     >
@@ -83,3 +98,19 @@
     </div>
   }
 </div>
+
+@if (state.loaded()) {
+  <div class="flex items-center gap-4 py-4 text-sm text-slate-400">
+    <span>Đã hiển thị {{ state.items().length }} / {{ state.totalCount() }}</span>
+    @if (state.hasMore()) {
+      <button
+        type="button"
+        class="px-4 py-2 rounded-xl bg-slate-800 text-white disabled:opacity-50 cursor-pointer"
+        [disabled]="state.loading()"
+        (click)="loadMore.emit()"
+      >
+        Xem thêm
+      </button>
+    }
+  </div>
+}

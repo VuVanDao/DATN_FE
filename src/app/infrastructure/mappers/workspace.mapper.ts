@@ -46,8 +46,8 @@ export class WorkspaceMapper {
       ownerName: dto.ownerName,
       currentUserRole: dto.currentUserRole ?? null,
       createdAt: dto.createdAt,
-      members: dto.members ?? [],
-      projects: (dto.projects ?? []).map((p) => this.toWorkspaceProject(p)),
+      membersCount: dto.membersCount,
+      memberPreview: dto.memberPreview ?? [],
     };
   }
 }

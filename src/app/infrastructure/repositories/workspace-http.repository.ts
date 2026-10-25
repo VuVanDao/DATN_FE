@@ -1,3 +1,4 @@
+import { PagedResult } from '../../shared/models/paged-result.model';
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
@@ -11,6 +12,8 @@ import {
   Workspace,
   WorkspaceDetail,
   WorkspaceRole,
+  WorkspaceMember,
+  WorkspaceProject,
 } from '../../domain/models/workspace.model';
 import { WorkspaceRepository } from '../../domain/repositories/workspace.repository';
 import { ApiResponse } from '../dtos/api-response.dto';
@@ -23,6 +26,30 @@ import { WorkspaceMapper } from '../mappers/workspace.mapper';
 export class WorkspaceHttpRepository extends WorkspaceRepository {
   private readonly API_URL = `${environment.apiUrl}/workspaces`;
   private readonly http = inject(HttpClient);
+
+  getMembers(id: string, pageIndex: number): Observable<PagedResult<WorkspaceMember>> {
+    return this.http
+      .get<ApiResponse<PagedResult<WorkspaceMember>>>(`${this.API_URL}/${id}/members`, {
+        params: { pageIndex, pageSize: 20 },
+      })
+      .pipe(map((res) => res.data));
+  }
+
+  getProjects(id: string, pageIndex: number): Observable<PagedResult<WorkspaceProject>> {
+    return this.http
+      .get<ApiResponse<PagedResult<WorkspaceProject>>>(
+        `${environment.apiUrl}/Project/workspace-project/${id}`,
+        {
+          params: { pageIndex, pageSize: 20 },
+        },
+      )
+      .pipe(
+        map((res) => ({
+          ...res.data,
+          items: res.data.items.map(WorkspaceMapper.toWorkspaceProject),
+        })),
+      );
+  }
 
   getUserWorkspaces(): Observable<Workspace[]> {
     return this.http.get<ApiResponse<WorkspaceResponse[]>>(this.API_URL).pipe(

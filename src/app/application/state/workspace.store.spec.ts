@@ -30,8 +30,8 @@ function detail(id: string): WorkspaceDetail {
     ownerId: 'owner',
     ownerName: 'Owner',
     createdAt: '',
-    members: [],
-    projects: [],
+    memberPreview: [],
+    membersCount: 0,
   };
 }
 function summary(id: string): Workspace {
@@ -57,6 +57,28 @@ describe('WorkspaceStore request ownership', () => {
     updated$ = new Subject();
     impacts = [];
     const repository = {
+      getProjects: vi.fn(() =>
+        of({
+          items: [],
+          totalCount: 0,
+          pageIndex: 1,
+          pageSize: 20,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        }),
+      ),
+      getMembers: vi.fn(() =>
+        of({
+          items: [],
+          totalCount: 0,
+          pageIndex: 1,
+          pageSize: 20,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        }),
+      ),
       getUserWorkspaces: vi.fn(() => list$),
       getWorkspaceBySlug: vi.fn((slug: string) => {
         const request = new Subject<WorkspaceDetail>();
@@ -128,7 +150,7 @@ describe('WorkspaceStore request ownership', () => {
       results: [{ email: member.email, success: true, member }],
     });
     added$.complete();
-    expect(store.currentWorkspace()?.members).toEqual([]);
+    expect(store.currentWorkspace()?.memberPreview).toEqual([]);
     expect(store.workspaces().find((workspace) => workspace.id === 'a')?.membersCount).toBe(2);
     expect(store.workspaces().find((workspace) => workspace.id === 'b')?.membersCount).toBe(1);
     expect(onSuccess).not.toHaveBeenCalled();
@@ -149,10 +171,10 @@ describe('WorkspaceStore request ownership', () => {
     open('a');
     store.removeMember('a', member.userId);
     store.getWorkspaceDetail('b');
-    loads.get('b')!.next({ ...detail('b'), members: [member] });
+    loads.get('b')!.next({ ...detail('b'), memberPreview: [member] });
     removed$.next(true);
     removed$.complete();
-    expect(store.currentWorkspace()?.members).toEqual([member]);
+    expect(store.currentWorkspace()?.memberPreview).toEqual([member]);
   });
 
   it('cancels impact requests when closing or changing the target member', () => {
@@ -218,7 +240,8 @@ describe('WorkspaceStore request ownership', () => {
     const onSuccess = vi.fn();
     store.createProject({ workspaceId: 'a', name: 'Project', projectKey: 'PR' }, onSuccess);
     expect(onSuccess).toHaveBeenCalledOnce();
-    expect(store.isLoadingDetail()).toBe(true);
+    expect(store.isLoadingDetail()).toBe(false);
+    expect(TestBed.inject(WorkspaceRepository).getProjects).toHaveBeenCalledTimes(2);
     expect(store.workspaces()[0].projectsCount).toBe(1);
   });
 });

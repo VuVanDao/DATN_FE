@@ -1,3 +1,4 @@
+import { WorkspaceContentSlice, WorkspaceTab } from './workspace/workspace-content.slice';
 import { inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CreateProjectRequest } from '../../domain/models/project.model';
@@ -21,6 +22,17 @@ import { WorkspaceMemberSlice } from './workspace/workspace-member.slice';
   providedIn: 'root',
 })
 export class WorkspaceStore {
+  private readonly _content = inject(WorkspaceContentSlice);
+  readonly projects = this._content.projects;
+  readonly members = this._content.members;
+
+  selectTab(tab: WorkspaceTab): void {
+    this._content.selectTab(tab);
+  }
+  loadMore(tab: 'projects' | 'members'): void {
+    this._content.loadMore(tab);
+  }
+
   private readonly _list = inject(WorkspaceListSlice); // danh sách workspace
   private readonly _detail = inject(WorkspaceDetailSlice); // thông tin chi tiết workspace đang mở
   private readonly _members = inject(WorkspaceMemberSlice); // danh sách thành viên và vai trò trong workspace
@@ -87,15 +99,22 @@ export class WorkspaceStore {
       () => {
         const isCurrent = this._detail.currentWorkspace()?.id === id;
         this._detail.clearIfCurrent(id);
-        if (isCurrent) onSuccess?.();
+        if (isCurrent) {
+          this._content.clear();
+          onSuccess?.();
+        }
       },
       onError,
     );
   }
 
   getWorkspaceDetail(slug: string): void {
+    this._content.clear();
     this._members.clearMemberRemovalImpact();
-    this._detail.getWorkspaceDetail(slug, (workspace) => this._list.selectWorkspace(workspace.id));
+    this._detail.getWorkspaceDetail(slug, (workspace) => {
+      this._list.selectWorkspace(workspace.id);
+      this._content.open(workspace.id);
+    });
   }
 
   updateWorkspace(
@@ -130,10 +149,10 @@ export class WorkspaceStore {
       workspaceId,
       request,
       (result) => {
-        const members = result.results.flatMap((item) =>
-          item.success && item.member ? [item.member] : [],
-        );
-        this._detail.appendMembers(workspaceId, members);
+        if (result.totalSuccess > 0) {
+          this._content.invalidate(workspaceId, 'members');
+          this._detail.refreshSummary(workspaceId);
+        }
         this._list.adjustCounts(workspaceId, result.totalSuccess);
         if (result.totalFailed === 0)
           this._notifications.success('Đã thêm thành công ' + result.totalSuccess + ' thành viên');
@@ -168,9 +187,11 @@ export class WorkspaceStore {
         if (isSelf) {
           this._list.removeWorkspaceLocally(workspaceId);
           this._detail.clearIfCurrent(workspaceId);
+          if (isCurrent) this._content.clear();
           this._list.loadWorkspaces(true);
         } else {
-          this._detail.removeMemberLocally(workspaceId, memberId);
+          this._content.invalidate(workspaceId, 'members', 'projects');
+          this._detail.refreshSummary(workspaceId);
           this._list.adjustCounts(workspaceId, -1);
         }
         this._notifications.success(
@@ -204,17 +225,19 @@ export class WorkspaceStore {
       const current = this._detail.currentWorkspace();
       if (current?.id === request.workspaceId) {
         onSuccess?.();
-        this.getWorkspaceDetail(current.slug);
+        this._content.invalidate(current.id, 'projects');
       }
     });
   }
 
   clearDetail(): void {
+    this._content.clear();
     this._detail.clearView();
     this._members.clearMemberRemovalImpact();
   }
 
   clear(): void {
+    this._content.clear();
     this._list.clear();
     this._detail.clear();
     this._members.clear();

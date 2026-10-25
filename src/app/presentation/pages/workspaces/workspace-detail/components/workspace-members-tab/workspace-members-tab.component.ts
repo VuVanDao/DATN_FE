@@ -1,3 +1,4 @@
+import { WorkspaceTabState } from '../../../../../../application/state/workspace/workspace-content.slice';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +11,9 @@ import { WorkspaceDetail, WorkspaceMember } from '../../../../../../domain/model
   templateUrl: './workspace-members-tab.component.html',
 })
 export class WorkspaceMembersTabComponent {
+  @Input() state!: WorkspaceTabState<WorkspaceMember>;
+  @Output() retry = new EventEmitter<void>();
+  @Output() loadMore = new EventEmitter<void>();
   @Input() workspace!: WorkspaceDetail;
   @Input() isOwner = false;
   @Output() removeMember = new EventEmitter<WorkspaceMember>();

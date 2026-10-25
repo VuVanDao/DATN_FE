@@ -61,8 +61,8 @@ export interface WorkspaceDetail {
   ownerName: string;
   currentUserRole?: string | null;
   createdAt: string;
-  members: WorkspaceMember[];
-  projects: WorkspaceProject[];
+  membersCount: number;
+  memberPreview: ProjectMemberAvatar[];
 }
 
 // Input cập nhật thông tin và tệp upload của workspace.
