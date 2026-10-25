@@ -38,7 +38,7 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
   getProjects(id: string, pageIndex: number): Observable<PagedResult<WorkspaceProject>> {
     return this.http
       .get<ApiResponse<PagedResult<WorkspaceProject>>>(
-        `${environment.apiUrl}/Project/workspace-project/${id}`,
+        `${this.API_URL}/${id}/projects`,
         {
           params: { pageIndex, pageSize: 20 },
         },

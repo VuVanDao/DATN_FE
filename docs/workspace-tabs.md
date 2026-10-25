@@ -5,7 +5,7 @@ Workspace detail and update responses contain metadata, `currentUserRole`,
 full `members` or `projects` arrays. Deploy the backend and frontend changes together.
 
 - `GET /api/workspaces/{slug}`: workspace summary.
-- `GET /api/Project/workspace-project/{workspaceId}?pageIndex=1&pageSize=20`:
+- `GET /api/workspaces/{workspaceId}/projects?pageIndex=1&pageSize=20`:
   `ApiResponse<PagedResult<WorkspaceProjectDto>>`; replaces the old unpaged response.
   Each project includes task/member counts and up to three member avatars.
 - `GET /api/workspaces/{workspaceId}/members?pageIndex=1&pageSize=20`:
