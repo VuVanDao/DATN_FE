@@ -39,7 +39,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
       @for (project of workspace.projects; track project.id) {
         <div
-          [routerLink]="['/workspaces', workspace.slug, 'projects', project.projectKey]"
+          [routerLink]="['/workspaces', workspace.id, 'projects', project.projectKey]"
           class="bg-[#131b2e] border border-slate-800/80 hover:border-indigo-500/50 rounded-2xl p-4 flex flex-col justify-between transition cursor-pointer group shadow-sm hover:shadow-indigo-500/5"
         >
           <div>

@@ -44,7 +44,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'workspaces/:slug/projects/:projectKey',
+        path: 'workspaces/:workspaceId/projects/:projectKey',
         loadComponent: () =>
           import('./presentation/pages/project/project-detail/project-detail.page').then(
             (m) => m.ProjectDetailPage,

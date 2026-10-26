@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { ProjectStore } from '../../../../application/state/project.store';
+import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { Board } from '../../../../domain/models/project.model';
 import {
   getBoardBadgeColor,
@@ -34,6 +35,7 @@ type BoardFilterTab = 'all' | 'Kanban' | 'Scrum';
 })
 export class ProjectDetailPage implements OnInit {
   readonly projectStore = inject(ProjectStore);
+  readonly workspaceStore = inject(WorkspaceStore);
   private readonly layoutService = inject(LayoutService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -88,9 +90,21 @@ export class ProjectDetailPage implements OnInit {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const projectKey = params.get('projectKey') || 'FIN';
       const workspaceId =
-        params.get('workspaceId') || params.get('slug') || 'default-workspace';
+        params.get('workspaceId') ||
+        this.route.snapshot.queryParamMap.get('workspaceId') ||
+        this.workspaceStore.currentWorkspace()?.id ||
+        '';
 
-      this.projectStore.getProjectDetail(projectKey, workspaceId, undefined, true);
+      if (workspaceId) {
+        this.projectStore.getProjectDetail(projectKey, workspaceId, undefined, true);
+      } else {
+        this.projectStore.getProjectDetail(
+          projectKey,
+          '00000000-0000-0000-0000-000000000001',
+          undefined,
+          true,
+        );
+      }
     });
   }
 
@@ -133,7 +147,14 @@ export class ProjectDetailPage implements OnInit {
   }
 
   goBack(): void {
-    const wsId = this.project()?.workspaceId;
+    const currentWs = this.workspaceStore.currentWorkspace();
+    if (currentWs?.slug) {
+      void this.router.navigate(['/workspaces', currentWs.slug]);
+      return;
+    }
+
+    const wsId =
+      this.project()?.workspaceId || this.route.snapshot.paramMap.get('workspaceId');
     if (wsId) {
       void this.router.navigate(['/workspaces', wsId]);
     } else {

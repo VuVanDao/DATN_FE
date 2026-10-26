@@ -65,7 +65,7 @@ export class ProjectStore {
         this.errorSignal.set(err);
         if (fallbackMock) {
           // Cung cấp dữ liệu mẫu theo giao diện mẫu khi chưa có bản ghi thật
-          this.applyMockProjectData(projectKey);
+          this.applyMockProjectData(projectKey, workspaceId);
         }
       },
     });
@@ -237,13 +237,16 @@ export class ProjectStore {
     this.errorSignal.set(null);
   }
 
-  private applyMockProjectData(projectKey: string): void {
+  private applyMockProjectData(
+    projectKey: string,
+    workspaceId = '00000000-0000-0000-0000-000000000001',
+  ): void {
     const mockProj: Project = {
       id: 'proj-mock-fintech',
       name: 'App di động Fintech',
       projectKey: projectKey || 'FIN',
       description: 'Ứng dụng ngân hàng số cho khách hàng cá nhân',
-      workspaceId: 'ws-mock-acme',
+      workspaceId,
       workspaceName: 'Acme Corp',
       createdById: 'user-minh',
       createdByName: 'Minh Nguyễn',
