@@ -1,4 +1,3 @@
-import { WorkspaceContentSlice, WorkspaceTab } from './workspace/workspace-content.slice';
 import { inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CreateProjectRequest } from '../../domain/models/project.model';
@@ -13,32 +12,37 @@ import {
 } from '../../domain/models/workspace.model';
 import { SessionService } from '../auth/session.service';
 import { NotificationService } from '../shared/notification.service';
-import { ProjectSlice } from './workspace/project.slice';
+import { WorkspaceProjectsSlice } from './workspace/workspace-projects.slice';
 import { WorkspaceDetailSlice } from './workspace/workspace-detail.slice';
 import { WorkspaceListSlice } from './workspace/workspace-list.slice';
 import { WorkspaceMemberSlice } from './workspace/workspace-member.slice';
+
+export type WorkspaceTab = 'projects' | 'members' | 'settings';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WorkspaceStore {
-  private readonly _content = inject(WorkspaceContentSlice);
-  readonly projects = this._content.projects;
-  readonly members = this._content.members;
-
-  selectTab(tab: WorkspaceTab): void {
-    this._content.selectTab(tab);
-  }
-  loadMore(tab: 'projects' | 'members'): void {
-    this._content.loadMore(tab);
-  }
-
   private readonly _list = inject(WorkspaceListSlice); // danh sách workspace
   private readonly _detail = inject(WorkspaceDetailSlice); // thông tin chi tiết workspace đang mở
   private readonly _members = inject(WorkspaceMemberSlice); // danh sách thành viên và vai trò trong workspace
-  private readonly _project = inject(ProjectSlice); // quản lý dự án trong workspace
+  private readonly _projects = inject(WorkspaceProjectsSlice); // danh sách và thao tác dự án trong workspace
   private readonly _session = inject(SessionService);
   private readonly _notifications = inject(NotificationService);
+  private workspaceId: string | null = null;
+  private activeTab: WorkspaceTab = 'projects';
+
+  readonly members = this._members.members;
+  readonly projects = this._projects.projects;
+
+  selectTab(tab: WorkspaceTab): void {
+    this.activeTab = tab;
+    if (this.workspaceId && tab !== 'settings') this[tab].load(this.workspaceId);
+  }
+
+  loadMore(tab: 'projects' | 'members'): void {
+    if (this.workspaceId) this[tab].load(this.workspaceId, true);
+  }
 
   constructor() {
     this._session.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.clear());
@@ -70,7 +74,7 @@ export class WorkspaceStore {
   readonly memberRemovalImpactError = this._members.memberRemovalImpactError;
 
   // ===== Dự án =====
-  readonly isCreatingProject = this._project.isCreatingProject;
+  readonly isCreatingProject = this._projects.isCreatingProject;
 
   loadWorkspaces(forceRefresh = false): void {
     this._list.loadWorkspaces(forceRefresh);
@@ -100,7 +104,7 @@ export class WorkspaceStore {
         const isCurrent = this._detail.currentWorkspace()?.id === id;
         this._detail.clearIfCurrent(id);
         if (isCurrent) {
-          this._content.clear();
+          this.clearTabLists();
           onSuccess?.();
         }
       },
@@ -109,11 +113,12 @@ export class WorkspaceStore {
   }
 
   getWorkspaceDetail(slug: string): void {
-    this._content.clear();
+    this.clearTabLists();
     this._members.clearMemberRemovalImpact();
     this._detail.getWorkspaceDetail(slug, (workspace) => {
       this._list.selectWorkspace(workspace.id);
-      this._content.open(workspace.id);
+      this.workspaceId = workspace.id;
+      this.selectTab(this.activeTab);
     });
   }
 
@@ -150,7 +155,7 @@ export class WorkspaceStore {
       request,
       (result) => {
         if (result.totalSuccess > 0) {
-          this._content.invalidate(workspaceId, 'members');
+          this.invalidateTabLists(workspaceId, 'members');
           this._detail.refreshSummary(workspaceId);
         }
         this._list.adjustCounts(workspaceId, result.totalSuccess);
@@ -187,10 +192,10 @@ export class WorkspaceStore {
         if (isSelf) {
           this._list.removeWorkspaceLocally(workspaceId);
           this._detail.clearIfCurrent(workspaceId);
-          if (isCurrent) this._content.clear();
+          if (isCurrent) this.clearTabLists();
           this._list.loadWorkspaces(true);
         } else {
-          this._content.invalidate(workspaceId, 'members', 'projects');
+          this.invalidateTabLists(workspaceId, 'members', 'projects');
           this._detail.refreshSummary(workspaceId);
           this._list.adjustCounts(workspaceId, -1);
         }
@@ -219,28 +224,41 @@ export class WorkspaceStore {
   }
 
   createProject(request: CreateProjectRequest, onSuccess?: () => void): void {
-    this._project.createProject(request, (project) => {
+    this._projects.createProject(request, (project) => {
       this._list.adjustCounts(request.workspaceId, 0, 1);
       this._notifications.success('Dự án "' + project.name + '" đã được tạo thành công');
       const current = this._detail.currentWorkspace();
       if (current?.id === request.workspaceId) {
         onSuccess?.();
-        this._content.invalidate(current.id, 'projects');
+        this.invalidateTabLists(current.id, 'projects');
       }
     });
   }
 
   clearDetail(): void {
-    this._content.clear();
+    this.clearTabLists();
     this._detail.clearView();
     this._members.clearMemberRemovalImpact();
   }
 
   clear(): void {
-    this._content.clear();
+    this.clearTabLists();
     this._list.clear();
     this._detail.clear();
     this._members.clear();
-    this._project.clear();
+    this._projects.clear();
+  }
+
+  private invalidateTabLists(id: string, ...tabs: ('projects' | 'members')[]): void {
+    if (id !== this.workspaceId) return;
+    tabs.forEach((tab) => this[tab].clear());
+    if (tabs.some((tab) => tab === this.activeTab)) this.selectTab(this.activeTab);
+  }
+
+  private clearTabLists(): void {
+    this.members.clear();
+    this.projects.clear();
+    this.workspaceId = null;
+    this.activeTab = 'projects';
   }
 }

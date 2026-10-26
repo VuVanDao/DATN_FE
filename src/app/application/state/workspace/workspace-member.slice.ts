@@ -4,22 +4,30 @@ import {
   AddWorkspaceMembersRequest,
   AddWorkspaceMembersResult,
   MemberRemovalImpact,
+  WorkspaceMember,
   WorkspaceRole,
 } from '../../../domain/models/workspace.model';
 import { InviteWorkspaceMembersUseCase } from '../../workspace/invite-workspace-members.use-case';
 import { GetMemberRemovalImpactUseCase } from '../../workspace/get-member-removal-impact.use-case';
 import { GetWorkspaceRolesUseCase } from '../../workspace/get-workspace-roles.use-case';
+import { GetWorkspaceMembersUseCase } from '../../workspace/get-workspace-members.use-case';
 import { RemoveMemberFromWorkspaceUseCase } from '../../workspace/remove-member-from-workspace.use-case';
 import { LoadingFlags } from '../../../shared/utils/loading-flags.util';
 import { StoreRequestRunner } from '../store-request.util';
+import { PagedListState } from '../paged-list-state.util';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceMemberSlice {
   private readonly requests = inject(StoreRequestRunner);
+  private readonly getMembers = inject(GetWorkspaceMembersUseCase);
   private readonly getRoles = inject(GetWorkspaceRolesUseCase);
   private readonly add = inject(InviteWorkspaceMembersUseCase);
   private readonly remove = inject(RemoveMemberFromWorkspaceUseCase);
   private readonly getImpact = inject(GetMemberRemovalImpactUseCase);
+
+  readonly members = new PagedListState<WorkspaceMember>(this.requests, (id, page) =>
+    this.getMembers.execute(id, page),
+  );
 
   private readonly cancel$ = new Subject<void>();
   private readonly impactCancel$ = new Subject<void>();
@@ -117,6 +125,7 @@ export class WorkspaceMemberSlice {
 
   clear(): void {
     this.cancel$.next();
+    this.members.clear();
     this.roles.set([]);
     this.clearMemberRemovalImpact();
   }

@@ -1,5 +1,5 @@
 import { WorkspaceProject } from '../../../../../../domain/models/workspace.model';
-import { WorkspaceTabState } from '../../../../../../application/state/workspace/workspace-content.slice';
+import { PagedListState } from '../../../../../../application/state/paged-list-state.util';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,7 +15,7 @@ export class WorkspaceProjectsTabComponent {
   ngOnInit(): void {
     // alert('OnInit');
   }
-  @Input() state!: WorkspaceTabState<WorkspaceProject>;
+  @Input() state!: PagedListState<WorkspaceProject>;
   @Output() retry = new EventEmitter<void>();
   @Output() loadMore = new EventEmitter<void>();
   @Input() workspace!: WorkspaceDetailView;

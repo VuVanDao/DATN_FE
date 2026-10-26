@@ -1,14 +1,10 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { signal } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { WorkspaceMember, WorkspaceProject } from '../../../domain/models/workspace.model';
-import { PagedResult } from '../../../shared/models/paged-result.model';
-import { GetWorkspaceContentUseCase } from '../../workspace/get-workspace-content.use-case';
-import { StoreRequestRunner } from '../store-request.util';
+import { PagedResult } from '../../shared/models/paged-result.model';
+import { StoreRequestRunner } from './store-request.util';
 
-export type WorkspaceTab = 'projects' | 'members' | 'settings';
-
-// Lives above tab components: switching tabs keeps completed pages and in-flight reads.
-export class WorkspaceTabState<T> {
+// Owned by a feature slice so cached pages survive tab component changes.
+export class PagedListState<T> {
   private readonly cancel$ = new Subject<void>();
   private readonly itemsState = signal<T[]>([]);
   private readonly loadingState = signal(false);
@@ -58,43 +54,5 @@ export class WorkspaceTabState<T> {
     this.totalState.set(0);
     this.hasMoreState.set(false);
     this.pageIndex = 0;
-  }
-}
-
-@Injectable({ providedIn: 'root' })
-export class WorkspaceContentSlice {
-  private readonly runner = inject(StoreRequestRunner);
-  private readonly get = inject(GetWorkspaceContentUseCase);
-  readonly projects = new WorkspaceTabState<WorkspaceProject>(this.runner, this.get.getProjects);
-  readonly members = new WorkspaceTabState<WorkspaceMember>(this.runner, this.get.getMembers);
-  private workspaceId: string | null = null;
-  private activeTab: WorkspaceTab = 'projects';
-
-  open(id: string): void {
-    if (id !== this.workspaceId) this.clear();
-    this.workspaceId = id;
-    this.selectTab(this.activeTab);
-  }
-
-  selectTab(tab: WorkspaceTab): void {
-    this.activeTab = tab;
-    if (this.workspaceId && tab !== 'settings') this[tab].load(this.workspaceId);
-  }
-
-  loadMore(tab: 'projects' | 'members'): void {
-    if (this.workspaceId) this[tab].load(this.workspaceId, true);
-  }
-
-  invalidate(id: string, ...tabs: ('projects' | 'members')[]): void {
-    if (id !== this.workspaceId) return;
-    tabs.forEach((tab) => this[tab].clear());
-    if (tabs.some((tab) => tab === this.activeTab)) this.selectTab(this.activeTab);
-  }
-
-  clear(): void {
-    this.projects.clear();
-    this.members.clear();
-    this.workspaceId = null;
-    this.activeTab = 'projects';
   }
 }
