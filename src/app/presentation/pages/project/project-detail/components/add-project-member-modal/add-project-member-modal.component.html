@@ -1,0 +1,114 @@
+@if (isOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
+    (click)="close()"
+  >
+    <div
+      class="bg-[#111827] rounded-2xl border border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-800 flex items-start justify-between shrink-0">
+        <div class="flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 mt-0.5"
+          >
+            <mat-icon fontIcon="person_add" class="text-xl"></mat-icon>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base">Thêm thành viên vào dự án</h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Gán thành viên từ không gian làm việc vào dự án và phân quyền vai trò.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-5 space-y-4">
+        <!-- Email thành viên -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+            Email người dùng <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="nhap.email@congty.com"
+            class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+          />
+          @if (form.controls.email.touched && form.controls.email.errors) {
+            <p class="text-[11px] mt-1 text-rose-500">Vui lòng nhập định dạng email hợp lệ.</p>
+          }
+        </div>
+
+        <!-- Chọn vai trò -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+            Vai trò trong dự án
+          </label>
+          <select
+            formControlName="roleId"
+            class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+          >
+            <option value="" class="bg-slate-900 text-slate-300">
+              Mặc định (ProjectMember - Thành viên)
+            </option>
+            @for (role of projectStore.roles(); track role.id) {
+              <option [value]="role.id" class="bg-slate-900 text-white">
+                {{ role.name }} - {{ role.description || 'Không có mô tả' }}
+              </option>
+            }
+          </select>
+          <p class="text-[11px] text-slate-400 mt-1">
+            Quyền này chỉ áp dụng trong phạm vi dự án hiện tại.
+          </p>
+        </div>
+
+        <!-- Note info -->
+        <div
+          class="p-3 rounded-xl bg-indigo-950/30 border border-indigo-900/40 flex items-start gap-2.5 text-xs text-indigo-300"
+        >
+          <mat-icon fontIcon="info" class="text-indigo-400 text-sm mt-0.5"></mat-icon>
+          <span>
+            Thành viên sau khi được thêm sẽ có quyền truy cập vào các bảng và thẻ công việc trong
+            dự án này.
+          </span>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            (click)="close()"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            [disabled]="projectStore.isAddingMember() || form.invalid"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-indigo-600/20"
+          >
+            @if (projectStore.isAddingMember()) {
+              <div
+                class="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"
+              ></div>
+              <span>Đang thêm...</span>
+            } @else {
+              <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
+              <span>Thêm vào dự án</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

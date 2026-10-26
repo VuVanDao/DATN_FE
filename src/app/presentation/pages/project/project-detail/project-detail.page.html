@@ -1,0 +1,530 @@
+<div class="max-w-7xl mx-auto space-y-6 pb-12 w-full min-w-0">
+  @if (projectStore.isLoading() && !project()) {
+    <!-- Skeleton Loading -->
+    <div class="animate-pulse space-y-6">
+      <div class="h-6 w-36 bg-slate-800 rounded"></div>
+      <div class="h-44 w-full rounded-2xl bg-slate-800"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="h-24 rounded-2xl bg-slate-800"></div>
+        }
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 h-72 rounded-2xl bg-slate-800"></div>
+        <div class="h-72 rounded-2xl bg-slate-800"></div>
+      </div>
+    </div>
+  } @else if (projectView(); as proj) {
+    <!-- 1. Top Navigation: Chỉ giữ lại nút Quay lại dự án -->
+    <div>
+      <button
+        type="button"
+        (click)="goBack()"
+        class="inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-400 hover:text-white transition cursor-pointer group"
+      >
+        <mat-icon
+          fontIcon="arrow_back"
+          class="text-base group-hover:-translate-x-0.5 transition-transform"
+        ></mat-icon>
+        <span>Quay lại dự án</span>
+      </button>
+    </div>
+
+    <!-- 2. Hero Banner Card -->
+    <div
+      class="relative w-full rounded-2xl overflow-hidden bg-linear-to-r from-purple-950 via-indigo-950 to-slate-900 border border-purple-500/20 p-6 shadow-xl"
+    >
+      <!-- Background ambient glow -->
+      <div
+        class="absolute -top-24 -right-24 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"
+      ></div>
+      <div
+        class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"
+      ></div>
+
+      <div class="relative flex flex-col lg:flex-row lg:items-center justify-between gap-6 z-10">
+        <!-- Left: Project Avatar & Info -->
+        <div class="flex items-start sm:items-center gap-4.5 flex-1 min-w-0">
+          <!-- Initial Badge (Tối đa 3 ký tự, không bị tràn chữ) -->
+          <div
+            [class]="proj.gradientColor"
+            class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shrink-0 flex items-center justify-center text-white text-xl md:text-2xl font-black shadow-lg shadow-purple-900/40 border border-white/10 overflow-hidden select-none tracking-wider"
+          >
+            {{ proj.initial }}
+          </div>
+
+          <!-- Project Title, Key & Description -->
+          <div class="space-y-1.5 min-w-0 flex-1">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight truncate">
+                {{ proj.name }}
+              </h1>
+              <span
+                class="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold tracking-wider bg-white/10 text-purple-200 border border-purple-400/20 shadow-xs"
+              >
+                {{ proj.projectKey }}
+              </span>
+            </div>
+
+            <p
+              class="text-xs md:text-sm text-slate-300 line-clamp-2 max-w-2xl font-normal leading-relaxed"
+            >
+              {{ proj.description || 'Ứng dụng ngân hàng số cho khách hàng cá nhân' }}
+            </p>
+
+            <!-- Meta Row: Creator, Created Date, Member Count -->
+            <div class="flex items-center gap-4 md:gap-6 pt-1 text-xs text-slate-400 flex-wrap">
+              <div class="flex items-center gap-1.5">
+                <div
+                  class="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px] font-bold"
+                >
+                  {{ proj.createdByName ? proj.createdByName.charAt(0).toUpperCase() : 'M' }}
+                </div>
+                <span
+                  >Tạo bởi
+                  <strong class="text-slate-200 font-medium">{{
+                    proj.createdByName || 'Minh Nguyễn'
+                  }}</strong></span
+                >
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <mat-icon fontIcon="calendar_today" class="text-sm text-slate-400"></mat-icon>
+                <span
+                  >Ngày tạo
+                  <strong class="text-slate-200 font-medium">{{
+                    proj.createdAt | date: 'dd/MM/yyyy'
+                  }}</strong></span
+                >
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <mat-icon fontIcon="group" class="text-sm text-slate-400"></mat-icon>
+                <span
+                  ><strong class="text-slate-200 font-medium">{{ proj.membersCount }}</strong> thành
+                  viên</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Action Buttons Area (Không có thanh tiến độ, Không có nút Mở bảng chính) -->
+        <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+          <button
+            type="button"
+            (click)="openCreateBoardModal()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
+          >
+            <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+            <span>Tạo bảng mới</span>
+          </button>
+
+          <!-- 2. Button Thêm thành viên (cạnh nút + Tạo bảng mới) -->
+          <button
+            type="button"
+            (click)="openAddMemberModal()"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-slate-200 bg-slate-800/90 hover:bg-slate-700 hover:text-white active:bg-slate-800 transition cursor-pointer border border-slate-700/80"
+          >
+            <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
+            <span>Thêm thành viên</span>
+          </button>
+
+          <!-- 3. Button Cài đặt (cạnh nút Thêm thành viên) -->
+          <button
+            type="button"
+            (click)="openSettingsModal()"
+            title="Cài đặt chi tiết dự án"
+            class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-slate-200 bg-slate-800/90 hover:bg-slate-700 hover:text-white active:bg-slate-800 transition cursor-pointer border border-slate-700/80"
+          >
+            <mat-icon fontIcon="settings" class="icon-sm"></mat-icon>
+            <span>Cài đặt</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 4 Stat Cards (Bố cục ngang hiện đại) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Card 1: Bảng -->
+      <div
+        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-indigo-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+      >
+        <div
+          class="w-13 h-13 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-indigo-500/20 transition"
+        >
+          <mat-icon fontIcon="dashboard" class="text-2xl"></mat-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            Bảng công việc
+          </span>
+          <div class="flex items-baseline gap-2 mt-0.5">
+            <span class="text-2xl font-bold text-white tracking-tight">
+              {{ proj.boardsCount }}
+            </span>
+            <span class="text-xs text-indigo-400 font-medium">Kanban & Scrum</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Thành viên -->
+      <div
+        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-sky-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+      >
+        <div
+          class="w-13 h-13 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-sky-500/20 transition"
+        >
+          <mat-icon fontIcon="group" class="text-2xl"></mat-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            Thành viên dự án
+          </span>
+          <div class="flex items-baseline gap-2 mt-0.5">
+            <span class="text-2xl font-bold text-white tracking-tight">
+              {{ proj.membersCount }}
+            </span>
+            <span class="text-xs text-sky-400 font-medium">Đang cộng tác</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Sprint -->
+      <div
+        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-purple-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+      >
+        <div
+          class="w-13 h-13 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-500/20 transition"
+        >
+          <mat-icon fontIcon="rocket_launch" class="text-2xl"></mat-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            Chu kỳ Sprint
+          </span>
+          <div class="flex items-baseline gap-2 mt-0.5">
+            <span class="text-2xl font-bold text-white tracking-tight">
+              {{ proj.sprintCount }}
+            </span>
+            <span class="text-xs text-purple-400 font-medium">Đang triển khai</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Task -->
+      <div
+        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-emerald-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+      >
+        <div
+          class="w-13 h-13 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-500/20 transition"
+        >
+          <mat-icon fontIcon="check_circle" class="text-2xl"></mat-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            Tổng số thẻ (Task)
+          </span>
+          <div class="flex items-baseline gap-2 mt-0.5">
+            <span class="text-2xl font-bold text-white tracking-tight">
+              {{ proj.cardCount }}
+            </span>
+            <span class="text-xs text-emerald-400 font-medium">Công việc</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Main Two-Column Layout (Trái: Danh sách Bảng, Phải: Danh sách Thành viên) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- LEFT COLUMN: QUẢN LÝ BẢNG CÔNG VIỆC (col-span-2) -->
+      <div class="lg:col-span-2 space-y-5">
+        <!-- Section Header & Search Input -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <h2 class="text-lg font-bold text-white">Bảng</h2>
+            <span
+              class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700/60"
+            >
+              {{ filteredBoards().length }}
+            </span>
+          </div>
+
+          <!-- Search input -->
+          <div class="relative w-full sm:w-72">
+            <mat-icon
+              fontIcon="search"
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+            ></mat-icon>
+            <input
+              type="text"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              placeholder="Tìm bảng theo tên hoặc slug..."
+              class="w-full bg-[#111827] border border-slate-800 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-hidden focus:border-indigo-500 transition"
+            />
+          </div>
+        </div>
+
+        <!-- Filter Tabs (Không có Timeline) -->
+        <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+          <!-- Tab: Tất cả -->
+          <button
+            type="button"
+            (click)="setBoardTab('all')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+            [class.bg-indigo-600]="activeBoardTab() === 'all'"
+            [class.text-white]="activeBoardTab() === 'all'"
+            [class.text-slate-400]="activeBoardTab() !== 'all'"
+            [class.hover:text-white]="activeBoardTab() !== 'all'"
+            [class.bg-slate-800/40]="activeBoardTab() !== 'all'"
+          >
+            <span>Tất cả</span>
+            <span
+              class="text-[10px] px-1.5 py-0.2 rounded-md"
+              [class.bg-white/20]="activeBoardTab() === 'all'"
+              [class.bg-slate-700]="activeBoardTab() !== 'all'"
+            >
+              {{ boards().length }}
+            </span>
+          </button>
+
+          <!-- Tab: Kanban -->
+          <button
+            type="button"
+            (click)="setBoardTab('Kanban')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+            [class.bg-indigo-600]="activeBoardTab() === 'Kanban'"
+            [class.text-white]="activeBoardTab() === 'Kanban'"
+            [class.text-slate-400]="activeBoardTab() !== 'Kanban'"
+            [class.hover:text-white]="activeBoardTab() !== 'Kanban'"
+            [class.bg-slate-800/40]="activeBoardTab() !== 'Kanban'"
+          >
+            <span>Kanban</span>
+            <span
+              class="text-[10px] px-1.5 py-0.2 rounded-md"
+              [class.bg-white/20]="activeBoardTab() === 'Kanban'"
+              [class.bg-slate-700]="activeBoardTab() !== 'Kanban'"
+            >
+              {{ kanbanCount() }}
+            </span>
+          </button>
+
+          <!-- Tab: Scrum -->
+          <button
+            type="button"
+            (click)="setBoardTab('Scrum')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+            [class.bg-indigo-600]="activeBoardTab() === 'Scrum'"
+            [class.text-white]="activeBoardTab() === 'Scrum'"
+            [class.text-slate-400]="activeBoardTab() !== 'Scrum'"
+            [class.hover:text-white]="activeBoardTab() !== 'Scrum'"
+            [class.bg-slate-800/40]="activeBoardTab() !== 'Scrum'"
+          >
+            <span>Scrum</span>
+            <span
+              class="text-[10px] px-1.5 py-0.2 rounded-md"
+              [class.bg-white/20]="activeBoardTab() === 'Scrum'"
+              [class.bg-slate-700]="activeBoardTab() !== 'Scrum'"
+            >
+              {{ scrumCount() }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Boards Grid -->
+        @if (filteredBoards().length > 0) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @for (board of filteredBoards(); track board.id) {
+              <div
+                (click)="onBoardClick(board)"
+                class="bg-[#111827] border border-slate-800/90 hover:border-indigo-500/50 rounded-2xl p-5 flex flex-col justify-between transition duration-200 cursor-pointer shadow-md hover:shadow-indigo-500/5 group"
+              >
+                <!-- Top Row: Icon + Type Badge -->
+                <div class="flex items-center justify-between">
+                  <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center border"
+                    [class]="
+                      getBoardBadge(board.type).bg +
+                      ' ' +
+                      getBoardBadge(board.type).text +
+                      ' ' +
+                      getBoardBadge(board.type).border
+                    "
+                  >
+                    <mat-icon [fontIcon]="getBoardIconName(board.type)" class="text-xl"></mat-icon>
+                  </div>
+
+                  <span
+                    class="text-xs px-2.5 py-0.5 rounded-full font-semibold border"
+                    [class]="
+                      getBoardBadge(board.type).bg +
+                      ' ' +
+                      getBoardBadge(board.type).text +
+                      ' ' +
+                      getBoardBadge(board.type).border
+                    "
+                  >
+                    {{ board.type }}
+                  </span>
+                </div>
+
+                <!-- Middle: Title & Slug -->
+                <div class="mt-4 mb-5">
+                  <h3
+                    class="text-base font-semibold text-white group-hover:text-indigo-400 transition truncate"
+                  >
+                    {{ board.title }}
+                  </h3>
+                  <p class="text-xs text-slate-400 font-mono mt-0.5 truncate">
+                    {{ board.slug }}
+                  </p>
+                </div>
+
+                <!-- Bottom: Created Date -->
+                <div
+                  class="flex items-center gap-1.5 text-xs text-slate-400 pt-3 border-t border-slate-800/60"
+                >
+                  <mat-icon fontIcon="calendar_today" class="text-sm text-slate-400"></mat-icon>
+                  <span>{{ board.createdAt | date: 'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Empty State -->
+          <div
+            class="bg-[#111827] border border-slate-800/80 rounded-2xl p-10 text-center space-y-3"
+          >
+            <div
+              class="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto"
+            >
+              <mat-icon fontIcon="dashboard" class="text-2xl"></mat-icon>
+            </div>
+            <h3 class="text-base font-semibold text-slate-200">Không tìm thấy bảng nào</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">
+              Không có bảng nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm của bạn.
+            </p>
+            <button
+              type="button"
+              (click)="openCreateBoardModal()"
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition cursor-pointer"
+            >
+              <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+              <span>Tạo bảng mới ngay</span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- RIGHT COLUMN: DANH SÁCH THÀNH VIÊN (col-span-1) -->
+      <!-- (Thông tin dự án đã được chuyển vào Modal Cài đặt chi tiết như yêu cầu) -->
+      <div class="space-y-6">
+        <div class="bg-[#111827] border border-slate-800/90 rounded-2xl p-5 shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-white">Thành viên dự án</h3>
+              <span
+                class="text-xs px-2 py-0.2 rounded-full bg-slate-800 text-slate-300 font-semibold border border-slate-700/60"
+              >
+                {{ members().length || proj.membersCount }}
+              </span>
+            </div>
+            <button
+              type="button"
+              (click)="openAddMemberModal()"
+              class="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition cursor-pointer inline-flex items-center gap-1"
+            >
+              <mat-icon fontIcon="add" class="text-sm! w-auto! h-auto!"></mat-icon>
+              <span>Thêm</span>
+            </button>
+          </div>
+
+          <!-- Member avatars stack row -->
+          <div
+            class="flex items-center -space-x-2 overflow-hidden pb-4 mb-4 border-b border-slate-800/60"
+          >
+            @for (member of members().slice(0, 4); track member.userId) {
+              @if (member.avatarUrl) {
+                <img
+                  [src]="member.avatarUrl"
+                  [alt]="member.username"
+                  class="h-9 w-9 rounded-full ring-2 ring-[#111827] object-cover"
+                />
+              } @else {
+                <div
+                  class="h-9 w-9 rounded-full ring-2 ring-[#111827] bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white"
+                >
+                  {{ member.username.charAt(0).toUpperCase() }}
+                </div>
+              }
+            }
+            @if (members().length > 4) {
+              <div
+                class="inline-flex h-9 w-9 rounded-full ring-2 ring-[#111827] bg-slate-800 items-center justify-center text-xs font-bold text-slate-300"
+              >
+                +{{ members().length - 4 }}
+              </div>
+            }
+          </div>
+
+          <!-- Member details preview list -->
+          <div class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+            @for (member of members(); track member.userId) {
+              <div
+                class="flex items-center justify-between p-2 rounded-xl bg-slate-800/30 hover:bg-slate-800/60 transition"
+              >
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div
+                    class="w-7 h-7 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                  >
+                    {{ member.username.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-medium text-slate-200 truncate">{{ member.username }}</p>
+                    <p class="text-[11px] text-slate-400 truncate">{{ member.email }}</p>
+                  </div>
+                </div>
+
+                <span
+                  class="text-[10px] px-2 py-0.5 rounded-md font-medium shrink-0"
+                  [class.bg-indigo-500/10]="member.roleName === 'ProjectLeader'"
+                  [class.text-indigo-400]="member.roleName === 'ProjectLeader'"
+                  [class.border]="member.roleName === 'ProjectLeader'"
+                  [class.border-indigo-500/20]="member.roleName === 'ProjectLeader'"
+                  [class.bg-slate-800]="member.roleName !== 'ProjectLeader'"
+                  [class.text-slate-400]="member.roleName !== 'ProjectLeader'"
+                >
+                  {{ member.roleName === 'ProjectLeader' ? 'Leader' : member.roleName || 'Member' }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Modal 1: Cài đặt chi tiết dự án (xen lẫn thông tin chỉnh sửa và chỉ đọc) -->
+    <app-project-settings-modal
+      [isOpen]="showSettingsModal()"
+      [project]="project()"
+      (closed)="closeSettingsModal()"
+    />
+
+    <!-- Modal 2: Thêm thành viên -->
+    <app-add-project-member-modal
+      [isOpen]="showAddMemberModal()"
+      [projectId]="proj.id"
+      [workspaceId]="proj.workspaceId"
+      (closed)="closeAddMemberModal()"
+    />
+
+    <!-- Modal 3: Tạo Board mới -->
+    <app-create-board-modal
+      [isOpen]="showCreateBoardModal()"
+      [projectId]="proj.id"
+      (closed)="closeCreateBoardModal()"
+    />
+  }
+</div>

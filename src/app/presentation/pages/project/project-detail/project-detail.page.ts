@@ -1,0 +1,148 @@
+import { CommonModule } from '@angular/common';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { LayoutService } from '../../../../application/layout/layout.service';
+import { ProjectStore } from '../../../../application/state/project.store';
+import { Board } from '../../../../domain/models/project.model';
+import {
+  getBoardBadgeColor,
+  getBoardIcon,
+  toProjectView,
+} from '../../../view-models/project.view-model';
+import { AddProjectMemberModalComponent } from './components/add-project-member-modal/add-project-member-modal.component';
+import { CreateBoardModalComponent } from './components/create-board-modal/create-board-modal.component';
+import { ProjectSettingsModalComponent } from './components/project-settings-modal/project-settings-modal.component';
+
+type BoardFilterTab = 'all' | 'Kanban' | 'Scrum';
+
+@Component({
+  selector: 'app-project-detail-page',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    RouterModule,
+    ProjectSettingsModalComponent,
+    AddProjectMemberModalComponent,
+    CreateBoardModalComponent,
+  ],
+  templateUrl: './project-detail.page.html',
+})
+export class ProjectDetailPage implements OnInit {
+  readonly projectStore = inject(ProjectStore);
+  private readonly layoutService = inject(LayoutService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly project = computed(() => this.projectStore.currentProject());
+  readonly projectView = computed(() => {
+    const p = this.project();
+    return p ? toProjectView(p) : null;
+  });
+
+  readonly boards = computed(() => this.projectStore.boards());
+  readonly members = computed(() => this.projectStore.members());
+
+  // Search & Filter Tabs
+  readonly searchQuery = signal('');
+  readonly activeBoardTab = signal<BoardFilterTab>('all');
+
+  // Filtered boards list
+  readonly filteredBoards = computed(() => {
+    const list = this.boards();
+    const query = this.searchQuery().trim().toLowerCase();
+    const tab = this.activeBoardTab();
+
+    return list.filter((board) => {
+      const matchTab =
+        tab === 'all' || board.type.toLowerCase() === tab.toLowerCase();
+      const matchQuery =
+        !query ||
+        board.title.toLowerCase().includes(query) ||
+        board.slug.toLowerCase().includes(query);
+      return matchTab && matchQuery;
+    });
+  });
+
+  readonly kanbanCount = computed(
+    () => this.boards().filter((b) => b.type.toLowerCase().includes('kanban')).length,
+  );
+  readonly scrumCount = computed(
+    () => this.boards().filter((b) => b.type.toLowerCase().includes('scrum')).length,
+  );
+
+  // Modals Visibility
+  readonly showSettingsModal = signal(false);
+  readonly showAddMemberModal = signal(false);
+  readonly showCreateBoardModal = signal(false);
+
+  ngOnInit(): void {
+    this.layoutService.setSidebar('main');
+    this.destroyRef.onDestroy(() => this.projectStore.clear());
+
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const projectKey = params.get('projectKey') || 'FIN';
+      const workspaceId =
+        params.get('workspaceId') || params.get('slug') || 'default-workspace';
+
+      this.projectStore.getProjectDetail(projectKey, workspaceId, undefined, true);
+    });
+  }
+
+  setBoardTab(tab: BoardFilterTab): void {
+    this.activeBoardTab.set(tab);
+  }
+
+  // Modals handlers
+  openSettingsModal(): void {
+    this.showSettingsModal.set(true);
+  }
+
+  closeSettingsModal(): void {
+    this.showSettingsModal.set(false);
+  }
+
+  openAddMemberModal(): void {
+    this.showAddMemberModal.set(true);
+  }
+
+  closeAddMemberModal(): void {
+    this.showAddMemberModal.set(false);
+  }
+
+  openCreateBoardModal(): void {
+    this.showCreateBoardModal.set(true);
+  }
+
+  closeCreateBoardModal(): void {
+    this.showCreateBoardModal.set(false);
+  }
+
+  // Helpers
+  getBoardIconName(type: string): string {
+    return getBoardIcon(type);
+  }
+
+  getBoardBadge(type: string) {
+    return getBoardBadgeColor(type);
+  }
+
+  goBack(): void {
+    const wsId = this.project()?.workspaceId;
+    if (wsId) {
+      void this.router.navigate(['/workspaces', wsId]);
+    } else {
+      void this.router.navigate(['/workspaces']);
+    }
+  }
+
+  onBoardClick(board: Board): void {
+    // Navigate to board view if route exists
+    void this.router.navigate(['/boards', board.slug]);
+  }
+}

@@ -39,16 +39,20 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
       @for (project of workspace.projects; track project.id) {
         <div
-          class="bg-[#131b2e] border border-slate-800/80 rounded-2xl p-3 flex flex-col justify-between"
+          [routerLink]="['/workspaces', workspace.slug, 'projects', project.projectKey]"
+          class="bg-[#131b2e] border border-slate-800/80 hover:border-indigo-500/50 rounded-2xl p-4 flex flex-col justify-between transition cursor-pointer group shadow-sm hover:shadow-indigo-500/5"
         >
           <div>
             <div
               [class]="project.color"
-              class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold"
+              class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm"
             >
               {{ project.initial }}
             </div>
-            <h3 class="text-[15px] font-semibold text-white mt-3 truncate" [title]="project.name">
+            <h3
+              class="text-[15px] font-semibold text-white mt-3 truncate group-hover:text-indigo-400 transition"
+              [title]="project.name"
+            >
               {{ project.name }}
             </h3>
             <p class="text-xs text-slate-400 mt-1 line-clamp-2 min-h-8">

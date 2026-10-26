@@ -44,6 +44,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'workspaces/:slug/projects/:projectKey',
+        loadComponent: () =>
+          import('./presentation/pages/project/project-detail/project-detail.page').then(
+            (m) => m.ProjectDetailPage,
+          ),
+      },
+      {
+        path: 'projects/:projectKey',
+        loadComponent: () =>
+          import('./presentation/pages/project/project-detail/project-detail.page').then(
+            (m) => m.ProjectDetailPage,
+          ),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         children: [
