@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest, distinctUntilChanged, map } from 'rxjs';
+import { SessionService } from '../../../../application/auth/session.service';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
-import { Board, Project } from '../../../../domain/models/project.model';
+import { Board, Project, ProjectMember } from '../../../../domain/models/project.model';
 import {
   getBoardBadgeColor,
   getBoardIcon,
@@ -39,6 +40,7 @@ export class ProjectDetailPage implements OnInit {
   readonly projectStore = inject(ProjectStore);
   readonly workspaceStore = inject(WorkspaceStore);
   private readonly notifications = inject(NotificationService);
+  private readonly session = inject(SessionService);
   private readonly layoutService = inject(LayoutService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -89,6 +91,8 @@ export class ProjectDetailPage implements OnInit {
   readonly showSettingsModal = signal(false);
   readonly showAddMemberModal = signal(false);
   readonly showCreateBoardModal = signal(false);
+  readonly memberToRemove = signal<ProjectMember | null>(null); // Thành viên đang được chọn để xóa
+  readonly memberRemovalError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận
 
   ngOnInit(): void {
     this.layoutService.setSidebar('main');
@@ -115,6 +119,8 @@ export class ProjectDetailPage implements OnInit {
         this.closeSettingsModal();
         this.closeAddMemberModal();
         this.closeCreateBoardModal();
+        this.memberToRemove.set(null);
+        this.memberRemovalError.set(null);
         this.loadProjectDetail();
       });
   }
@@ -185,6 +191,65 @@ export class ProjectDetailPage implements OnInit {
     this.closeSettingsModal(); // đóng modal settings project
     this.workspaceStore.onProjectDeleted(project.workspaceId);
     this.goBack();
+  }
+
+  isSelf(member: ProjectMember): boolean {
+    return member.userId.toLowerCase() === this.session.currentUser()?.id.toLowerCase();
+  }
+
+  canRemoveMember(member: ProjectMember): boolean {
+    // hàm xác định xem người dùng hiện tại có quyền xóa thành viên dự án hay không
+    const userId = this.session.currentUser()?.id;
+    const project = this.project();
+    if (!userId || !project || member.roleName === 'ProjectLeader') return false;
+    const currentWorkspace = this.workspaceStore.currentWorkspace();
+    const workspace =
+      currentWorkspace?.id === project.workspaceId
+        ? currentWorkspace
+        : this.workspaceStore.workspaces().find((item) => item.id === project.workspaceId);
+    const isOwner = workspace?.ownerId.toLowerCase() === userId.toLowerCase();
+    const isLeader = this.members().some(
+      (item) =>
+        item.userId.toLowerCase() === userId.toLowerCase() && item.roleName === 'ProjectLeader',
+    );
+    return isOwner || isLeader || this.isSelf(member);
+  }
+
+  openRemoveMember(member: ProjectMember): void {
+    // mở hộp xác nhận xóa thành viên dự án
+    if (!this.canRemoveMember(member) || this.projectStore.isRemovingMember()) return;
+    this.memberRemovalError.set(null);
+    this.memberToRemove.set(member);
+  }
+
+  closeRemoveMember(): void {
+    // đóng hộp xác nhận xóa thành viên dự án
+    if (this.projectStore.isRemovingMember()) return;
+    this.memberToRemove.set(null);
+    this.memberRemovalError.set(null);
+  }
+
+  confirmRemoveMember(): void {
+    // xác nhận xóa thành viên dự án
+    const member = this.memberToRemove();
+    const project = this.project();
+    if (!member || !project || !this.canRemoveMember(member)) return;
+    const isSelf = this.isSelf(member);
+    this.memberRemovalError.set(null);
+    this.projectStore.removeMember(
+      project.id,
+      member.userId,
+      () => {
+        this.memberToRemove.set(null);
+        this.memberRemovalError.set(null);
+        this.workspaceStore.onProjectMemberRemoved(project.workspaceId);
+        if (isSelf) {
+          this.projectStore.clear();
+          this.goBack();
+        }
+      },
+      (message) => this.memberRemovalError.set(message),
+    );
   }
 
   // Helpers

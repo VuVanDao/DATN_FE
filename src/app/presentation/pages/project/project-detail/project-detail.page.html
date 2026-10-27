@@ -528,6 +528,29 @@
                 >
                   {{ member.roleName === 'ProjectLeader' ? 'Leader' : member.roleName || 'Member' }}
                 </span>
+                @if (canRemoveMember(member)) {
+                  <button
+                    type="button"
+                    (click)="openRemoveMember(member)"
+                    [disabled]="
+                      projectStore.isRemovingMember() ||
+                      projectStore.isAddingMember() ||
+                      projectStore.isDeleting()
+                    "
+                    [attr.aria-label]="
+                      isSelf(member) ? 'Rời dự án' : 'Xóa ' + member.username + ' khỏi dự án'
+                    "
+                    class="ml-2 shrink-0 rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-500/10 cursor-pointer disabled:opacity-50"
+                  >
+                    {{ isSelf(member) ? 'Rời dự án' : 'Xóa' }}
+                  </button>
+                } @else if (member.roleName === 'ProjectLeader' && isSelf(member)) {
+                  <span
+                    class="ml-2 text-[10px] text-slate-400"
+                    title="Cần chuyển giao vai trò ProjectLeader trước khi rời dự án"
+                    >Cần chuyển giao trước khi rời</span
+                  >
+                }
               </div>
             }
           </div>
@@ -536,6 +559,64 @@
     </div>
 
     <!-- Modals -->
+    @if (memberToRemove(); as member) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4"
+        (click)="closeRemoveMember()"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="remove-project-member-title"
+          class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 space-y-4"
+          (click)="$event.stopPropagation()"
+        >
+          <h2 id="remove-project-member-title" class="text-lg font-semibold text-white">
+            {{ isSelf(member) ? 'Rời dự án' : 'Xóa thành viên khỏi dự án' }}
+          </h2>
+          <p class="text-sm text-slate-300">
+            {{
+              isSelf(member)
+                ? 'Bạn muốn rời dự án'
+                : 'Bạn muốn xóa ' + member.username + ' (' + member.email + ') khỏi dự án'
+            }}
+            <strong>{{ proj.name }}</strong
+            >?
+          </p>
+          <p class="text-xs text-slate-400">
+            Thành viên vẫn thuộc workspace. Các thẻ trong dự án đang giao cho thành viên này sẽ được
+            bỏ gán.
+          </p>
+          @if (memberRemovalError(); as error) {
+            <p role="alert" class="text-sm text-rose-300">{{ error }}</p>
+          }
+          <div class="flex justify-end gap-3">
+            <button
+              type="button"
+              (click)="closeRemoveMember()"
+              [disabled]="projectStore.isRemovingMember()"
+              class="rounded-xl px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 cursor-pointer disabled:opacity-50"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              (click)="confirmRemoveMember()"
+              [disabled]="projectStore.isRemovingMember()"
+              class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-500 cursor-pointer disabled:opacity-50"
+            >
+              {{
+                projectStore.isRemovingMember()
+                  ? 'Đang xử lý...'
+                  : isSelf(member)
+                    ? 'Xác nhận rời dự án'
+                    : 'Xác nhận xóa'
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
     <!-- Modal 1: Cài đặt chi tiết dự án (xen lẫn thông tin chỉnh sửa và chỉ đọc) -->
     <app-project-settings-modal
       [isOpen]="showSettingsModal()"

@@ -244,6 +244,10 @@ export class WorkspaceStore {
     this.invalidateTabLists(workspaceId, 'projects'); // vô hiệu hoá danh sách dự án cũ của workspace này
   }
 
+  onProjectMemberRemoved(workspaceId: string): void {
+    this.invalidateTabLists(workspaceId, 'projects');
+  }
+
   clearDetail(): void {
     this.clearTabLists();
     this._detail.clearView();

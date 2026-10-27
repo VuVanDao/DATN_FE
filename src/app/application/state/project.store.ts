@@ -16,6 +16,7 @@ import { GetProjectBoardsUseCase } from '../project/get-project-boards.use-case'
 import { GetProjectDetailUseCase } from '../project/get-project-detail.use-case';
 import { GetProjectMembersUseCase } from '../project/get-project-members.use-case';
 import { GetProjectRolesUseCase } from '../project/get-project-roles.use-case';
+import { RemoveProjectMemberUseCase } from '../project/remove-project-member.use-case';
 import { UpdateProjectUseCase } from '../project/update-project.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
@@ -30,6 +31,7 @@ export class ProjectStore {
   private readonly addProjectMembersUseCase = inject(AddProjectMembersUseCase);
   private readonly createBoardUseCase = inject(CreateBoardUseCase);
   private readonly deleteProjectUseCase = inject(DeleteProjectUseCase);
+  private readonly removeProjectMemberUseCase = inject(RemoveProjectMemberUseCase);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -46,6 +48,7 @@ export class ProjectStore {
   private readonly savingSignal = signal<boolean>(false);
   private readonly deletingSignal = signal(false); // trạng thái đang xóa dự án
   private readonly addingMemberSignal = signal<boolean>(false);
+  private readonly removingMemberSignal = signal(false); // trạng thái đang xóa thành viên dự án
   private readonly creatingBoardSignal = signal<boolean>(false);
   private readonly loadingRolesSignal = signal(false);
   private readonly rolesErrorSignal = signal<string | null>(null);
@@ -61,6 +64,7 @@ export class ProjectStore {
   readonly isSaving = this.savingSignal.asReadonly();
   readonly isDeleting = this.deletingSignal.asReadonly();
   readonly isAddingMember = this.addingMemberSignal.asReadonly();
+  readonly isRemovingMember = this.removingMemberSignal.asReadonly();
   readonly isCreatingBoard = this.creatingBoardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
   readonly isLoadingRoles = this.loadingRolesSignal.asReadonly();
@@ -169,7 +173,7 @@ export class ProjectStore {
     onSuccess?: (members: ProjectMember[]) => void,
     onError?: (message: string) => void,
   ): void {
-    if (this.addingMemberSignal()) return;
+    if (this.addingMemberSignal() || this.removingMemberSignal() || this.deletingSignal()) return;
     this.requests.run({
       loading: this.addingMemberSignal,
       request$: this.addProjectMembersUseCase.execute(projectId, request),
@@ -190,7 +194,7 @@ export class ProjectStore {
     onSuccess?: () => void,
     onError?: (message: string) => void,
   ): void {
-    if (this.deletingSignal() || this.savingSignal()) return;
+    if (this.deletingSignal() || this.savingSignal() || this.removingMemberSignal()) return;
     this.requests.run({
       loading: this.deletingSignal,
       request$: this.deleteProjectUseCase.execute(projectId),
@@ -224,6 +228,43 @@ export class ProjectStore {
         );
         this.notifications.success('Tạo bảng mới thành công');
         onSuccess?.(newBoard);
+      },
+    });
+  }
+
+  removeMember(
+    projectId: string,
+    userId: string,
+    onSuccess?: () => void,
+    onError?: (message: string) => void,
+  ): void {
+    if (this.removingMemberSignal() || this.addingMemberSignal() || this.deletingSignal()) return;
+    this.requests.run({
+      loading: this.removingMemberSignal,
+      request$: this.removeProjectMemberUseCase.execute(projectId, userId),
+      cancel$: this.cancel$,
+      fallbackErrorMessage: 'Không thể xóa thành viên khỏi dự án. Vui lòng thử lại.',
+      onError,
+      onSuccess: (removed) => {
+        if (removed !== true) {
+          const message = 'Không thể xóa thành viên khỏi dự án. Vui lòng thử lại.';
+          this.notifications.error(message);
+          onError?.(message);
+          return;
+        }
+        if (this.projectSignal()?.id === projectId) {
+          this.membersReadCancel$.next(); // Hủy request lấy danh sách thành viên cũ đang chạy
+          this.membersSignal.update((members) =>
+            members.filter((member) => member.userId !== userId),
+          ); // Loại người vừa xóa khỏi danh sách local.
+          this.projectSignal.update((project) =>
+            project ? { ...project, membersCount: Math.max(0, project.membersCount - 1) } : project,
+          ); // giảm số lượng thành viên trong dự án
+        }
+        this.notifications.success('Đã xóa thành viên khỏi dự án');
+        onSuccess?.();
+        // The page clears project state when the current user leaves, so do not read it again.
+        if (this.projectSignal()?.id === projectId) this.loadMembers(projectId);
       },
     });
   }
