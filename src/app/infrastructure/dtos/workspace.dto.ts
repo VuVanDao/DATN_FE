@@ -23,6 +23,7 @@ export interface WorkspaceProjectResponse {
   tasksCount: number;
   members: ProjectMemberAvatar[];
   createdAt: string;
+  isMember?: boolean;
 }
 export interface WorkspaceDetailResponse {
   id: string;

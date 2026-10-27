@@ -27,6 +27,8 @@ export interface Project {
   sprintCount: number;
   cardCount: number;
   createdAt: string;
+  isMember?: boolean;
+  currentUserRole?: string | null;
 }
 
 export interface ProjectMember {

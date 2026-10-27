@@ -47,6 +47,7 @@ export interface WorkspaceProject {
   tasksCount: number;
   members: ProjectMemberAvatar[];
   createdAt: string;
+  isMember?: boolean;
 }
 
 // Chi tiết workspace được repository trả về.

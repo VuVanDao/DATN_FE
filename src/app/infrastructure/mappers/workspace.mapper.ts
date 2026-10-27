@@ -32,6 +32,7 @@ export class WorkspaceMapper {
       tasksCount: dto.tasksCount ?? 0,
       members: dto.members ?? [],
       createdAt: dto.createdAt,
+      isMember: dto.isMember ?? false,
     };
   }
   static toWorkspaceDetail(dto: WorkspaceDetailResponse): WorkspaceDetail {
