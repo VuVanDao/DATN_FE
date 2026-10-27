@@ -359,7 +359,9 @@
         @if (projectStore.isLoadingBoards()) {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @for (i of [1, 2]; track i) {
-              <div class="h-36 rounded-2xl bg-[#111827] border border-slate-800 animate-pulse"></div>
+              <div
+                class="h-36 rounded-2xl bg-[#111827] border border-slate-800 animate-pulse"
+              ></div>
             }
           </div>
         } @else if (filteredBoards().length > 0) {
@@ -539,6 +541,7 @@
       [isOpen]="showSettingsModal()"
       [project]="project()"
       (closed)="closeSettingsModal()"
+      (saved)="onProjectUpdated($event)"
     />
 
     <!-- Modal 2: Thêm thành viên -->

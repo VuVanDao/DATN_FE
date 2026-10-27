@@ -140,14 +140,19 @@ export class ProjectStore {
     projectId: string,
     request: UpdateProjectRequest,
     onSuccess?: (project: Project) => void,
+    onError?: (message: string) => void,
   ): void {
+    if (this.savingSignal()) return;
     this.requests.run({
       loading: this.savingSignal,
       request$: this.updateProjectUseCase.execute(projectId, request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Cập nhật dự án thất bại',
+      onError,
       onSuccess: (updated) => {
-        this.projectSignal.update((current) => (current ? { ...current, ...updated } : updated));
+        this.projectSignal.update((current) =>
+          current?.id === projectId ? { ...current, ...updated } : current,
+        );
         this.notifications.success('Cập nhật thông tin dự án thành công');
         onSuccess?.(updated);
       },

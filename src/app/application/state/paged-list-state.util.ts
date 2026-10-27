@@ -46,6 +46,10 @@ export class PagedListState<T> {
     });
   }
 
+  patch(updater: (items: T[]) => T[]): void {
+    this.itemsState.update(updater);
+  }
+
   clear(): void {
     this.cancel$.next();
     this.itemsState.set([]);

@@ -9,7 +9,7 @@ import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
-import { Board } from '../../../../domain/models/project.model';
+import { Board, Project } from '../../../../domain/models/project.model';
 import {
   getBoardBadgeColor,
   getBoardIcon,
@@ -162,6 +162,23 @@ export class ProjectDetailPage implements OnInit {
 
   closeCreateBoardModal(): void {
     this.showCreateBoardModal.set(false);
+  }
+
+  onProjectUpdated(updated: Project): void {
+    this.projectKey = updated.projectKey;
+    this.workspaceStore.patchProject(updated);
+
+    const routeWorkspaceId = this.route.snapshot.paramMap.get('workspaceId');
+    const commands = routeWorkspaceId
+      ? ['/workspaces', routeWorkspaceId, 'projects', updated.projectKey]
+      : ['/projects', updated.projectKey];
+
+    if (this.route.snapshot.paramMap.get('projectKey') !== updated.projectKey) {
+      void this.router.navigate(commands, {
+        queryParamsHandling: 'preserve',
+        replaceUrl: true,
+      });
+    }
   }
 
   // Helpers

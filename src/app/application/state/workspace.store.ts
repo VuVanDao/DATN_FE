@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CreateProjectRequest } from '../../domain/models/project.model';
+import { CreateProjectRequest, Project } from '../../domain/models/project.model';
 import {
   AddWorkspaceMembersRequest,
   AddWorkspaceMembersResult,
@@ -233,6 +233,10 @@ export class WorkspaceStore {
         this.invalidateTabLists(current.id, 'projects');
       }
     });
+  }
+
+  patchProject(project: Project): void {
+    this._projects.patchProject(project);
   }
 
   clearDetail(): void {

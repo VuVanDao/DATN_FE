@@ -6,6 +6,7 @@ import {
   Input,
   OnChanges,
   Output,
+  signal,
   SimpleChanges,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -23,11 +24,12 @@ import { Project, UpdateProjectRequest } from '../../../../../../domain/models/p
 export class ProjectSettingsModalComponent implements OnChanges {
   readonly projectStore = inject(ProjectStore);
   readonly workspaceStore = inject(WorkspaceStore);
+  readonly submitError = signal<string | null>(null);
 
   @Input() isOpen = false;
   @Input() project: Project | null = null;
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<UpdateProjectRequest>();
+  @Output() saved = new EventEmitter<Project>();
 
   readonly form = new FormGroup({
     name: new FormControl('', {
@@ -51,6 +53,7 @@ export class ProjectSettingsModalComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true && this.project) {
+      this.submitError.set(null);
       this.form.reset({
         name: this.project.name || '',
         projectKey: this.project.projectKey || '',
@@ -60,25 +63,34 @@ export class ProjectSettingsModalComponent implements OnChanges {
   }
 
   onSubmit(): void {
+    if (this.projectStore.isSaving()) return;
+    this.submitError.set(null);
+    const { name, projectKey, description } = this.form.getRawValue();
+    this.form.patchValue({ name: name.trim(), projectKey: projectKey.trim().toUpperCase() });
     if (this.form.invalid || !this.project) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const { name, projectKey, description } = this.form.getRawValue();
     const request: UpdateProjectRequest = {
       name: name.trim(),
       projectKey: projectKey.trim().toUpperCase(),
-      description: description ? description.trim() : null,
+      description: description.trim() || null,
     };
 
-    this.projectStore.updateProject(this.project.id, request, () => {
-      this.saved.emit(request);
-      this.close();
-    });
+    this.projectStore.updateProject(
+      this.project.id,
+      request,
+      (updated) => {
+        this.saved.emit(updated);
+        this.closed.emit();
+      },
+      (message) => this.submitError.set(message),
+    );
   }
 
   close(): void {
+    if (this.projectStore.isSaving()) return;
     this.closed.emit();
   }
 }

@@ -30,6 +30,21 @@ export class WorkspaceProjectsSlice {
     });
   }
 
+  patchProject(project: Project): void {
+    this.projects.patch((items) =>
+      items.map((item) =>
+        item.id === project.id
+          ? {
+              ...item,
+              name: project.name,
+              projectKey: project.projectKey,
+              description: project.description,
+            }
+          : item,
+      ),
+    );
+  }
+
   clear(): void {
     this.cancel$.next();
     this.projects.clear();
