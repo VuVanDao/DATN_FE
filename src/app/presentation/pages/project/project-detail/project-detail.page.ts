@@ -61,8 +61,7 @@ export class ProjectDetailPage implements OnInit {
     const tab = this.activeBoardTab();
 
     return list.filter((board) => {
-      const matchTab =
-        tab === 'all' || board.type.toLowerCase() === tab.toLowerCase();
+      const matchTab = tab === 'all' || board.type.toLowerCase() === tab.toLowerCase();
       const matchQuery =
         !query ||
         board.title.toLowerCase().includes(query) ||
@@ -147,9 +146,12 @@ export class ProjectDetailPage implements OnInit {
   }
 
   goBack(): void {
-    const currentWs = this.workspaceStore.currentWorkspace();
-    if (currentWs?.slug) {
-      void this.router.navigate(['/workspaces', currentWs.slug]);
+    const slug =
+      this.workspaceStore.currentWorkspace()?.slug ||
+      this.route.snapshot.queryParamMap.get('workspaceSlug');
+
+    if (slug) {
+      void this.router.navigate(['/workspaces', slug]);
       return;
     }
 

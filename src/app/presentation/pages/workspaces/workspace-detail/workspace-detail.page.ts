@@ -82,7 +82,6 @@ export class WorkspaceDetailPage implements OnInit {
 
   ngOnInit(): void {
     this.layoutService.setSidebar('main');
-    this.destroyRef.onDestroy(() => this.workspaceStore.clearDetail());
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.closeInviteModal();
       this.closeDeleteWorkspaceModal();

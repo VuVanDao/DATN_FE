@@ -11,6 +11,7 @@ import {
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectStore } from '../../../../../../application/state/project.store';
+import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
 import { Project, UpdateProjectRequest } from '../../../../../../domain/models/project.model';
 
 @Component({
@@ -21,6 +22,7 @@ import { Project, UpdateProjectRequest } from '../../../../../../domain/models/p
 })
 export class ProjectSettingsModalComponent implements OnChanges {
   readonly projectStore = inject(ProjectStore);
+  readonly workspaceStore = inject(WorkspaceStore);
 
   @Input() isOpen = false;
   @Input() project: Project | null = null;
