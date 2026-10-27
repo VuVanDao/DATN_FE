@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { BehaviorSubject } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LayoutService } from '../../../../application/layout/layout.service';
+import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { ProjectDetailPage } from './project-detail.page';
@@ -40,6 +41,7 @@ describe('ProjectDetailPage route and error states', () => {
       imports: [ProjectDetailPage],
       providers: [
         provideRouter([]),
+        { provide: NotificationService, useValue: { warning: vi.fn(), error: vi.fn(), success: vi.fn() } },
         { provide: ProjectStore, useValue: store },
         { provide: WorkspaceStore, useValue: { currentWorkspace: () => null } },
         { provide: LayoutService, useValue: { setSidebar() {} } },
@@ -58,10 +60,10 @@ describe('ProjectDetailPage route and error states', () => {
   it('loads route identifiers and reloads when a reused route changes project', () => {
     const fixture = TestBed.createComponent(ProjectDetailPage);
     fixture.detectChanges();
-    expect(store.getProjectDetail).toHaveBeenCalledWith('APP', workspaceId);
+    expect(store.getProjectDetail).toHaveBeenCalledWith('APP', workspaceId, expect.any(Function));
 
     params.next(convertToParamMap({ projectKey: 'NEW', workspaceId }));
-    expect(store.getProjectDetail).toHaveBeenLastCalledWith('NEW', workspaceId);
+    expect(store.getProjectDetail).toHaveBeenLastCalledWith('NEW', workspaceId, expect.any(Function));
     fixture.destroy();
     expect(store.clear).toHaveBeenCalled();
   });
@@ -82,7 +84,7 @@ describe('ProjectDetailPage route and error states', () => {
     query.next(convertToParamMap({ workspaceId }));
     const fixture = TestBed.createComponent(ProjectDetailPage);
     fixture.detectChanges();
-    expect(store.getProjectDetail).toHaveBeenCalledWith('APP', workspaceId);
+    expect(store.getProjectDetail).toHaveBeenCalledWith('APP', workspaceId, expect.any(Function));
 
     store.error.set('Bạn không có quyền xem dự án.');
     fixture.detectChanges();
@@ -92,6 +94,10 @@ describe('ProjectDetailPage route and error states', () => {
     expect(store.getProjectDetail).toHaveBeenCalledTimes(2);
 
     query.next(convertToParamMap({ workspaceId: 'another-workspace' }));
-    expect(store.getProjectDetail).toHaveBeenLastCalledWith('APP', 'another-workspace');
+    expect(store.getProjectDetail).toHaveBeenLastCalledWith(
+      'APP',
+      'another-workspace',
+      expect.any(Function),
+    );
   });
 });

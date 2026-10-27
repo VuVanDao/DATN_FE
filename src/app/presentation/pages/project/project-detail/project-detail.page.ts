@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest, distinctUntilChanged, map } from 'rxjs';
 import { LayoutService } from '../../../../application/layout/layout.service';
+import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { Board } from '../../../../domain/models/project.model';
@@ -37,6 +38,7 @@ type BoardFilterTab = 'all' | 'Kanban' | 'Scrum';
 export class ProjectDetailPage implements OnInit {
   readonly projectStore = inject(ProjectStore);
   readonly workspaceStore = inject(WorkspaceStore);
+  private readonly notifications = inject(NotificationService);
   private readonly layoutService = inject(LayoutService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -125,7 +127,12 @@ export class ProjectDetailPage implements OnInit {
       return;
     }
 
-    this.projectStore.getProjectDetail(this.projectKey, this.workspaceId);
+    this.projectStore.getProjectDetail(this.projectKey, this.workspaceId, (project) => {
+      if (project.isMember === false) {
+        this.notifications.warning('Bạn chưa tham gia dự án này nên không thể vào trang chi tiết.');
+        this.goBack();
+      }
+    });
   }
 
   setBoardTab(tab: BoardFilterTab): void {

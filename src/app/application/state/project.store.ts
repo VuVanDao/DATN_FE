@@ -76,8 +76,10 @@ export class ProjectStore {
       toastOnError: false,
       onSuccess: (project) => {
         this.projectSignal.set(project);
-        this.loadBoards(project.id);
-        this.loadMembers(project.id);
+        if (project.isMember !== false) {
+          this.loadBoards(project.id);
+          this.loadMembers(project.id);
+        }
         onSuccess?.(project);
       },
       onError: (err) => {

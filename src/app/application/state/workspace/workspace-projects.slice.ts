@@ -16,7 +16,7 @@ export class WorkspaceProjectsSlice {
   private readonly creating = signal(false);
   readonly projects = new PagedListState<WorkspaceProject>(this.requests, (id, page) =>
     this.getProjects.execute(id, page),
-  );
+  ); // danh sach các dự án của 1 workspace
   readonly isCreatingProject = this.creating.asReadonly();
 
   createProject(request: CreateProjectRequest, onSuccess?: (project: Project) => void): void {
