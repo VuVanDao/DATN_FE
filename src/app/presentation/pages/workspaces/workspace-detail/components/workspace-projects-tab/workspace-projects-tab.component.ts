@@ -34,7 +34,7 @@ export class WorkspaceProjectsTabComponent {
   }
 
   onProjectClick(project: WorkspaceProjectView): void {
-    if (project.isMember) {
+    if (this.isOwner || project.isMember) {
       void this.router.navigate(
         ['/workspaces', this.workspace.id, 'projects', project.projectKey],
         { queryParams: { workspaceSlug: this.workspace.slug } },
