@@ -40,6 +40,7 @@ export class ProjectStore {
   private readonly rolesSignal = signal<ProjectRole[]>([]);
 
   private readonly loadingSignal = signal<boolean>(false);
+  private readonly loadingBoardsSignal = signal<boolean>(false);
   private readonly savingSignal = signal<boolean>(false);
   private readonly addingMemberSignal = signal<boolean>(false);
   private readonly creatingBoardSignal = signal<boolean>(false);
@@ -53,6 +54,7 @@ export class ProjectStore {
   readonly roles = this.rolesSignal.asReadonly();
 
   readonly isLoading = this.loadingSignal.asReadonly();
+  readonly isLoadingBoards = this.loadingBoardsSignal.asReadonly();
   readonly isSaving = this.savingSignal.asReadonly();
   readonly isAddingMember = this.addingMemberSignal.asReadonly();
   readonly isCreatingBoard = this.creatingBoardSignal.asReadonly();
@@ -86,7 +88,7 @@ export class ProjectStore {
 
   loadBoards(projectId: string): void {
     this.requests.run({
-      loading: signal(false),
+      loading: this.loadingBoardsSignal,
       request$: this.getProjectBoardsUseCase.execute(projectId),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải danh sách bảng',
@@ -95,9 +97,7 @@ export class ProjectStore {
         this.boardsSignal.set(boards);
       },
       onError: () => {
-        if (this.boardsSignal().length === 0) {
-          this.boardsSignal.set(this.getDefaultMockBoards(projectId));
-        }
+        this.boardsSignal.set([]);
       },
     });
   }
@@ -199,30 +199,10 @@ export class ProjectStore {
 
   clear(): void {
     this.cancel$.next();
+    this.membersReadCancel$.next();
     this.projectSignal.set(null);
     this.boardsSignal.set([]);
     this.membersSignal.set([]);
     this.errorSignal.set(null);
-  }
-
-  private getDefaultMockBoards(projectId: string): Board[] {
-    return [
-      {
-        id: 'board-1',
-        projectId,
-        title: 'Bảng phát triển',
-        slug: 'bang-phat-trien',
-        type: 'Kanban',
-        createdAt: '2026-09-04T08:30:00Z',
-      },
-      {
-        id: 'board-2',
-        projectId,
-        title: 'Sprint Planning',
-        slug: 'sprint-planning',
-        type: 'Scrum',
-        createdAt: '2026-09-05T09:15:00Z',
-      },
-    ];
   }
 }

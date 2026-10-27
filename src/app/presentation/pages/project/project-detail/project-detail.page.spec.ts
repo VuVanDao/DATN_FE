@@ -17,6 +17,7 @@ describe('ProjectDetailPage route and error states', () => {
     boards: ReturnType<typeof signal<[]>>;
     members: ReturnType<typeof signal<[]>>;
     isLoading: ReturnType<typeof signal<boolean>>;
+    isLoadingBoards: ReturnType<typeof signal<boolean>>;
     error: ReturnType<typeof signal<string | null>>;
     getProjectDetail: ReturnType<typeof vi.fn>;
     clear: ReturnType<typeof vi.fn>;
@@ -30,6 +31,7 @@ describe('ProjectDetailPage route and error states', () => {
       boards: signal([]),
       members: signal([]),
       isLoading: signal(false),
+      isLoadingBoards: signal(false),
       error: signal(null),
       getProjectDetail: vi.fn(),
       clear: vi.fn(),

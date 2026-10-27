@@ -100,6 +100,15 @@ describe('Project detail API integration', () => {
     http.expectOne(`${environment.apiUrl}/project/${project.id}/members`).flush({ data: [] });
   });
 
+  it('does not insert mock boards when the board read fails', () => {
+    store.clear();
+    store.loadBoards(project.id);
+    http
+      .expectOne(`${environment.apiUrl}/board/project/${project.id}`)
+      .flush(null, { status: 500, statusText: 'Server Error' });
+    expect(store.boards()).toEqual([]);
+  });
+
   it('clears the previous project and cancels its related reads on navigation', () => {
     store.getProjectDetail('APP', workspaceId);
     http.expectOne(detailUrl('APP')).flush({ data: project });
