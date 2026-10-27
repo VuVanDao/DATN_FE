@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Subject } from 'rxjs';
+import { merge, Subject } from 'rxjs';
 import {
   AddProjectMembersRequest,
   Board,
@@ -33,6 +33,7 @@ export class ProjectStore {
   private readonly notifications = inject(NotificationService);
 
   private readonly cancel$ = new Subject<void>();
+  private readonly membersReadCancel$ = new Subject<void>();
   private readonly projectSignal = signal<Project | null>(null);
   private readonly boardsSignal = signal<Board[]>([]);
   private readonly membersSignal = signal<ProjectMember[]>([]);
@@ -98,19 +99,17 @@ export class ProjectStore {
   }
 
   loadMembers(projectId: string): void {
+    this.membersReadCancel$.next();
     this.requests.run({
       loading: signal(false),
       request$: this.getProjectMembersUseCase.execute(projectId),
-      cancel$: this.cancel$,
+      cancel$: merge(this.cancel$, this.membersReadCancel$),
       fallbackErrorMessage: 'Không thể tải danh sách thành viên',
-      toastOnError: false,
       onSuccess: (members) => {
         this.membersSignal.set(members);
-      },
-      onError: () => {
-        if (this.membersSignal().length === 0) {
-          this.membersSignal.set(this.getDefaultMockMembers());
-        }
+        this.projectSignal.update((project) =>
+          project?.id === projectId ? { ...project, membersCount: members.length } : project,
+        );
       },
     });
   }
@@ -175,23 +174,17 @@ export class ProjectStore {
     request: AddProjectMembersRequest,
     onSuccess?: (members: ProjectMember[]) => void,
   ): void {
+    if (this.addingMemberSignal()) return;
     this.requests.run({
       loading: this.addingMemberSignal,
       request$: this.addProjectMembersUseCase.execute(projectId, request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Thêm thành viên thất bại',
       onSuccess: (newMembers) => {
-        this.membersSignal.set(newMembers);
-        this.projectSignal.update((p) => (p ? { ...p, membersCount: newMembers.length } : null));
+        // POST returns only newly added members; reload to also refresh existing leader roles.
+        this.loadMembers(projectId);
         this.notifications.success('Thêm thành viên vào dự án thành công');
         onSuccess?.(newMembers);
-      },
-      onError: () => {
-        this.notifications.success('Đã thêm thành viên vào dự án');
-        this.projectSignal.update((p) =>
-          p ? { ...p, membersCount: (p.membersCount || 0) + request.members.length } : null,
-        );
-        onSuccess?.(this.membersSignal());
       },
     });
   }
@@ -260,56 +253,6 @@ export class ProjectStore {
         slug: 'sprint-planning',
         type: 'Scrum',
         createdAt: '2026-09-05T09:15:00Z',
-      },
-    ];
-  }
-
-  private getDefaultMockMembers(): ProjectMember[] {
-    return [
-      {
-        userId: 'u1',
-        username: 'Minh Nguyễn',
-        email: 'minh.nguyen@example.com',
-        avatarUrl: null,
-        roleId: '1',
-        roleName: 'ProjectLeader',
-        joinedAt: '2026-09-03T10:00:00Z',
-      },
-      {
-        userId: 'u2',
-        username: 'Hà Linh',
-        email: 'ha.linh@example.com',
-        avatarUrl: null,
-        roleId: '2',
-        roleName: 'ProjectMember',
-        joinedAt: '2026-09-04T11:00:00Z',
-      },
-      {
-        userId: 'u3',
-        username: 'Quốc Anh',
-        email: 'quoc.anh@example.com',
-        avatarUrl: null,
-        roleId: '3',
-        roleName: 'Developer',
-        joinedAt: '2026-09-04T14:30:00Z',
-      },
-      {
-        userId: 'u4',
-        username: 'Trang Thu',
-        email: 'trang.thu@example.com',
-        avatarUrl: null,
-        roleId: '3',
-        roleName: 'Developer',
-        joinedAt: '2026-09-05T08:00:00Z',
-      },
-      {
-        userId: 'u5',
-        username: 'Đức Huy',
-        email: 'duc.huy@example.com',
-        avatarUrl: null,
-        roleId: '4',
-        roleName: 'Observer',
-        joinedAt: '2026-09-06T09:20:00Z',
       },
     ];
   }
