@@ -151,21 +151,6 @@ export class ProjectStore {
         this.notifications.success('Cập nhật thông tin dự án thành công');
         onSuccess?.(updated);
       },
-      onError: () => {
-        // Fallback update in state if offline/mock
-        this.projectSignal.update((current) =>
-          current
-            ? {
-                ...current,
-                name: request.name,
-                projectKey: request.projectKey,
-                description: request.description,
-              }
-            : null,
-        );
-        this.notifications.success('Đã cập nhật thông tin dự án');
-        if (this.projectSignal()) onSuccess?.(this.projectSignal()!);
-      },
     });
   }
 
@@ -202,22 +187,6 @@ export class ProjectStore {
         );
         this.notifications.success('Tạo bảng mới thành công');
         onSuccess?.(newBoard);
-      },
-      onError: () => {
-        const mockBoard: Board = {
-          id: crypto.randomUUID(),
-          projectId: request.projectId,
-          title: request.title,
-          slug: request.slug,
-          type: request.type === 2 || request.type === 'Scrum' ? 'Scrum' : 'Kanban',
-          createdAt: new Date().toISOString(),
-        };
-        this.boardsSignal.update((boards) => [mockBoard, ...boards]);
-        this.projectSignal.update((p) =>
-          p ? { ...p, boardsCount: (p.boardsCount || 0) + 1 } : null,
-        );
-        this.notifications.success('Đã tạo bảng mới');
-        onSuccess?.(mockBoard);
       },
     });
   }
