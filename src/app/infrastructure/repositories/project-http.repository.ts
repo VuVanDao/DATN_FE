@@ -84,10 +84,8 @@ export class ProjectHttpRepository implements ProjectRepository {
     // If request.type is string 'Kanban' or 'Scrum', map to enum number (Kanban=1, Scrum=2) for BE
     const payload = {
       ...request,
-      type: typeof request.type === 'string' ? (request.type === 'Scrum' ? 2 : 1) : request.type,
+      type: typeof request.type === 'string' ? (request.type === 'Scrum' ? 1 : 0) : request.type,
     };
-    return this.http
-      .post<ApiResponse<Board>>(this.boardUrl, payload)
-      .pipe(map((res) => res.data));
+    return this.http.post<ApiResponse<Board>>(this.boardUrl, payload).pipe(map((res) => res.data));
   }
 }

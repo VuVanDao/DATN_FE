@@ -9,13 +9,26 @@ import {
   ProjectRole,
   UpdateProjectRequest,
 } from '../../domain/models/project.model';
-import { ProjectRepository } from '../../domain/repositories/project.repository';
+import { AddProjectMembersUseCase } from '../project/add-project-members.use-case';
+import { CreateBoardUseCase } from '../project/create-board.use-case';
+import { GetProjectBoardsUseCase } from '../project/get-project-boards.use-case';
+import { GetProjectDetailUseCase } from '../project/get-project-detail.use-case';
+import { GetProjectMembersUseCase } from '../project/get-project-members.use-case';
+import { GetProjectRolesUseCase } from '../project/get-project-roles.use-case';
+import { UpdateProjectUseCase } from '../project/update-project.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectStore {
-  private readonly projectRepo = inject(ProjectRepository);
+  private readonly getProjectDetailUseCase = inject(GetProjectDetailUseCase);
+  private readonly getProjectBoardsUseCase = inject(GetProjectBoardsUseCase);
+  private readonly getProjectMembersUseCase = inject(GetProjectMembersUseCase);
+  private readonly getProjectRolesUseCase = inject(GetProjectRolesUseCase);
+  private readonly updateProjectUseCase = inject(UpdateProjectUseCase);
+  private readonly addProjectMembersUseCase = inject(AddProjectMembersUseCase);
+  private readonly createBoardUseCase = inject(CreateBoardUseCase);
+
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
 
@@ -51,7 +64,7 @@ export class ProjectStore {
     this.errorSignal.set(null);
     this.requests.run({
       loading: this.loadingSignal,
-      request$: this.projectRepo.getProjectDetail(projectKey, workspaceId),
+      request$: this.getProjectDetailUseCase.execute(projectKey, workspaceId),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải thông tin dự án',
       toastOnError: false,
@@ -74,7 +87,7 @@ export class ProjectStore {
   loadBoards(projectId: string): void {
     this.requests.run({
       loading: signal(false),
-      request$: this.projectRepo.getProjectBoards(projectId),
+      request$: this.getProjectBoardsUseCase.execute(projectId),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải danh sách bảng',
       toastOnError: false,
@@ -92,7 +105,7 @@ export class ProjectStore {
   loadMembers(projectId: string): void {
     this.requests.run({
       loading: signal(false),
-      request$: this.projectRepo.getProjectMembers(projectId),
+      request$: this.getProjectMembersUseCase.execute(projectId),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải danh sách thành viên',
       toastOnError: false,
@@ -111,7 +124,7 @@ export class ProjectStore {
     if (this.rolesSignal().length > 0) return;
     this.requests.run({
       loading: signal(false),
-      request$: this.projectRepo.getProjectRoles(),
+      request$: this.getProjectRolesUseCase.execute(),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải danh sách vai trò',
       toastOnError: false,
@@ -136,7 +149,7 @@ export class ProjectStore {
   ): void {
     this.requests.run({
       loading: this.savingSignal,
-      request$: this.projectRepo.updateProject(projectId, request),
+      request$: this.updateProjectUseCase.execute(projectId, request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Cập nhật dự án thất bại',
       onSuccess: (updated) => {
@@ -169,7 +182,7 @@ export class ProjectStore {
   ): void {
     this.requests.run({
       loading: this.addingMemberSignal,
-      request$: this.projectRepo.addProjectMembers(projectId, request),
+      request$: this.addProjectMembersUseCase.execute(projectId, request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Thêm thành viên thất bại',
       onSuccess: (newMembers) => {
@@ -193,7 +206,7 @@ export class ProjectStore {
   createBoard(request: CreateBoardRequest, onSuccess?: (board: Board) => void): void {
     this.requests.run({
       loading: this.creatingBoardSignal,
-      request$: this.projectRepo.createBoard(request),
+      request$: this.createBoardUseCase.execute(request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Tạo bảng thất bại',
       onSuccess: (newBoard) => {
