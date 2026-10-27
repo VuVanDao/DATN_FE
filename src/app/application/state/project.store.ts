@@ -43,6 +43,8 @@ export class ProjectStore {
   private readonly savingSignal = signal<boolean>(false);
   private readonly addingMemberSignal = signal<boolean>(false);
   private readonly creatingBoardSignal = signal<boolean>(false);
+  private readonly loadingRolesSignal = signal(false);
+  private readonly rolesErrorSignal = signal<string | null>(null);
   private readonly errorSignal = signal<string | null>(null);
 
   readonly currentProject = this.projectSignal.asReadonly();
@@ -55,6 +57,8 @@ export class ProjectStore {
   readonly isAddingMember = this.addingMemberSignal.asReadonly();
   readonly isCreatingBoard = this.creatingBoardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
+  readonly isLoadingRoles = this.loadingRolesSignal.asReadonly();
+  readonly rolesError = this.rolesErrorSignal.asReadonly();
 
   getProjectDetail(
     projectKey: string,
@@ -115,9 +119,10 @@ export class ProjectStore {
   }
 
   loadRoles(): void {
-    if (this.rolesSignal().length > 0) return;
+    if (this.loadingRolesSignal() || this.rolesSignal().length > 0) return;
+    this.rolesErrorSignal.set(null);
     this.requests.run({
-      loading: signal(false),
+      loading: this.loadingRolesSignal,
       request$: this.getProjectRolesUseCase.execute(),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải danh sách vai trò',
@@ -125,14 +130,7 @@ export class ProjectStore {
       onSuccess: (roles) => {
         this.rolesSignal.set(roles);
       },
-      onError: () => {
-        this.rolesSignal.set([
-          { id: '1', name: 'ProjectLeader', description: 'Trưởng dự án' },
-          { id: '2', name: 'ProjectMember', description: 'Thành viên dự án' },
-          { id: '3', name: 'Developer', description: 'Lập trình viên' },
-          { id: '4', name: 'Observer', description: 'Người quan sát' },
-        ]);
-      },
+      onError: (message) => this.rolesErrorSignal.set(message),
     });
   }
 
@@ -158,6 +156,7 @@ export class ProjectStore {
     projectId: string,
     request: AddProjectMembersRequest,
     onSuccess?: (members: ProjectMember[]) => void,
+    onError?: (message: string) => void,
   ): void {
     if (this.addingMemberSignal()) return;
     this.requests.run({
@@ -165,6 +164,7 @@ export class ProjectStore {
       request$: this.addProjectMembersUseCase.execute(projectId, request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Thêm thành viên thất bại',
+      onError,
       onSuccess: (newMembers) => {
         // POST returns only newly added members; reload to also refresh existing leader roles.
         this.loadMembers(projectId);

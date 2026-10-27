@@ -4,7 +4,10 @@
     (click)="close()"
   >
     <div
-      class="bg-[#111827] rounded-2xl border border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col"
+      class="bg-[#111827] rounded-2xl border border-slate-800 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-150 flex flex-col"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-project-member-title"
       (click)="$event.stopPropagation()"
     >
       <!-- Header -->
@@ -16,7 +19,9 @@
             <mat-icon fontIcon="person_add" class="text-xl"></mat-icon>
           </div>
           <div>
-            <h3 class="font-bold text-white text-base">Thêm thành viên vào dự án</h3>
+            <h3 id="add-project-member-title" class="font-bold text-white text-base">
+              Thêm thành viên vào dự án
+            </h3>
             <p class="text-xs text-slate-400 mt-0.5">
               Gán thành viên từ không gian làm việc vào dự án và phân quyền vai trò.
             </p>
@@ -25,6 +30,8 @@
         <button
           type="button"
           (click)="close()"
+          [disabled]="projectStore.isAddingMember()"
+          aria-label="Đóng"
           class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer"
         >
           <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
@@ -33,28 +40,75 @@
 
       <!-- Form Body -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-5 space-y-4">
-        <!-- Email thành viên -->
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
-            Email người dùng <span class="text-rose-500">*</span>
+          <label
+            for="project-member-user"
+            class="block text-xs font-semibold text-slate-300 mb-1.5"
+          >
+            Thành viên workspace <span class="text-rose-500">*</span>
           </label>
-          <input
-            type="email"
-            formControlName="email"
-            placeholder="nhap.email@congty.com"
+          <select
+            id="project-member-user"
+            formControlName="userId"
             class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
-          />
-          @if (form.controls.email.touched && form.controls.email.errors) {
-            <p class="text-[11px] mt-1 text-rose-500">Vui lòng nhập định dạng email hợp lệ.</p>
+          >
+            <option value="">Chọn thành viên</option>
+            @for (member of candidates.items(); track member.userId) {
+              <option [value]="member.userId" [disabled]="isProjectMember(member.userId)">
+                {{ member.username }} — {{ member.email
+                }}{{ isProjectMember(member.userId) ? ' (Đã tham gia)' : '' }}
+              </option>
+            }
+          </select>
+          @if (form.controls.userId.touched && form.controls.userId.errors) {
+            <p class="text-[11px] mt-1 text-rose-500">Vui lòng chọn thành viên.</p>
+          }
+          @if (candidates.loading()) {
+            <p role="status" class="text-xs text-slate-400 mt-2">Đang tải thành viên…</p>
+          }
+          @if (candidates.error(); as error) {
+            <p role="alert" class="text-xs text-rose-400 mt-2">
+              {{ error }}
+              <button
+                type="button"
+                (click)="loadCandidates(candidates.loaded())"
+                class="ml-2 underline cursor-pointer"
+              >
+                Thử lại
+              </button>
+            </p>
+          }
+          @if (candidates.loaded() && !candidates.loading()) {
+            <p class="text-xs text-slate-400 mt-2">
+              Đã tải {{ candidates.items().length }} / {{ candidates.totalCount() }} thành viên.
+            </p>
+            @if (candidates.items().length === 0) {
+              <p class="text-xs text-slate-400 mt-2">
+                Workspace chưa có thành viên để thêm vào dự án.
+              </p>
+            }
+            @if (candidates.hasMore() && !candidates.error()) {
+              <button
+                type="button"
+                (click)="loadCandidates(true)"
+                class="text-xs text-indigo-400 underline mt-2 cursor-pointer"
+              >
+                Tải thêm thành viên
+              </button>
+            }
           }
         </div>
 
         <!-- Chọn vai trò -->
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+          <label
+            for="project-member-role"
+            class="block text-xs font-semibold text-slate-300 mb-1.5"
+          >
             Vai trò trong dự án
           </label>
           <select
+            id="project-member-role"
             formControlName="roleId"
             class="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
           >
@@ -67,10 +121,34 @@
               </option>
             }
           </select>
+          @if (projectStore.isLoadingRoles()) {
+            <p role="status" class="text-xs text-slate-400 mt-2">Đang tải vai trò…</p>
+          }
+          @if (projectStore.rolesError(); as error) {
+            <p role="alert" class="text-xs text-rose-400 mt-2">
+              {{ error }}
+              <button
+                type="button"
+                (click)="projectStore.loadRoles()"
+                class="ml-2 underline cursor-pointer"
+              >
+                Thử lại
+              </button>
+            </p>
+          }
           <p class="text-[11px] text-slate-400 mt-1">
             Quyền này chỉ áp dụng trong phạm vi dự án hiện tại.
           </p>
         </div>
+
+        @if (isLeaderSelected()) {
+          <p class="text-xs text-amber-300">
+            Gán ProjectLeader sẽ chuyển trưởng dự án hiện tại về ProjectMember.
+          </p>
+        }
+        @if (submitError(); as error) {
+          <p role="alert" class="text-sm text-rose-400">{{ error }}</p>
+        }
 
         <!-- Note info -->
         <div
@@ -78,8 +156,8 @@
         >
           <mat-icon fontIcon="info" class="text-indigo-400 text-sm mt-0.5"></mat-icon>
           <span>
-            Thành viên sau khi được thêm sẽ có quyền truy cập vào các bảng và thẻ công việc trong
-            dự án này.
+            Thành viên sau khi được thêm sẽ có quyền truy cập vào các bảng và thẻ công việc trong dự
+            án này.
           </span>
         </div>
 
@@ -88,13 +166,19 @@
           <button
             type="button"
             (click)="close()"
+            [disabled]="projectStore.isAddingMember()"
             class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition cursor-pointer"
           >
             Hủy
           </button>
           <button
             type="submit"
-            [disabled]="projectStore.isAddingMember() || form.invalid"
+            [disabled]="
+              projectStore.isAddingMember() ||
+              form.invalid ||
+              projectStore.isLoadingRoles() ||
+              !!projectStore.rolesError()
+            "
             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-indigo-600/20"
           >
             @if (projectStore.isAddingMember()) {

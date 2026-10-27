@@ -4,23 +4,27 @@ import {
   EventEmitter,
   inject,
   Input,
-  OnInit,
+  OnChanges,
   Output,
+  signal,
+  SimpleChanges,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectStore } from '../../../../../../application/state/project.store';
-import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
+import { ProjectMemberPickerStore } from '../../../../../../application/project/project-member-picker.store';
 
 @Component({
   selector: 'app-add-project-member-modal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatIconModule],
+  providers: [ProjectMemberPickerStore],
   templateUrl: './add-project-member-modal.component.html',
 })
-export class AddProjectMemberModalComponent implements OnInit {
+export class AddProjectMemberModalComponent implements OnChanges {
   readonly projectStore = inject(ProjectStore);
-  readonly workspaceStore = inject(WorkspaceStore);
+  readonly candidates = inject(ProjectMemberPickerStore).members;
+  readonly submitError = signal<string | null>(null);
 
   @Input() isOpen = false;
   @Input() projectId = '';
@@ -29,32 +33,65 @@ export class AddProjectMemberModalComponent implements OnInit {
   @Output() memberAdded = new EventEmitter<void>();
 
   readonly form = new FormGroup({
-    email: new FormControl('', {
+    userId: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.email],
+      validators: [Validators.required],
     }),
     roleId: new FormControl('', { nonNullable: false }),
   });
 
-  ngOnInit(): void {
-    this.projectStore.loadRoles();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen'] || changes['workspaceId'] || changes['projectId']) {
+      this.candidates.clear();
+      this.form.reset({ userId: '', roleId: '' });
+      this.submitError.set(null);
+      if (this.isOpen && this.workspaceId && this.projectId) {
+        this.loadCandidates();
+        this.projectStore.loadRoles();
+      }
+    }
+  }
+
+  loadCandidates(more = false): void {
+    if (this.workspaceId) this.candidates.load(this.workspaceId, more);
+  }
+
+  isProjectMember(userId: string): boolean {
+    return this.projectStore.members().some((member) => member.userId === userId);
+  }
+
+  isLeaderSelected(): boolean {
+    return this.projectStore
+      .roles()
+      .some((role) => role.id === this.form.controls.roleId.value && role.name === 'ProjectLeader');
   }
 
   onSubmit(): void {
-    if (this.form.invalid || !this.projectId) {
+    if (
+      this.projectStore.isAddingMember() ||
+      this.projectStore.isLoadingRoles() ||
+      this.projectStore.rolesError()
+    )
+      return;
+    this.submitError.set(null);
+    if (this.form.invalid || !this.projectId || !this.workspaceId) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const { email, roleId } = this.form.getRawValue();
-
-    // Find member from workspace members if available to obtain userId
-    const wsMembers = this.workspaceStore.members.items();
-    const existing = wsMembers.find(
-      (m) => m.email.toLowerCase() === email.trim().toLowerCase(),
-    );
-
-    const userId = existing?.userId || crypto.randomUUID();
+    const { userId, roleId } = this.form.getRawValue();
+    if (!this.candidates.items().some((member) => member.userId === userId)) {
+      this.submitError.set('Vui lòng chọn một thành viên trong workspace.');
+      return;
+    }
+    if (this.isProjectMember(userId)) {
+      this.submitError.set('Thành viên này đã có trong dự án.');
+      return;
+    }
+    if (roleId && !this.projectStore.roles().some((role) => role.id === roleId)) {
+      this.submitError.set('Vai trò không hợp lệ. Vui lòng chọn lại.');
+      return;
+    }
 
     this.projectStore.addMembers(
       this.projectId,
@@ -68,13 +105,18 @@ export class AddProjectMemberModalComponent implements OnInit {
       },
       () => {
         this.memberAdded.emit();
-        this.close();
+        this.form.reset({ userId: '', roleId: '' });
+        this.closed.emit();
       },
+      (message) => this.submitError.set(message),
     );
   }
 
   close(): void {
-    this.form.reset({ email: '', roleId: '' });
+    if (this.projectStore.isAddingMember()) return;
+    this.candidates.clear();
+    this.submitError.set(null);
+    this.form.reset({ userId: '', roleId: '' });
     this.closed.emit();
   }
 }
