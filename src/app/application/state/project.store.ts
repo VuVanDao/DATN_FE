@@ -59,9 +59,8 @@ export class ProjectStore {
     projectKey: string,
     workspaceId: string,
     onSuccess?: (project: Project) => void,
-    fallbackMock = true,
   ): void {
-    this.errorSignal.set(null);
+    this.clear();
     this.requests.run({
       loading: this.loadingSignal,
       request$: this.getProjectDetailUseCase.execute(projectKey, workspaceId),
@@ -76,10 +75,6 @@ export class ProjectStore {
       },
       onError: (err) => {
         this.errorSignal.set(err);
-        if (fallbackMock) {
-          // Cung cấp dữ liệu mẫu theo giao diện mẫu khi chưa có bản ghi thật
-          this.applyMockProjectData(projectKey, workspaceId);
-        }
       },
     });
   }
@@ -187,9 +182,7 @@ export class ProjectStore {
       fallbackErrorMessage: 'Thêm thành viên thất bại',
       onSuccess: (newMembers) => {
         this.membersSignal.set(newMembers);
-        this.projectSignal.update((p) =>
-          p ? { ...p, membersCount: newMembers.length } : null,
-        );
+        this.projectSignal.update((p) => (p ? { ...p, membersCount: newMembers.length } : null));
         this.notifications.success('Thêm thành viên vào dự án thành công');
         onSuccess?.(newMembers);
       },
@@ -248,30 +241,6 @@ export class ProjectStore {
     this.boardsSignal.set([]);
     this.membersSignal.set([]);
     this.errorSignal.set(null);
-  }
-
-  private applyMockProjectData(
-    projectKey: string,
-    workspaceId = '00000000-0000-0000-0000-000000000001',
-  ): void {
-    const mockProj: Project = {
-      id: 'proj-mock-fintech',
-      name: 'App di động Fintech',
-      projectKey: projectKey || 'FIN',
-      description: 'Ứng dụng ngân hàng số cho khách hàng cá nhân',
-      workspaceId,
-      workspaceName: 'Acme Corp',
-      createdById: 'user-minh',
-      createdByName: 'Minh Nguyễn',
-      boardsCount: 3,
-      membersCount: 8,
-      sprintCount: 14,
-      cardCount: 42,
-      createdAt: '2026-09-03T10:00:00Z',
-    };
-    this.projectSignal.set(mockProj);
-    this.boardsSignal.set(this.getDefaultMockBoards(mockProj.id));
-    this.membersSignal.set(this.getDefaultMockMembers());
   }
 
   private getDefaultMockBoards(projectId: string): Board[] {

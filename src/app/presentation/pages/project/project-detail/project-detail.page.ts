@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { combineLatest, distinctUntilChanged, map } from 'rxjs';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
@@ -40,6 +41,11 @@ export class ProjectDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private projectKey = '';
+  private workspaceId = '';
+
+  readonly routeError = signal<string | null>(null);
+  readonly detailError = computed(() => this.routeError() || this.projectStore.error());
 
   readonly project = computed(() => this.projectStore.currentProject());
   readonly projectView = computed(() => {
@@ -86,25 +92,40 @@ export class ProjectDetailPage implements OnInit {
     this.layoutService.setSidebar('main');
     this.destroyRef.onDestroy(() => this.projectStore.clear());
 
-    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const projectKey = params.get('projectKey') || 'FIN';
-      const workspaceId =
-        params.get('workspaceId') ||
-        this.route.snapshot.queryParamMap.get('workspaceId') ||
-        this.workspaceStore.currentWorkspace()?.id ||
-        '';
+    combineLatest([this.route.paramMap, this.route.queryParamMap])
+      .pipe(
+        map(([params, query]) => ({
+          projectKey: params.get('projectKey')?.trim() || '',
+          workspaceId: params.get('workspaceId') || query.get('workspaceId') || '',
+        })),
+        distinctUntilChanged(
+          (previous, current) =>
+            previous.projectKey === current.projectKey &&
+            previous.workspaceId === current.workspaceId,
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(({ projectKey, workspaceId }) => {
+        this.projectKey = projectKey;
+        this.workspaceId = workspaceId;
+        this.searchQuery.set('');
+        this.activeBoardTab.set('all');
+        this.closeSettingsModal();
+        this.closeAddMemberModal();
+        this.closeCreateBoardModal();
+        this.loadProjectDetail();
+      });
+  }
 
-      if (workspaceId) {
-        this.projectStore.getProjectDetail(projectKey, workspaceId, undefined, true);
-      } else {
-        this.projectStore.getProjectDetail(
-          projectKey,
-          '00000000-0000-0000-0000-000000000001',
-          undefined,
-          true,
-        );
-      }
-    });
+  loadProjectDetail(): void {
+    this.routeError.set(null);
+    if (!this.projectKey || !this.workspaceId) {
+      this.projectStore.clear();
+      this.routeError.set('Đường dẫn thiếu mã dự án hoặc thông tin workspace.');
+      return;
+    }
+
+    this.projectStore.getProjectDetail(this.projectKey, this.workspaceId);
   }
 
   setBoardTab(tab: BoardFilterTab): void {
@@ -146,22 +167,17 @@ export class ProjectDetailPage implements OnInit {
   }
 
   goBack(): void {
+    const workspace = this.workspaceStore.currentWorkspace();
     const slug =
-      this.workspaceStore.currentWorkspace()?.slug ||
-      this.route.snapshot.queryParamMap.get('workspaceSlug');
+      this.route.snapshot.queryParamMap.get('workspaceSlug') ||
+      (workspace?.id === this.workspaceId ? workspace.slug : null);
 
     if (slug) {
       void this.router.navigate(['/workspaces', slug]);
       return;
     }
 
-    const wsId =
-      this.project()?.workspaceId || this.route.snapshot.paramMap.get('workspaceId');
-    if (wsId) {
-      void this.router.navigate(['/workspaces', wsId]);
-    } else {
-      void this.router.navigate(['/workspaces']);
-    }
+    void this.router.navigate(['/workspaces']);
   }
 
   onBoardClick(board: Board): void {

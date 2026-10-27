@@ -1,5 +1,5 @@
 <div class="max-w-7xl mx-auto space-y-6 pb-12 w-full min-w-0">
-  @if (projectStore.isLoading() && !project()) {
+  @if (projectStore.isLoading()) {
     <!-- Skeleton Loading -->
     <div class="animate-pulse space-y-6">
       <div class="h-6 w-36 bg-slate-800 rounded"></div>
@@ -12,6 +12,29 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 h-72 rounded-2xl bg-slate-800"></div>
         <div class="h-72 rounded-2xl bg-slate-800"></div>
+      </div>
+    </div>
+  } @else if (detailError(); as error) {
+    <div role="alert" class="rounded-2xl border border-slate-800 bg-slate-900 p-8 space-y-4">
+      <h1 class="text-lg font-semibold text-white">Không thể tải thông tin dự án</h1>
+      <p class="text-sm text-rose-400">{{ error }}</p>
+      <div class="flex items-center gap-4">
+        @if (!routeError()) {
+          <button
+            type="button"
+            (click)="loadProjectDetail()"
+            class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 cursor-pointer"
+          >
+            Thử lại
+          </button>
+        }
+        <button
+          type="button"
+          (click)="goBack()"
+          class="text-sm font-semibold text-slate-300 hover:text-white cursor-pointer"
+        >
+          Quay lại
+        </button>
       </div>
     </div>
   } @else if (projectView(); as proj) {
@@ -69,7 +92,7 @@
             <p
               class="text-xs md:text-sm text-slate-300 line-clamp-2 max-w-2xl font-normal leading-relaxed"
             >
-              {{ proj.description || 'Ứng dụng ngân hàng số cho khách hàng cá nhân' }}
+              {{ proj.description || 'Chưa có mô tả cho dự án này.' }}
             </p>
 
             <!-- Meta Row: Creator, Created Date, Member Count -->
@@ -78,12 +101,12 @@
                 <div
                   class="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px] font-bold"
                 >
-                  {{ proj.createdByName ? proj.createdByName.charAt(0).toUpperCase() : 'M' }}
+                  {{ proj.createdByName ? proj.createdByName.charAt(0).toUpperCase() : '?' }}
                 </div>
                 <span
                   >Tạo bởi
                   <strong class="text-slate-200 font-medium">{{
-                    proj.createdByName || 'Minh Nguyễn'
+                    proj.createdByName || 'Không xác định'
                   }}</strong></span
                 >
               </div>
