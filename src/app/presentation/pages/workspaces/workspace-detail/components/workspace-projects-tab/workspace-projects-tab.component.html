@@ -39,16 +39,26 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
       @for (project of workspace.projects; track project.id) {
         <div
-          [routerLink]="['/workspaces', workspace.id, 'projects', project.projectKey]"
-          [queryParams]="{ workspaceSlug: workspace.slug }"
+          (click)="onProjectClick(project)"
           class="bg-[#131b2e] border border-slate-800/80 hover:border-indigo-500/50 rounded-2xl p-4 flex flex-col justify-between transition cursor-pointer group shadow-sm hover:shadow-indigo-500/5"
         >
           <div>
-            <div
-              [class]="project.color"
-              class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm"
-            >
-              {{ project.initial }}
+            <div class="flex items-start justify-between gap-2">
+              <div
+                [class]="project.color"
+                class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0"
+              >
+                {{ project.initial }}
+              </div>
+              @if (!project.isMember) {
+                <span
+                  class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  title="Bạn chưa tham gia dự án này"
+                >
+                  <mat-icon fontIcon="lock" class="icon-xxs !w-3 !h-3"></mat-icon>
+                  Chưa tham gia
+                </span>
+              }
             </div>
             <h3
               class="text-[15px] font-semibold text-white mt-3 truncate group-hover:text-indigo-400 transition"
@@ -119,3 +129,9 @@
     }
   </div>
 }
+
+<app-project-info-modal
+  [isOpen]="showProjectInfoModal()"
+  [project]="selectedProjectForInfo()"
+  (closed)="closeProjectInfoModal()"
+/>
