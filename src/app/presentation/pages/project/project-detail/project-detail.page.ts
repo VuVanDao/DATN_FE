@@ -63,6 +63,30 @@ export class ProjectDetailPage implements OnInit {
   // Search & Filter Tabs
   readonly searchQuery = signal('');
   readonly activeBoardTab = signal<BoardFilterTab>('all');
+  readonly memberSearch = signal('');
+
+  // Filtered members list
+  readonly filteredMembers = computed(() => {
+    const list = this.members();
+    const query = this.memberSearch().trim().toLowerCase();
+    if (!query) return list;
+    return list.filter(
+      (m) =>
+        m.username.toLowerCase().includes(query) ||
+        m.email.toLowerCase().includes(query),
+    );
+  });
+
+  // Check if current user is ProjectLeader
+  readonly isCurrentLeader = computed(() => {
+    const currentUserId = this.session.currentUser()?.id;
+    if (!currentUserId) return false;
+    return this.members().some(
+      (m) =>
+        m.userId.toLowerCase() === currentUserId.toLowerCase() &&
+        m.roleName === 'ProjectLeader',
+    );
+  });
 
   // Filtered boards list
   readonly filteredBoards = computed(() => {
@@ -115,6 +139,7 @@ export class ProjectDetailPage implements OnInit {
         this.projectKey = projectKey;
         this.workspaceId = workspaceId;
         this.searchQuery.set('');
+        this.memberSearch.set('');
         this.activeBoardTab.set('all');
         this.closeSettingsModal();
         this.closeAddMemberModal();
