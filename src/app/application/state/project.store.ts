@@ -11,6 +11,7 @@ import {
 } from '../../domain/models/project.model';
 import { AddProjectMembersUseCase } from '../project/add-project-members.use-case';
 import { CreateBoardUseCase } from '../project/create-board.use-case';
+import { DeleteProjectUseCase } from '../project/delete-project.use-case';
 import { GetProjectBoardsUseCase } from '../project/get-project-boards.use-case';
 import { GetProjectDetailUseCase } from '../project/get-project-detail.use-case';
 import { GetProjectMembersUseCase } from '../project/get-project-members.use-case';
@@ -28,6 +29,7 @@ export class ProjectStore {
   private readonly updateProjectUseCase = inject(UpdateProjectUseCase);
   private readonly addProjectMembersUseCase = inject(AddProjectMembersUseCase);
   private readonly createBoardUseCase = inject(CreateBoardUseCase);
+  private readonly deleteProjectUseCase = inject(DeleteProjectUseCase);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -42,6 +44,7 @@ export class ProjectStore {
   private readonly loadingSignal = signal<boolean>(false);
   private readonly loadingBoardsSignal = signal<boolean>(false);
   private readonly savingSignal = signal<boolean>(false);
+  private readonly deletingSignal = signal(false); // trạng thái đang xóa dự án
   private readonly addingMemberSignal = signal<boolean>(false);
   private readonly creatingBoardSignal = signal<boolean>(false);
   private readonly loadingRolesSignal = signal(false);
@@ -56,6 +59,7 @@ export class ProjectStore {
   readonly isLoading = this.loadingSignal.asReadonly();
   readonly isLoadingBoards = this.loadingBoardsSignal.asReadonly();
   readonly isSaving = this.savingSignal.asReadonly();
+  readonly isDeleting = this.deletingSignal.asReadonly();
   readonly isAddingMember = this.addingMemberSignal.asReadonly();
   readonly isCreatingBoard = this.creatingBoardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
@@ -142,7 +146,7 @@ export class ProjectStore {
     onSuccess?: (project: Project) => void,
     onError?: (message: string) => void,
   ): void {
-    if (this.savingSignal()) return;
+    if (this.savingSignal() || this.deletingSignal()) return;
     this.requests.run({
       loading: this.savingSignal,
       request$: this.updateProjectUseCase.execute(projectId, request),
@@ -177,6 +181,32 @@ export class ProjectStore {
         this.loadMembers(projectId);
         this.notifications.success('Thêm thành viên vào dự án thành công');
         onSuccess?.(newMembers);
+      },
+    });
+  }
+
+  deleteProject(
+    projectId: string,
+    onSuccess?: () => void,
+    onError?: (message: string) => void,
+  ): void {
+    if (this.deletingSignal() || this.savingSignal()) return;
+    this.requests.run({
+      loading: this.deletingSignal,
+      request$: this.deleteProjectUseCase.execute(projectId),
+      cancel$: this.cancel$,
+      fallbackErrorMessage: 'Xóa dự án thất bại. Vui lòng thử lại.',
+      onError,
+      onSuccess: (deleted) => {
+        if (deleted !== true) {
+          const message = 'Xóa dự án thất bại. Vui lòng thử lại.';
+          this.notifications.error(message);
+          onError?.(message);
+          return;
+        }
+        if (this.projectSignal()?.id === projectId) this.clear();
+        this.notifications.success('Xóa dự án thành công');
+        onSuccess?.();
       },
     });
   }

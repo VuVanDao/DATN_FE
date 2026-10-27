@@ -239,6 +239,11 @@ export class WorkspaceStore {
     this._projects.patchProject(project);
   }
 
+  onProjectDeleted(workspaceId: string): void {
+    this._list.adjustCounts(workspaceId, 0, -1); // giảm số lượng dự án trong danh sách dự án đang được cache workspace
+    this.invalidateTabLists(workspaceId, 'projects'); // vô hiệu hoá danh sách dự án cũ của workspace này
+  }
+
   clearDetail(): void {
     this.clearTabLists();
     this._detail.clearView();

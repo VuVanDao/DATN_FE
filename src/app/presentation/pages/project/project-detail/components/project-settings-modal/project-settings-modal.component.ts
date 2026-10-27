@@ -25,11 +25,15 @@ export class ProjectSettingsModalComponent implements OnChanges {
   readonly projectStore = inject(ProjectStore);
   readonly workspaceStore = inject(WorkspaceStore);
   readonly submitError = signal<string | null>(null);
+  readonly confirmingDelete = signal(false); // đã mở modal xác nhận xoá chưa ?
+  readonly deleteName = new FormControl('', { nonNullable: true }); // tên người dùng nhạp xác định xoá
+  readonly deleteError = signal<string | null>(null); // lỗi khi xoá
 
   @Input() isOpen = false;
   @Input() project: Project | null = null;
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<Project>();
+  @Output() deleted = new EventEmitter<Project>();
 
   readonly form = new FormGroup({
     name: new FormControl('', {
@@ -52,6 +56,11 @@ export class ProjectSettingsModalComponent implements OnChanges {
   });
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen'] || changes['project']) {
+      this.confirmingDelete.set(false);
+      this.deleteName.reset();
+      this.deleteError.set(null);
+    }
     if (changes['isOpen']?.currentValue === true && this.project) {
       this.submitError.set(null);
       this.form.reset({
@@ -63,7 +72,8 @@ export class ProjectSettingsModalComponent implements OnChanges {
   }
 
   onSubmit(): void {
-    if (this.projectStore.isSaving()) return;
+    if (this.projectStore.isSaving() || this.projectStore.isDeleting() || this.confirmingDelete())
+      return;
     this.submitError.set(null);
     const { name, projectKey, description } = this.form.getRawValue();
     this.form.patchValue({ name: name.trim(), projectKey: projectKey.trim().toUpperCase() });
@@ -90,7 +100,47 @@ export class ProjectSettingsModalComponent implements OnChanges {
   }
 
   close(): void {
-    if (this.projectStore.isSaving()) return;
+    if (this.projectStore.isSaving() || this.projectStore.isDeleting()) return;
     this.closed.emit();
+  }
+
+  startDelete(): void {
+    // mở modal xác nhận xoá
+    if (!this.project || this.projectStore.isSaving() || this.projectStore.isDeleting()) return;
+    this.deleteName.reset();
+    this.deleteError.set(null);
+    this.confirmingDelete.set(true);
+  }
+
+  cancelDelete(): void {
+    // đóng modal xác nhận xoá
+    if (this.projectStore.isDeleting()) return;
+    this.confirmingDelete.set(false);
+    this.deleteError.set(null);
+    this.deleteName.reset();
+  }
+
+  isDeleteNameMatched(): boolean {
+    // kiểm tra text nhập vào có trùng tên dự ánđẻ xoá hay không
+    return !!this.project && this.deleteName.value.trim() === this.project.name.trim();
+  }
+
+  confirmDelete(): void {
+    // xác nhận xoá dự án
+    const project = this.project;
+    if (
+      !project ||
+      !this.confirmingDelete() ||
+      !this.isDeleteNameMatched() ||
+      this.projectStore.isSaving() ||
+      this.projectStore.isDeleting()
+    )
+      return;
+    this.deleteError.set(null);
+    this.projectStore.deleteProject(
+      project.id,
+      () => this.deleted.emit(project),
+      (message) => this.deleteError.set(message),
+    );
   }
 }

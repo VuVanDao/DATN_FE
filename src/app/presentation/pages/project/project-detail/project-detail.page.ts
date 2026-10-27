@@ -181,6 +181,12 @@ export class ProjectDetailPage implements OnInit {
     }
   }
 
+  onProjectDeleted(project: Project): void {
+    this.closeSettingsModal(); // đóng modal settings project
+    this.workspaceStore.onProjectDeleted(project.workspaceId);
+    this.goBack();
+  }
+
   // Helpers
   getBoardIconName(type: string): string {
     return getBoardIcon(type);
