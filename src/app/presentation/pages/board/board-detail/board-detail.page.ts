@@ -69,10 +69,11 @@ export class BoardDetailPage implements OnInit {
   ngOnInit(): void {
     // Kích hoạt chế độ full bleed & thu gọn sidebar cho giao diện Kanban Board như Trello
     this.layoutService.setFullBleed(true);
-    this.layoutService.setSidebarCollapsed(true);
+    this.layoutService.setSidebarCollapsed(true, false);
 
     this.destroyRef.onDestroy(() => {
       this.layoutService.setFullBleed(false);
+      this.layoutService.restoreSidebarPreference();
       this.boardStore.clear();
     });
 

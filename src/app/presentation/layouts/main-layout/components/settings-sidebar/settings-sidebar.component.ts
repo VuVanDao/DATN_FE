@@ -17,13 +17,14 @@ export class SettingsSidebarComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
 
   ngOnInit(): void {
-    // Đảm bảo sidebar ở trạng thái mở rộng khi vào trang settings
-    this.layoutService.setSidebarCollapsed(false);
+    // Đảm bảo sidebar ở trạng thái mở rộng khi vào trang settings mà không ghi đè cài đặt lưu trữ
+    this.layoutService.setSidebarCollapsed(false, false);
   }
 
   ngOnDestroy(): void {
-    // Khi rời trang settings, quay lại sidebar chính
+    // Khi rời trang settings, quay lại sidebar chính và khôi phục tuỳ chọn thu gọn trước đó
     this.layoutService.setSidebar('main');
+    this.layoutService.restoreSidebarPreference();
   }
 
   navigateBack(): void {
