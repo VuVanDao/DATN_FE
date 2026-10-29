@@ -105,23 +105,23 @@
 
   <!-- Boards Grid -->
   @if (isLoading()) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      @for (i of [1, 2]; track i) {
-        <div class="h-36 rounded-2xl bg-[#111827] border border-slate-800 animate-pulse"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="h-26 rounded-xl bg-[#111827] border border-slate-800 animate-pulse"></div>
       }
     </div>
   } @else if (filteredBoards().length > 0) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
       @for (board of filteredBoards(); track board.id) {
         <div
           (click)="onBoardClick(board)"
-          class="bg-[#111827] border border-slate-800/90 hover:border-indigo-500/50 rounded-2xl p-5 flex flex-col justify-between transition duration-200 cursor-pointer shadow-md hover:shadow-indigo-500/5 group"
+          class="bg-[#111827] border border-slate-800/90 hover:border-indigo-500/50 rounded-xl p-3.5 flex flex-col justify-between transition duration-200 cursor-pointer shadow-md hover:shadow-indigo-500/5 group"
         >
-          <!-- Top Row: Icon + Type Badge -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
+          <!-- Top Row: Icon + Title + Type Badge -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
               <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center border"
+                class="w-8.5 h-8.5 rounded-lg flex items-center justify-center border shrink-0"
                 [class]="
                   getBoardBadge(board.type).bg +
                   ' ' +
@@ -130,17 +130,21 @@
                   getBoardBadge(board.type).border
                 "
               >
-                <mat-icon [fontIcon]="getBoardIconName(board.type)" class="text-xl"></mat-icon>
+                <mat-icon
+                  [fontIcon]="getBoardIconName(board.type)"
+                  class="text-lg! w-auto! h-auto!"
+                ></mat-icon>
               </div>
               <h3
-                class="text-base font-semibold text-white group-hover:text-indigo-400 transition truncate"
+                class="text-sm font-semibold text-white group-hover:text-indigo-400 transition truncate"
+                [title]="board.title"
               >
                 {{ board.title }}
               </h3>
             </div>
 
             <span
-              class="text-xs px-2.5 py-0.5 rounded-full font-semibold border"
+              class="text-[10px] px-2 py-0.5 rounded-full font-semibold border shrink-0"
               [class]="
                 getBoardBadge(board.type).bg +
                 ' ' +
@@ -153,8 +157,8 @@
             </span>
           </div>
 
-          <div class="mt-4">
-            <p class="text-xs text-slate-400 font-mono mt-0.5 truncate">
+          <div class="mt-2.5">
+            <p class="text-[11px] text-slate-400 font-mono truncate" [title]="board.slug">
               {{ board.slug }}
             </p>
           </div>
