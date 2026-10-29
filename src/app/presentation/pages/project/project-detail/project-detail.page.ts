@@ -10,17 +10,18 @@ import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
-import { Board, Project, ProjectMember, ProjectRole } from '../../../../domain/models/project.model';
 import {
-  getBoardBadgeColor,
-  getBoardIcon,
-  toProjectView,
-} from '../../../view-models/project.view-model';
+  Board,
+  Project,
+  ProjectMember,
+  ProjectRole,
+} from '../../../../domain/models/project.model';
+import { toProjectView } from '../../../view-models/project.view-model';
 import { AddProjectMemberModalComponent } from './components/add-project-member-modal/add-project-member-modal.component';
 import { CreateBoardModalComponent } from './components/create-board-modal/create-board-modal.component';
+import { ProjectBoardsComponent } from './components/project-boards/project-boards.component';
+import { ProjectMembersComponent } from './components/project-members/project-members.component';
 import { ProjectSettingsModalComponent } from './components/project-settings-modal/project-settings-modal.component';
-
-type BoardFilterTab = 'all' | 'Kanban' | 'Scrum';
 
 @Component({
   selector: 'app-project-detail-page',
@@ -33,6 +34,8 @@ type BoardFilterTab = 'all' | 'Kanban' | 'Scrum';
     ProjectSettingsModalComponent,
     AddProjectMemberModalComponent,
     CreateBoardModalComponent,
+    ProjectBoardsComponent,
+    ProjectMembersComponent,
   ],
   templateUrl: './project-detail.page.html',
 })
@@ -59,23 +62,7 @@ export class ProjectDetailPage implements OnInit {
 
   readonly boards = computed(() => this.projectStore.boards());
   readonly members = computed(() => this.projectStore.members());
-
-  // Search & Filter Tabs
-  readonly searchQuery = signal('');
-  readonly activeBoardTab = signal<BoardFilterTab>('all');
-  readonly memberSearch = signal('');
-
-  // Filtered members list
-  readonly filteredMembers = computed(() => {
-    const list = this.members();
-    const query = this.memberSearch().trim().toLowerCase();
-    if (!query) return list;
-    return list.filter(
-      (m) =>
-        m.username.toLowerCase().includes(query) ||
-        m.email.toLowerCase().includes(query),
-    );
-  });
+  readonly currentUserId = computed(() => this.session.currentUser()?.id);
 
   // Check if current user is ProjectLeader
   readonly isCurrentLeader = computed(() => {
@@ -83,8 +70,7 @@ export class ProjectDetailPage implements OnInit {
     if (!currentUserId) return false;
     return this.members().some(
       (m) =>
-        m.userId.toLowerCase() === currentUserId.toLowerCase() &&
-        m.roleName === 'ProjectLeader',
+        m.userId.toLowerCase() === currentUserId.toLowerCase() && m.roleName === 'ProjectLeader',
     );
   });
 
@@ -106,28 +92,16 @@ export class ProjectDetailPage implements OnInit {
     return this.isWorkspaceOwner() || this.isCurrentLeader();
   });
 
-  // Filtered boards list
-  readonly filteredBoards = computed(() => {
-    const list = this.boards();
-    const query = this.searchQuery().trim().toLowerCase();
-    const tab = this.activeBoardTab();
-
-    return list.filter((board) => {
-      const matchTab = tab === 'all' || board.type.toLowerCase() === tab.toLowerCase();
-      const matchQuery =
-        !query ||
-        board.title.toLowerCase().includes(query) ||
-        board.slug.toLowerCase().includes(query);
-      return matchTab && matchQuery;
-    });
-  });
-
-  readonly kanbanCount = computed(
-    () => this.boards().filter((b) => b.type.toLowerCase().includes('kanban')).length,
+  readonly isMemberActionBusy = computed(
+    () =>
+      this.projectStore.isRemovingMember() ||
+      this.projectStore.isUpdatingMemberRole() ||
+      this.projectStore.isAddingMember() ||
+      this.projectStore.isDeleting(),
   );
-  readonly scrumCount = computed(
-    () => this.boards().filter((b) => b.type.toLowerCase().includes('scrum')).length,
-  );
+
+  readonly canRemoveMemberBound = (m: ProjectMember) => this.canRemoveMember(m);
+  readonly canChangeRoleBound = (m: ProjectMember) => this.canChangeRole(m);
 
   // Modals Visibility
   readonly showSettingsModal = signal(false);
@@ -165,9 +139,6 @@ export class ProjectDetailPage implements OnInit {
       .subscribe(({ projectKey, workspaceId }) => {
         this.projectKey = projectKey;
         this.workspaceId = workspaceId;
-        this.searchQuery.set('');
-        this.memberSearch.set('');
-        this.activeBoardTab.set('all');
         this.closeSettingsModal();
         this.closeAddMemberModal();
         this.closeCreateBoardModal();
@@ -192,10 +163,6 @@ export class ProjectDetailPage implements OnInit {
         this.goBack();
       }
     });
-  }
-
-  setBoardTab(tab: BoardFilterTab): void {
-    this.activeBoardTab.set(tab);
   }
 
   // Modals handlers
@@ -348,15 +315,6 @@ export class ProjectDetailPage implements OnInit {
         this.changeRoleError.set(message);
       },
     );
-  }
-
-  // Helpers
-  getBoardIconName(type: string): string {
-    return getBoardIcon(type);
-  }
-
-  getBoardBadge(type: string) {
-    return getBoardBadgeColor(type);
   }
 
   goBack(): void {
