@@ -13,8 +13,10 @@ import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { Project, ProjectMember } from '../../../../domain/models/project.model';
 import { Workspace } from '../../../../domain/models/workspace.model';
+import { BoardRepository } from '../../../../domain/repositories/board.repository';
 import { ProjectRepository } from '../../../../domain/repositories/project.repository';
 import { WorkspaceRepository } from '../../../../domain/repositories/workspace.repository';
+import { BoardHttpRepository } from '../../../../infrastructure/repositories/board-http.repository';
 import { ProjectHttpRepository } from '../../../../infrastructure/repositories/project-http.repository';
 import { WorkspaceHttpRepository } from '../../../../infrastructure/repositories/workspace-http.repository';
 import { ProjectDetailPage } from './project-detail.page';
@@ -79,6 +81,7 @@ describe('Remove project members', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ProjectRepository, useClass: ProjectHttpRepository },
+        { provide: BoardRepository, useClass: BoardHttpRepository },
         { provide: WorkspaceRepository, useClass: WorkspaceHttpRepository },
         { provide: WorkspaceStore, useValue: workspace },
         { provide: SessionService, useValue: { currentUser: user } },

@@ -13,6 +13,7 @@ import { AuthStore } from './application/state/auth.store';
 import { AdminRepository } from './domain/repositories/admin.repository';
 import { AiRepository } from './domain/repositories/ai.repository';
 import { AuthRepository } from './domain/repositories/auth.repository';
+import { BoardRepository } from './domain/repositories/board.repository';
 import { ProjectRepository } from './domain/repositories/project.repository';
 import { SecurityRepository } from './domain/repositories/security.repository';
 import { UserRepository } from './domain/repositories/user.repository';
@@ -21,6 +22,7 @@ import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
 import { MockAiAssistantService } from './infrastructure/mocks/mock-ai-assistant.service';
 import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
 import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repository';
+import { BoardHttpRepository } from './infrastructure/repositories/board-http.repository';
 import { ProjectHttpRepository } from './infrastructure/repositories/project-http.repository';
 import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
 import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
@@ -62,6 +64,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: ProjectRepository,
       useClass: ProjectHttpRepository,
+    },
+    {
+      provide: BoardRepository,
+      useClass: BoardHttpRepository,
     },
   ],
 };

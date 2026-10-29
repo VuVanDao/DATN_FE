@@ -37,12 +37,9 @@ export class WorkspaceHttpRepository extends WorkspaceRepository {
 
   getProjects(id: string, pageIndex: number): Observable<PagedResult<WorkspaceProject>> {
     return this.http
-      .get<ApiResponse<PagedResult<WorkspaceProject>>>(
-        `${this.API_URL}/${id}/projects`,
-        {
-          params: { pageIndex, pageSize: 20 },
-        },
-      )
+      .get<ApiResponse<PagedResult<WorkspaceProject>>>(`${this.API_URL}/${id}/projects`, {
+        params: { pageIndex, pageSize: 20 },
+      })
       .pipe(
         map((res) => ({
           ...res.data,

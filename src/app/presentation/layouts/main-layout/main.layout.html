@@ -23,8 +23,23 @@
     }
 
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto p-5 transition-all duration-200 min-h-0 min-w-0">
-      <div class="w-full min-w-0">
+    <main
+      class="flex-1 transition-all duration-200 min-h-0 min-w-0"
+      [class.p-5]="!layoutService.isFullBleed()"
+      [class.overflow-y-auto]="!layoutService.isFullBleed()"
+      [class.p-0]="layoutService.isFullBleed()"
+      [class.overflow-hidden]="layoutService.isFullBleed()"
+      [class.flex]="layoutService.isFullBleed()"
+      [class.flex-col]="layoutService.isFullBleed()"
+    >
+      <div
+        class="w-full min-w-0"
+        [class.h-full]="layoutService.isFullBleed()"
+        [class.flex]="layoutService.isFullBleed()"
+        [class.flex-col]="layoutService.isFullBleed()"
+        [class.flex-1]="layoutService.isFullBleed()"
+        [class.min-h-0]="layoutService.isFullBleed()"
+      >
         <router-outlet></router-outlet>
       </div>
     </main>

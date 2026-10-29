@@ -58,6 +58,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'boards/:boardSlug',
+        loadComponent: () =>
+          import('./presentation/pages/board/board-detail/board-detail.page').then(
+            (m) => m.BoardDetailPage,
+          ),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         children: [

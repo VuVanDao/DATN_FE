@@ -9,7 +9,9 @@ import { NotificationService } from '../../../../../../application/shared/notifi
 import { ProjectStore } from '../../../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
 import { Project } from '../../../../../../domain/models/project.model';
+import { BoardRepository } from '../../../../../../domain/repositories/board.repository';
 import { ProjectRepository } from '../../../../../../domain/repositories/project.repository';
+import { BoardHttpRepository } from '../../../../../../infrastructure/repositories/board-http.repository';
 import { ProjectHttpRepository } from '../../../../../../infrastructure/repositories/project-http.repository';
 import { ProjectDetailPage } from '../../project-detail.page';
 import { ProjectSettingsModalComponent } from './project-settings-modal.component';
@@ -44,6 +46,7 @@ describe('Delete project integration', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ProjectRepository, useClass: ProjectHttpRepository },
+        { provide: BoardRepository, useClass: BoardHttpRepository },
         { provide: WorkspaceStore, useValue: workspace },
         { provide: NotificationService, useValue: notifications },
         { provide: Router, useValue: router },

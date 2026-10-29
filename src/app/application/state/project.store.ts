@@ -18,7 +18,7 @@ import { GetProjectDetailUseCase } from '../project/get-project-detail.use-case'
 import { GetProjectMembersUseCase } from '../project/get-project-members.use-case';
 import { GetProjectRolesUseCase } from '../project/get-project-roles.use-case';
 import { RemoveProjectMemberUseCase } from '../project/remove-project-member.use-case';
-import { UpdateBoardPreferenceUseCase } from '../project/update-board-preference.use-case';
+import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
 import { UpdateProjectMemberRoleUseCase } from '../project/update-project-member-role.use-case';
 import { UpdateProjectUseCase } from '../project/update-project.use-case';
 import { NotificationService } from '../shared/notification.service';
@@ -248,46 +248,40 @@ export class ProjectStore {
       boards.map((b) => (b.id === board.id ? { ...b, isPinned: nextPinned } : b)),
     );
 
-    this.updateBoardPreferenceUseCase
-      .execute(board.id, { isPinned: nextPinned })
-      .subscribe({
-        next: (pref) => {
-          this.boardsSignal.update((boards) =>
-            boards.map((b) =>
-              b.id === board.id
-                ? { ...b, isPinned: pref.isPinned, lastViewedAt: pref.lastViewedAt }
-                : b,
-            ),
-          );
-          this.notifications.success(
-            nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
-          );
-        },
-        error: () => {
-          // Hoàn tác cập nhật lạc quan khi gặp lỗi
-          this.boardsSignal.update((boards) =>
-            boards.map((b) => (b.id === board.id ? { ...b, isPinned: previousPinned } : b)),
-          );
-          this.notifications.error('Không thể cập nhật tùy chọn ghim bảng. Vui lòng thử lại.');
-        },
-      });
+    this.updateBoardPreferenceUseCase.execute(board.id, { isPinned: nextPinned }).subscribe({
+      next: (pref) => {
+        this.boardsSignal.update((boards) =>
+          boards.map((b) =>
+            b.id === board.id
+              ? { ...b, isPinned: pref.isPinned, lastViewedAt: pref.lastViewedAt }
+              : b,
+          ),
+        );
+        this.notifications.success(
+          nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
+        );
+      },
+      error: () => {
+        // Hoàn tác cập nhật lạc quan khi gặp lỗi
+        this.boardsSignal.update((boards) =>
+          boards.map((b) => (b.id === board.id ? { ...b, isPinned: previousPinned } : b)),
+        );
+        this.notifications.error('Không thể cập nhật tùy chọn ghim bảng. Vui lòng thử lại.');
+      },
+    });
   }
 
   markBoardViewed(boardId: string): void {
-    this.updateBoardPreferenceUseCase
-      .execute(boardId, { markViewed: true })
-      .subscribe({
-        next: (pref) => {
-          this.boardsSignal.update((boards) =>
-            boards.map((b) =>
-              b.id === boardId ? { ...b, lastViewedAt: pref.lastViewedAt } : b,
-            ),
-          );
-        },
-        error: () => {
-          // Silent fallback cho lượt xem
-        },
-      });
+    this.updateBoardPreferenceUseCase.execute(boardId, { markViewed: true }).subscribe({
+      next: (pref) => {
+        this.boardsSignal.update((boards) =>
+          boards.map((b) => (b.id === boardId ? { ...b, lastViewedAt: pref.lastViewedAt } : b)),
+        );
+      },
+      error: () => {
+        // Silent fallback cho lượt xem
+      },
+    });
   }
 
   removeMember(

@@ -5,13 +5,11 @@ import { environment } from '../../../environments/environment';
 import {
   AddProjectMembersRequest,
   Board,
-  BoardPreference,
   CreateBoardRequest,
   CreateProjectRequest,
   Project,
   ProjectMember,
   ProjectRole,
-  UpdateBoardPreferenceRequest,
   UpdateProjectMemberRoleRequest,
   UpdateProjectRequest,
 } from '../../domain/models/project.model';
@@ -103,14 +101,5 @@ export class ProjectHttpRepository implements ProjectRepository {
       type: typeof request.type === 'string' ? (request.type === 'Scrum' ? 1 : 0) : request.type,
     };
     return this.http.post<ApiResponse<Board>>(this.boardUrl, payload).pipe(map((res) => res.data));
-  }
-
-  updateBoardPreference(
-    boardId: string,
-    request: UpdateBoardPreferenceRequest,
-  ): Observable<BoardPreference> {
-    return this.http
-      .patch<ApiResponse<BoardPreference>>(`${this.boardUrl}/${boardId}/preferences`, request)
-      .pipe(map((res) => res.data));
   }
 }
