@@ -332,7 +332,12 @@ export class ProjectDetailPage implements OnInit {
   }
 
   onBoardClick(board: Board): void {
+    this.projectStore.markBoardViewed(board.id);
     // Navigate to board view if route exists
     void this.router.navigate(['/boards', board.slug]);
+  }
+
+  onTogglePin(board: Board): void {
+    this.projectStore.toggleBoardPin(board);
   }
 }

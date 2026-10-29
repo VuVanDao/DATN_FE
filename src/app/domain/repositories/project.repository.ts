@@ -2,11 +2,13 @@ import { Observable } from 'rxjs';
 import {
   AddProjectMembersRequest,
   Board,
+  BoardPreference,
   CreateBoardRequest,
   CreateProjectRequest,
   Project,
   ProjectMember,
   ProjectRole,
+  UpdateBoardPreferenceRequest,
   UpdateProjectMemberRoleRequest,
   UpdateProjectRequest,
 } from '../models/project.model';
@@ -30,4 +32,8 @@ export abstract class ProjectRepository {
   abstract getProjectRoles(): Observable<ProjectRole[]>;
   abstract getProjectBoards(projectId: string): Observable<Board[]>;
   abstract createBoard(request: CreateBoardRequest): Observable<Board>;
+  abstract updateBoardPreference(
+    boardId: string,
+    request: UpdateBoardPreferenceRequest,
+  ): Observable<BoardPreference>;
 }

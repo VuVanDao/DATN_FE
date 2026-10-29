@@ -258,6 +258,7 @@
         [isLoading]="projectStore.isLoadingBoards()"
         (createBoard)="openCreateBoardModal()"
         (boardClick)="onBoardClick($event)"
+        (togglePin)="onTogglePin($event)"
       />
 
       <!-- RIGHT COLUMN: DANH SÁCH THÀNH VIÊN (col-span-1) -->

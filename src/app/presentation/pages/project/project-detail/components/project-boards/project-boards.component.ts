@@ -20,6 +20,7 @@ export class ProjectBoardsComponent {
 
   readonly createBoard = output<void>();
   readonly boardClick = output<Board>();
+  readonly togglePin = output<Board>();
 
   readonly searchQuery = signal('');
   readonly activeBoardTab = signal<BoardFilterTab>('all');
@@ -29,13 +30,21 @@ export class ProjectBoardsComponent {
     const query = this.searchQuery().trim().toLowerCase();
     const tab = this.activeBoardTab();
 
-    return list.filter((board) => {
+    const filtered = list.filter((board) => {
       const matchTab = tab === 'all' || board.type.toLowerCase() === tab.toLowerCase();
       const matchQuery =
         !query ||
         board.title.toLowerCase().includes(query) ||
         board.slug.toLowerCase().includes(query);
       return matchTab && matchQuery;
+    });
+
+    // Pinned boards appear first, then sorted by created date / default order
+    return filtered.slice().sort((a, b) => {
+      if (!!a.isPinned !== !!b.isPinned) {
+        return a.isPinned ? -1 : 1;
+      }
+      return 0;
     });
   });
 
@@ -61,5 +70,10 @@ export class ProjectBoardsComponent {
 
   onBoardClick(board: Board): void {
     this.boardClick.emit(board);
+  }
+
+  onTogglePin(event: Event, board: Board): void {
+    event.stopPropagation();
+    this.togglePin.emit(board);
   }
 }

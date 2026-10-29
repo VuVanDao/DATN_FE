@@ -69,6 +69,19 @@ export interface Board {
   slug: string;
   type: string;
   createdAt: string;
+  isPinned?: boolean;
+  lastViewedAt?: string | null;
+}
+
+export interface BoardPreference {
+  boardId: string;
+  isPinned: boolean;
+  lastViewedAt: string;
+}
+
+export interface UpdateBoardPreferenceRequest {
+  isPinned?: boolean;
+  markViewed?: boolean;
 }
 
 export interface CreateBoardRequest {
