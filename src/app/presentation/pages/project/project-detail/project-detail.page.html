@@ -134,16 +134,7 @@
 
         <!-- Right: Action Buttons Area (Không có thanh tiến độ, Không có nút Mở bảng chính) -->
         <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
-          <button
-            type="button"
-            (click)="openCreateBoardModal()"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-400/20"
-          >
-            <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
-            <span>Tạo bảng mới</span>
-          </button>
-
-          <!-- 2. Button Thêm thành viên (cạnh nút + Tạo bảng mới) -->
+          <!-- Button Thêm thành viên -->
           <button
             type="button"
             (click)="openAddMemberModal()"
@@ -153,7 +144,7 @@
             <span>Thêm thành viên</span>
           </button>
 
-          <!-- 3. Button Cài đặt (cạnh nút Thêm thành viên) -->
+          <!-- Button Cài đặt -->
           <button
             type="button"
             (click)="openSettingsModal()"
