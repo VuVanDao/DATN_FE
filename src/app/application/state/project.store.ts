@@ -7,6 +7,7 @@ import {
   Project,
   ProjectMember,
   ProjectRole,
+  UpdateProjectMemberRoleRequest,
   UpdateProjectRequest,
 } from '../../domain/models/project.model';
 import { AddProjectMembersUseCase } from '../project/add-project-members.use-case';
@@ -17,6 +18,7 @@ import { GetProjectDetailUseCase } from '../project/get-project-detail.use-case'
 import { GetProjectMembersUseCase } from '../project/get-project-members.use-case';
 import { GetProjectRolesUseCase } from '../project/get-project-roles.use-case';
 import { RemoveProjectMemberUseCase } from '../project/remove-project-member.use-case';
+import { UpdateProjectMemberRoleUseCase } from '../project/update-project-member-role.use-case';
 import { UpdateProjectUseCase } from '../project/update-project.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
@@ -32,6 +34,7 @@ export class ProjectStore {
   private readonly createBoardUseCase = inject(CreateBoardUseCase);
   private readonly deleteProjectUseCase = inject(DeleteProjectUseCase);
   private readonly removeProjectMemberUseCase = inject(RemoveProjectMemberUseCase);
+  private readonly updateProjectMemberRoleUseCase = inject(UpdateProjectMemberRoleUseCase);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -49,6 +52,7 @@ export class ProjectStore {
   private readonly deletingSignal = signal(false); // trạng thái đang xóa dự án
   private readonly addingMemberSignal = signal<boolean>(false);
   private readonly removingMemberSignal = signal(false); // trạng thái đang xóa thành viên dự án
+  private readonly updatingMemberRoleSignal = signal(false); // trạng thái đang cập nhật vai trò thành viên
   private readonly creatingBoardSignal = signal<boolean>(false);
   private readonly loadingRolesSignal = signal(false);
   private readonly rolesErrorSignal = signal<string | null>(null);
@@ -65,6 +69,7 @@ export class ProjectStore {
   readonly isDeleting = this.deletingSignal.asReadonly();
   readonly isAddingMember = this.addingMemberSignal.asReadonly();
   readonly isRemovingMember = this.removingMemberSignal.asReadonly();
+  readonly isUpdatingMemberRole = this.updatingMemberRoleSignal.asReadonly();
   readonly isCreatingBoard = this.creatingBoardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
   readonly isLoadingRoles = this.loadingRolesSignal.asReadonly();
@@ -265,6 +270,42 @@ export class ProjectStore {
         onSuccess?.();
         // The page clears project state when the current user leaves, so do not read it again.
         if (this.projectSignal()?.id === projectId) this.loadMembers(projectId);
+      },
+    });
+  }
+
+  /**
+   * Cập nhật vai trò thành viên trong dự án (chuyển giao Leader / đổi role).
+   * Sau khi thành công, reload lại toàn bộ danh sách thành viên vì khi chuyển giao
+   * Leader, BE tự hạ vai trò Leader cũ xuống ProjectMember.
+   */
+  updateMemberRole(
+    projectId: string,
+    userId: string,
+    request: UpdateProjectMemberRoleRequest,
+    onSuccess?: (updated: ProjectMember) => void,
+    onError?: (message: string) => void,
+  ): void {
+    if (
+      this.updatingMemberRoleSignal() ||
+      this.removingMemberSignal() ||
+      this.addingMemberSignal() ||
+      this.deletingSignal()
+    )
+      return;
+    this.requests.run({
+      loading: this.updatingMemberRoleSignal,
+      request$: this.updateProjectMemberRoleUseCase.execute(projectId, userId, request),
+      cancel$: this.cancel$,
+      fallbackErrorMessage: 'Cập nhật vai trò thành viên thất bại. Vui lòng thử lại.',
+      onError,
+      onSuccess: (updated) => {
+        // Reload toàn bộ danh sách vì khi chuyển giao Leader, BE đồng thời hạ Leader cũ
+        this.loadMembers(projectId);
+        this.notifications.success(
+          `Đã cập nhật vai trò của ${updated.username} thành ${updated.roleName === 'ProjectLeader' ? 'Trưởng dự án' : 'Thành viên'}`,
+        );
+        onSuccess?.(updated);
       },
     });
   }

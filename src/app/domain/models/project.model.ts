@@ -56,6 +56,10 @@ export interface AddProjectMembersRequest {
   members: AddProjectMemberEntry[];
 }
 
+export interface UpdateProjectMemberRoleRequest {
+  newRoleId: string;
+}
+
 export type BoardType = 'Kanban' | 'Scrum';
 
 export interface Board {

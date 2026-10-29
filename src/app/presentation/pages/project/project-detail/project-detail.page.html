@@ -612,13 +612,34 @@
                 </div>
 
                 <!-- Right: Actions -->
-                <div class="shrink-0 flex items-center ml-2">
+                <div class="shrink-0 flex items-center gap-1 ml-2">
+                  @if (canChangeRole(member)) {
+                    <button
+                      type="button"
+                      (click)="openChangeRoleModal(member)"
+                      [disabled]="
+                        projectStore.isUpdatingMemberRole() ||
+                        projectStore.isRemovingMember() ||
+                        projectStore.isAddingMember() ||
+                        projectStore.isDeleting()
+                      "
+                      title="Đổi vai trò thành viên"
+                      class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 active:bg-amber-500/20 border border-transparent hover:border-amber-500/20 transition cursor-pointer disabled:opacity-50"
+                    >
+                      <mat-icon
+                        fontIcon="swap_horiz"
+                        class="text-sm! w-auto! h-auto!"
+                      ></mat-icon>
+                      <span class="text-[11px]">Đổi vai trò</span>
+                    </button>
+                  }
                   @if (canRemoveMember(member)) {
                     <button
                       type="button"
                       (click)="openRemoveMember(member)"
                       [disabled]="
                         projectStore.isRemovingMember() ||
+                        projectStore.isUpdatingMemberRole() ||
                         projectStore.isAddingMember() ||
                         projectStore.isDeleting()
                       "
@@ -671,6 +692,198 @@
     </div>
 
     <!-- Modals -->
+    <!-- Modal đổi vai trò / chuyển giao Trưởng dự án -->
+    @if (memberToChangeRole(); as member) {
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-xs"
+        (click)="closeChangeRoleModal()"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="change-project-role-title"
+          class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 space-y-5 shadow-2xl"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Header -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"
+              >
+                <mat-icon fontIcon="published_with_changes" class="text-xl! w-auto! h-auto!"></mat-icon>
+              </div>
+              <div>
+                <h2 id="change-project-role-title" class="text-base font-semibold text-white">
+                  Chuyển giao vai trò thành viên
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">
+                  Dự án: <span class="text-slate-300 font-medium">{{ proj.name }}</span>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              (click)="closeChangeRoleModal()"
+              [disabled]="projectStore.isUpdatingMemberRole()"
+              class="text-slate-500 hover:text-slate-300 transition cursor-pointer disabled:opacity-50"
+            >
+              <mat-icon fontIcon="close" class="text-lg! w-auto! h-auto!"></mat-icon>
+            </button>
+          </div>
+
+          <!-- Target member info card -->
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-800"
+          >
+            @if (member.avatarUrl) {
+              <img
+                [src]="member.avatarUrl"
+                [alt]="member.username"
+                class="w-10 h-10 rounded-full object-cover ring-1 ring-slate-700"
+              />
+            } @else {
+              <div
+                class="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-xs"
+              >
+                {{ member.username.charAt(0).toUpperCase() }}
+              </div>
+            }
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-semibold text-white truncate">{{ member.username }}</div>
+              <div class="text-xs text-slate-400 truncate">{{ member.email }}</div>
+            </div>
+            <div class="shrink-0 text-right">
+              <span
+                class="text-[11px] px-2 py-0.5 rounded-md font-medium"
+                [class]="
+                  member.roleName === 'ProjectLeader'
+                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                "
+              >
+                {{ member.roleName === 'ProjectLeader' ? 'Leader' : 'Thành viên' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Role Selection -->
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              Chọn vai trò mới
+            </label>
+            <div class="space-y-2">
+              @for (role of projectStore.roles(); track role.id) {
+                <label
+                  class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer"
+                  [class]="
+                    selectedNewRoleId() === role.id
+                      ? 'border-indigo-500/80 bg-indigo-500/10 ring-1 ring-indigo-500/40'
+                      : 'border-slate-800 bg-slate-800/20 hover:bg-slate-800/40'
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="projectRole"
+                    [value]="role.id"
+                    [ngModel]="selectedNewRoleId()"
+                    (ngModelChange)="selectedNewRoleId.set($event)"
+                    class="mt-1 text-indigo-500 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium text-white">
+                        {{
+                          role.name === 'ProjectLeader'
+                            ? 'Trưởng dự án (Project Leader)'
+                            : 'Thành viên (Project Member)'
+                        }}
+                      </span>
+                      @if (role.name === 'ProjectLeader') {
+                        <span
+                          class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.2 rounded font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        >
+                          <mat-icon
+                            fontIcon="stars"
+                            class="text-[10px]! w-auto! h-auto!"
+                          ></mat-icon>
+                          Cao nhất
+                        </span>
+                      }
+                    </div>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                      {{
+                        role.description ||
+                          (role.name === 'ProjectLeader'
+                            ? 'Toàn quyền quản lý bảng, thành viên và cài đặt dự án'
+                            : 'Tham gia bảng, tạo và quản lý thẻ công việc được giao')
+                      }}
+                    </p>
+                  </div>
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Warning notice when selecting ProjectLeader -->
+          @if (selectedRole()?.name === 'ProjectLeader') {
+            <div
+              class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-amber-300"
+            >
+              <mat-icon fontIcon="warning" class="text-amber-400 text-sm! shrink-0 mt-0.5"></mat-icon>
+              <div class="text-[11px] leading-relaxed">
+                <strong>Chuyển giao quyền Trưởng dự án:</strong> Dự án chỉ có một Trưởng dự án duy
+                nhất. Khi chuyển giao cho <strong>{{ member.username }}</strong
+                >, Trưởng dự án hiện tại sẽ tự động chuyển thành Thành viên.
+              </div>
+            </div>
+          }
+
+          <!-- Error message if any -->
+          @if (changeRoleError(); as error) {
+            <div
+              class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2"
+            >
+              <mat-icon fontIcon="error" class="text-rose-400 text-sm! shrink-0"></mat-icon>
+              <span>{{ error }}</span>
+            </div>
+          }
+
+          <!-- Buttons -->
+          <div class="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              (click)="closeChangeRoleModal()"
+              [disabled]="projectStore.isUpdatingMemberRole()"
+              class="rounded-xl px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              (click)="confirmChangeRole()"
+              [disabled]="
+                projectStore.isUpdatingMemberRole() ||
+                !selectedNewRoleId() ||
+                selectedNewRoleId() === member.roleId
+              "
+              class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 active:bg-indigo-700 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              @if (projectStore.isUpdatingMemberRole()) {
+                <div
+                  class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"
+                ></div>
+                <span>Đang xử lý...</span>
+              } @else {
+                <mat-icon fontIcon="check" class="text-sm! w-auto! h-auto!"></mat-icon>
+                <span>Xác nhận chuyển đổi</span>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (memberToRemove(); as member) {
       <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4"

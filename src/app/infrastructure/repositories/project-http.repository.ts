@@ -10,6 +10,7 @@ import {
   Project,
   ProjectMember,
   ProjectRole,
+  UpdateProjectMemberRoleRequest,
   UpdateProjectRequest,
 } from '../../domain/models/project.model';
 import { ProjectRepository } from '../../domain/repositories/project.repository';
@@ -65,6 +66,19 @@ export class ProjectHttpRepository implements ProjectRepository {
   removeProjectMember(projectId: string, userId: string): Observable<boolean> {
     return this.http
       .delete<ApiResponse<boolean>>(`${this.projectUrl}/${projectId}/members/${userId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  updateProjectMemberRole(
+    projectId: string,
+    userId: string,
+    request: UpdateProjectMemberRoleRequest,
+  ): Observable<ProjectMember> {
+    return this.http
+      .put<ApiResponse<ProjectMember>>(
+        `${this.projectUrl}/${projectId}/members/${userId}/role`,
+        request,
+      )
       .pipe(map((res) => res.data));
   }
 

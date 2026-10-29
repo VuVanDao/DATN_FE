@@ -10,7 +10,7 @@ import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
-import { Board, Project, ProjectMember } from '../../../../domain/models/project.model';
+import { Board, Project, ProjectMember, ProjectRole } from '../../../../domain/models/project.model';
 import {
   getBoardBadgeColor,
   getBoardIcon,
@@ -88,6 +88,24 @@ export class ProjectDetailPage implements OnInit {
     );
   });
 
+  // Check if current user is WorkspaceOwner
+  readonly isWorkspaceOwner = computed(() => {
+    const userId = this.session.currentUser()?.id;
+    const project = this.project();
+    if (!userId || !project) return false;
+    const currentWorkspace = this.workspaceStore.currentWorkspace();
+    const workspace =
+      currentWorkspace?.id === project.workspaceId
+        ? currentWorkspace
+        : this.workspaceStore.workspaces().find((item) => item.id === project.workspaceId);
+    return workspace?.ownerId.toLowerCase() === userId.toLowerCase();
+  });
+
+  // User has authority to change member roles (WorkspaceOwner or ProjectLeader)
+  readonly canManageRoles = computed(() => {
+    return this.isWorkspaceOwner() || this.isCurrentLeader();
+  });
+
   // Filtered boards list
   readonly filteredBoards = computed(() => {
     const list = this.boards();
@@ -118,6 +136,15 @@ export class ProjectDetailPage implements OnInit {
   readonly memberToRemove = signal<ProjectMember | null>(null); // Thành viên đang được chọn để xóa
   readonly memberRemovalError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận
 
+  // Đổi vai trò thành viên
+  readonly memberToChangeRole = signal<ProjectMember | null>(null); // Thành viên đang được chọn để đổi vai trò
+  readonly selectedNewRoleId = signal<string | null>(null); // Vai trò mới được chọn
+  readonly changeRoleError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận đổi vai trò
+  readonly selectedRole = computed<ProjectRole | undefined>(() => {
+    const roleId = this.selectedNewRoleId();
+    return this.projectStore.roles().find((r) => r.id === roleId);
+  });
+
   ngOnInit(): void {
     this.layoutService.setSidebar('main');
     this.destroyRef.onDestroy(() => this.projectStore.clear());
@@ -146,6 +173,7 @@ export class ProjectDetailPage implements OnInit {
         this.closeCreateBoardModal();
         this.memberToRemove.set(null);
         this.memberRemovalError.set(null);
+        this.closeChangeRoleModal();
         this.loadProjectDetail();
       });
   }
@@ -274,6 +302,51 @@ export class ProjectDetailPage implements OnInit {
         }
       },
       (message) => this.memberRemovalError.set(message),
+    );
+  }
+
+  canChangeRole(member: ProjectMember): boolean {
+    if (!this.canManageRoles()) return false;
+    // Không thể tự đổi role của chính mình nếu đang là ProjectLeader (cần chọn thành viên khác để chuyển giao)
+    if (this.isSelf(member) && member.roleName === 'ProjectLeader') return false;
+    return true;
+  }
+
+  openChangeRoleModal(member: ProjectMember): void {
+    if (!this.canChangeRole(member) || this.projectStore.isUpdatingMemberRole()) return;
+    this.projectStore.loadRoles();
+    this.changeRoleError.set(null);
+    this.memberToChangeRole.set(member);
+    // Mặc định chọn vai trò đối ứng nếu đã có roles
+    const oppositeRole =
+      this.projectStore.roles().find((r) => r.name !== member.roleName) ??
+      this.projectStore.roles().find((r) => r.id !== member.roleId);
+    this.selectedNewRoleId.set(oppositeRole?.id ?? null);
+  }
+
+  closeChangeRoleModal(force = false): void {
+    if (!force && this.projectStore.isUpdatingMemberRole()) return;
+    this.memberToChangeRole.set(null);
+    this.selectedNewRoleId.set(null);
+    this.changeRoleError.set(null);
+  }
+
+  confirmChangeRole(): void {
+    const member = this.memberToChangeRole();
+    const project = this.project();
+    const newRoleId = this.selectedNewRoleId();
+    if (!member || !project || !newRoleId || this.projectStore.isUpdatingMemberRole()) return;
+    this.changeRoleError.set(null);
+    this.projectStore.updateMemberRole(
+      project.id,
+      member.userId,
+      { newRoleId },
+      () => {
+        this.closeChangeRoleModal(true);
+      },
+      (message) => {
+        this.changeRoleError.set(message);
+      },
     );
   }
 

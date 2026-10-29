@@ -7,6 +7,7 @@ import {
   Project,
   ProjectMember,
   ProjectRole,
+  UpdateProjectMemberRoleRequest,
   UpdateProjectRequest,
 } from '../models/project.model';
 
@@ -21,6 +22,11 @@ export abstract class ProjectRepository {
     request: AddProjectMembersRequest,
   ): Observable<ProjectMember[]>;
   abstract removeProjectMember(projectId: string, userId: string): Observable<boolean>;
+  abstract updateProjectMemberRole(
+    projectId: string,
+    userId: string,
+    request: UpdateProjectMemberRoleRequest,
+  ): Observable<ProjectMember>;
   abstract getProjectRoles(): Observable<ProjectRole[]>;
   abstract getProjectBoards(projectId: string): Observable<Board[]>;
   abstract createBoard(request: CreateBoardRequest): Observable<Board>;
