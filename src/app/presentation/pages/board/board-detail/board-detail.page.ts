@@ -28,6 +28,11 @@ import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-mo
     CdkDrag,
     SwitchBoardModalComponent,
   ],
+  host: {
+    class: 'flex flex-col flex-1 h-full min-h-0 min-w-0 w-full overflow-hidden',
+    style:
+      'display: flex; flex-direction: column; flex: 1; height: 100%; min-height: 0; width: 100%;',
+  },
   templateUrl: './board-detail.page.html',
 })
 export class BoardDetailPage implements OnInit {

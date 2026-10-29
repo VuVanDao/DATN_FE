@@ -31,6 +31,8 @@
       [class.overflow-hidden]="layoutService.isFullBleed()"
       [class.flex]="layoutService.isFullBleed()"
       [class.flex-col]="layoutService.isFullBleed()"
+      [class.h-full]="layoutService.isFullBleed()"
+      [style.height]="layoutService.isFullBleed() ? '100%' : 'auto'"
     >
       <div
         class="w-full min-w-0"
@@ -39,6 +41,10 @@
         [class.flex-col]="layoutService.isFullBleed()"
         [class.flex-1]="layoutService.isFullBleed()"
         [class.min-h-0]="layoutService.isFullBleed()"
+        [style.display]="layoutService.isFullBleed() ? 'flex' : 'block'"
+        [style.flex-direction]="layoutService.isFullBleed() ? 'column' : 'initial'"
+        [style.flex]="layoutService.isFullBleed() ? '1' : 'initial'"
+        [style.height]="layoutService.isFullBleed() ? '100%' : 'auto'"
       >
         <router-outlet></router-outlet>
       </div>
