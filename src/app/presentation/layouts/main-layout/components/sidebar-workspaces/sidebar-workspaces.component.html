@@ -94,19 +94,27 @@
     } @else {
       <div class="space-y-2 py-1">
         @for (ws of workspaces(); track ws.id) {
-          <button
-            type="button"
+          <a
+            routerLink="/workspaces/{{ ws.slug }}"
             [matTooltip]="ws.name"
             matTooltipPosition="right"
             class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 mx-auto transition cursor-pointer"
           >
-            <div
-              class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-xs"
-              [class]="ws.color"
-            >
-              {{ ws.initial }}
-            </div>
-          </button>
+            @if (ws.logoUrl !== null) {
+              <img
+                class="w-7 h-7 rounded-lg object-cover shadow-xs"
+                [src]="ws.logoUrl"
+                [alt]="ws.name"
+              />
+            } @else {
+              <div
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-xs"
+                [class]="ws.color"
+              >
+                {{ ws.initial }}
+              </div>
+            }
+          </a>
         }
 
         @if (totalCount() > 0) {
