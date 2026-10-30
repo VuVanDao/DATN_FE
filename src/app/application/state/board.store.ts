@@ -85,12 +85,15 @@ export class BoardStore {
     });
   }
 
-  createColumn(boardId: string, title: string, onSuccess?: () => void): void {
+  createColumn(boardId: string, title: string, isDoneColumn = false, onSuccess?: () => void): void {
     if (!title.trim() || this.isAddingColumnSignal()) return;
 
     this.requests.run({
       loading: this.isAddingColumnSignal,
-      request$: this.createColumnUseCase.execute(boardId, { title: title.trim() }),
+      request$: this.createColumnUseCase.execute(boardId, {
+        title: title.trim(),
+        isDoneColumn,
+      }),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Tạo cột mới thất bại.',
       onSuccess: (newColumn) => {
@@ -100,6 +103,9 @@ export class BoardStore {
           cards: newColumn.cards || [],
         };
         this.columnsSignal.update((cols) => [...cols, colWithCards]);
+        this.boardSignal.update((b) =>
+          b ? { ...b, columns: [...(b.columns || []), colWithCards] } : null,
+        );
         this.notifications.success(`Đã thêm danh sách "${colWithCards.title}"`);
         onSuccess?.();
       },

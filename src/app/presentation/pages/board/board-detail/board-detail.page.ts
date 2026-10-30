@@ -171,11 +171,19 @@ export class BoardDetailPage implements OnInit {
   }
 
   // Add Column handler
-  confirmAddColumn({ title, onSuccess }: { title: string; onSuccess: () => void }): void {
+  confirmAddColumn({
+    title,
+    isDoneColumn,
+    onSuccess,
+  }: {
+    title: string;
+    isDoneColumn?: boolean;
+    onSuccess: () => void;
+  }): void {
     const board = this.currentBoard();
     if (!title || !board) return;
 
-    this.boardStore.createColumn(board.id, title, () => {
+    this.boardStore.createColumn(board.id, title, isDoneColumn ?? false, () => {
       onSuccess();
     });
   }

@@ -25,7 +25,7 @@ export class BoardCanvasComponent {
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
   readonly confirmAddCard = output<{ columnId: string; title: string }>();
-  readonly addColumn = output<{ title: string; onSuccess: () => void }>();
+  readonly addColumn = output<{ title: string; isDoneColumn: boolean; onSuccess: () => void }>();
 
   readonly isAddingList = signal<boolean>(false);
   readonly newColumnTitle = signal<string>('');
@@ -45,6 +45,7 @@ export class BoardCanvasComponent {
     if (!title || this.isAddingColumn()) return;
     this.addColumn.emit({
       title,
+      isDoneColumn: false,
       onSuccess: () => this.cancelAddList(),
     });
   }
