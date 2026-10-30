@@ -11,6 +11,7 @@ import {
 import {
   Board,
   BoardPreference,
+  MyBoards,
   UpdateBoardPreferenceRequest,
   UpdateBoardRequest,
 } from '../models/project.model';
@@ -28,4 +29,5 @@ export abstract class BoardRepository {
     boardId: string,
     request: UpdateBoardPreferenceRequest,
   ): Observable<BoardPreference>;
+  abstract getMyBoards(): Observable<MyBoards>;
 }

@@ -7,12 +7,13 @@ import {
   ColumnSummary,
   CreateCardRequest,
 } from '../../domain/models/board-detail.model';
-import { Board, UpdateBoardRequest } from '../../domain/models/project.model';
+import { Board, MyBoards, UpdateBoardRequest } from '../../domain/models/project.model';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
 import { DeleteBoardUseCase } from '../board/delete-board.use-case';
 import { DeleteCardUseCase } from '../board/delete-card.use-case';
 import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
+import { GetMyBoardsUseCase } from '../board/get-my-boards.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
 import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
@@ -33,6 +34,7 @@ export class BoardStore {
   private readonly deleteBoardUseCase = inject(DeleteBoardUseCase);
   private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
   private readonly updateBoardUseCase = inject(UpdateBoardUseCase);
+  private readonly getMyBoardsUseCase = inject(GetMyBoardsUseCase);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -48,6 +50,9 @@ export class BoardStore {
   private readonly isUpdatingBoardSignal = signal<boolean>(false);
   private readonly isDeletingBoardSignal = signal<boolean>(false);
 
+  private readonly myBoardsSignal = signal<MyBoards>({ recentBoards: [], pinnedBoards: [] });
+  private readonly isLoadingMyBoardsSignal = signal<boolean>(false);
+
   readonly currentBoard = this.boardSignal.asReadonly();
   readonly columns = this.columnsSignal.asReadonly();
   readonly isLoading = this.loadingSignal.asReadonly();
@@ -56,6 +61,8 @@ export class BoardStore {
   readonly isAddingCard = this.isAddingCardSignal.asReadonly();
   readonly isUpdatingBoard = this.isUpdatingBoardSignal.asReadonly();
   readonly isDeletingBoard = this.isDeletingBoardSignal.asReadonly();
+  readonly myBoards = this.myBoardsSignal.asReadonly();
+  readonly isLoadingMyBoards = this.isLoadingMyBoardsSignal.asReadonly();
 
   loadBoard(slug: string, projectId: string, onSuccess?: (board: BoardDetail) => void): void {
     this.cancel$.next();
@@ -241,6 +248,7 @@ export class BoardStore {
         this.notifications.success(
           nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
         );
+        this.loadMyBoards();
         onSuccess?.(pref.isPinned);
       },
       error: () => {
@@ -299,6 +307,18 @@ export class BoardStore {
 
   setBoardPinnedLocally(isPinned: boolean): void {
     this.boardSignal.update((b) => (b ? { ...b, isPinned } : null));
+  }
+
+  loadMyBoards(): void {
+    this.requests.run({
+      loading: this.isLoadingMyBoardsSignal,
+      request$: this.getMyBoardsUseCase.execute(),
+      fallbackErrorMessage: 'Không thể tải danh sách bảng gần đây.',
+      toastOnError: false,
+      onSuccess: (data) => {
+        this.myBoardsSignal.set(data || { recentBoards: [], pinnedBoards: [] });
+      },
+    });
   }
 
   clear(): void {

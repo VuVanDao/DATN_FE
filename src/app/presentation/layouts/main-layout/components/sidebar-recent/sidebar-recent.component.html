@@ -58,14 +58,19 @@
                 Bảng gần đây
               </span>
               <div class="space-y-0.5 mt-0.5">
-                @for (board of recentBoardsList(); track board.id) {
+                @for (board of recentBoardsList(); track board.boardId) {
                   <a
-                    routerLink="/home-page"
+                    [routerLink]="['/boards', board.boardSlug]"
+                    [queryParams]="{ projectId: board.projectId }"
                     class="flex items-center gap-2 px-2 py-1 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                   >
-                    <span class="w-2 h-2 rounded-xs shrink-0" [class]="board.color"></span>
-                    <span class="truncate">{{ board.name }}</span>
+                    <span class="w-2 h-2 rounded-xs shrink-0" [class]="getBoardColor(board.boardId)"></span>
+                    <span class="truncate">{{ board.title }}</span>
                   </a>
+                } @empty {
+                  <span class="text-[11px] text-slate-400 dark:text-slate-500 px-2 py-1 block italic">
+                    Chưa có bảng gần đây
+                  </span>
                 }
               </div>
             </div>
@@ -78,17 +83,22 @@
                 Bảng đã ghim
               </span>
               <div class="space-y-0.5 mt-0.5">
-                @for (board of pinnedBoardsList(); track board.id) {
+                @for (board of pinnedBoardsList(); track board.boardId) {
                   <a
-                    routerLink="/home-page"
+                    [routerLink]="['/boards', board.boardSlug]"
+                    [queryParams]="{ projectId: board.projectId }"
                     class="flex items-center gap-2 px-2 py-1 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                   >
                     <mat-icon
                       fontIcon="push_pin"
                       class="icon-xxs text-amber-500 shrink-0"
                     ></mat-icon>
-                    <span class="truncate">{{ board.name }}</span>
+                    <span class="truncate">{{ board.title }}</span>
                   </a>
+                } @empty {
+                  <span class="text-[11px] text-slate-400 dark:text-slate-500 px-2 py-1 block italic">
+                    Chưa có bảng đã ghim
+                  </span>
                 }
               </div>
             </div>

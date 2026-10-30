@@ -22,6 +22,7 @@ import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.u
 import { UpdateProjectMemberRoleUseCase } from '../project/update-project-member-role.use-case';
 import { UpdateProjectUseCase } from '../project/update-project.use-case';
 import { NotificationService } from '../shared/notification.service';
+import { BoardStore } from './board.store';
 import { StoreRequestRunner } from './store-request.util';
 
 @Injectable({ providedIn: 'root' })
@@ -37,6 +38,7 @@ export class ProjectStore {
   private readonly removeProjectMemberUseCase = inject(RemoveProjectMemberUseCase);
   private readonly updateProjectMemberRoleUseCase = inject(UpdateProjectMemberRoleUseCase);
   private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
+  private readonly boardStore = inject(BoardStore);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -264,6 +266,7 @@ export class ProjectStore {
         this.notifications.success(
           nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
         );
+        this.boardStore.loadMyBoards();
         onSuccess?.(pref.isPinned);
       },
       error: () => {
@@ -299,6 +302,7 @@ export class ProjectStore {
         this.boardsSignal.update((boards) =>
           boards.map((b) => (b.id === boardId ? { ...b, lastViewedAt: pref.lastViewedAt } : b)),
         );
+        this.boardStore.loadMyBoards();
       },
       error: () => {
         // Silent fallback cho lượt xem

@@ -96,3 +96,17 @@ export interface UpdateBoardRequest {
   slug: string;
   type?: BoardType | string;
 }
+
+export interface MyBoardItem {
+  boardId: string;
+  title: string;
+  boardSlug: string;
+  projectId: string;
+  isPinned: boolean;
+  lastViewedAt: string;
+}
+
+export interface MyBoards {
+  recentBoards: MyBoardItem[];
+  pinnedBoards: MyBoardItem[];
+}

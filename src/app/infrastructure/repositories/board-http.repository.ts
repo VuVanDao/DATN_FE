@@ -14,6 +14,7 @@ import {
 import {
   Board,
   BoardPreference,
+  MyBoards,
   UpdateBoardPreferenceRequest,
   UpdateBoardRequest,
 } from '../../domain/models/project.model';
@@ -94,6 +95,12 @@ export class BoardHttpRepository implements BoardRepository {
   ): Observable<BoardPreference> {
     return this.http
       .patch<ApiResponse<BoardPreference>>(`${this.boardUrl}/${boardId}/preferences`, request)
+      .pipe(map((res) => res.data));
+  }
+
+  getMyBoards(): Observable<MyBoards> {
+    return this.http
+      .get<ApiResponse<MyBoards>>(`${this.boardUrl}/my-boards`)
       .pipe(map((res) => res.data));
   }
 }
