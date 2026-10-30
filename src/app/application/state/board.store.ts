@@ -7,6 +7,7 @@ import {
   ColumnSummary,
   CreateCardRequest,
 } from '../../domain/models/board-detail.model';
+import { Board, UpdateBoardRequest } from '../../domain/models/project.model';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
 import { DeleteCardUseCase } from '../board/delete-card.use-case';
@@ -14,6 +15,7 @@ import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
 import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
+import { UpdateBoardUseCase } from '../board/update-board.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
 
@@ -28,6 +30,7 @@ export class BoardStore {
   private readonly moveCardUseCase = inject(MoveCardUseCase);
   private readonly deleteCardUseCase = inject(DeleteCardUseCase);
   private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
+  private readonly updateBoardUseCase = inject(UpdateBoardUseCase);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -40,6 +43,7 @@ export class BoardStore {
   private readonly errorSignal = signal<string | null>(null);
   private readonly isAddingColumnSignal = signal<boolean>(false);
   private readonly isAddingCardSignal = signal<boolean>(false);
+  private readonly isUpdatingBoardSignal = signal<boolean>(false);
 
   readonly currentBoard = this.boardSignal.asReadonly();
   readonly columns = this.columnsSignal.asReadonly();
@@ -47,6 +51,7 @@ export class BoardStore {
   readonly error = this.errorSignal.asReadonly();
   readonly isAddingColumn = this.isAddingColumnSignal.asReadonly();
   readonly isAddingCard = this.isAddingCardSignal.asReadonly();
+  readonly isUpdatingBoard = this.isUpdatingBoardSignal.asReadonly();
 
   loadBoard(slug: string, projectId: string, onSuccess?: (board: BoardDetail) => void): void {
     this.cancel$.next();
@@ -238,6 +243,36 @@ export class BoardStore {
         this.boardSignal.update((b) => (b ? { ...b, isPinned: previousPinned } : null));
         this.notifications.error('Không thể cập nhật tùy chọn ghim bảng.');
         onError?.(previousPinned);
+      },
+    });
+  }
+
+  updateBoard(
+    boardId: string,
+    request: UpdateBoardRequest,
+    onSuccess?: (updated: Board) => void,
+    onError?: (error: string) => void,
+  ): void {
+    this.requests.run({
+      loading: this.isUpdatingBoardSignal,
+      request$: this.updateBoardUseCase.execute(boardId, request),
+      cancel$: this.cancel$,
+      fallbackErrorMessage: 'Cập nhật thông tin bảng thất bại.',
+      onSuccess: (updated) => {
+        this.boardSignal.update((current) => {
+          if (!current || current.id !== boardId) return current;
+          return {
+            ...current,
+            title: updated.title,
+            slug: updated.slug,
+            type: updated.type,
+          };
+        });
+        this.notifications.success('Đã cập nhật thông tin bảng thành công!');
+        onSuccess?.(updated);
+      },
+      onError: (err) => {
+        onError?.(err);
       },
     });
   }

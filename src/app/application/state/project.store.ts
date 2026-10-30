@@ -283,6 +283,12 @@ export class ProjectStore {
     );
   }
 
+  updateBoardLocally(updated: Board): void {
+    this.boardsSignal.update((boards) =>
+      boards.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)),
+    );
+  }
+
   markBoardViewed(boardId: string): void {
     this.updateBoardPreferenceUseCase.execute(boardId, { markViewed: true }).subscribe({
       next: (pref) => {

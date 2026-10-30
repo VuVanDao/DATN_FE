@@ -13,8 +13,13 @@ import { BoardDetail } from '../../../../../../domain/models/board-detail.model'
 export class BoardHeaderComponent {
   readonly board = input<BoardDetail | null>(null);
   readonly togglePin = output<void>();
+  readonly openMenu = output<void>();
 
   onTogglePin(): void {
     this.togglePin.emit();
+  }
+
+  onOpenMenu(): void {
+    this.openMenu.emit();
   }
 }

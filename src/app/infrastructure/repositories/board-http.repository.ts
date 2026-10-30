@@ -11,7 +11,12 @@ import {
   MoveCardRequest,
   ReorderColumnsRequest,
 } from '../../domain/models/board-detail.model';
-import { BoardPreference, UpdateBoardPreferenceRequest } from '../../domain/models/project.model';
+import {
+  Board,
+  BoardPreference,
+  UpdateBoardPreferenceRequest,
+  UpdateBoardRequest,
+} from '../../domain/models/project.model';
 import { BoardRepository } from '../../domain/repositories/board.repository';
 import { ApiResponse } from '../dtos/api-response.dto';
 
@@ -26,6 +31,17 @@ export class BoardHttpRepository implements BoardRepository {
   getBoardDetail(slug: string, projectId: string): Observable<BoardDetail> {
     return this.http
       .get<ApiResponse<BoardDetail>>(`${this.boardUrl}/${slug}/project/${projectId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  updateBoard(boardId: string, request: UpdateBoardRequest): Observable<Board> {
+    return this.http
+      .put<ApiResponse<Board>>(`${this.boardUrl}/${boardId}`, {
+        boardId,
+        title: request.title,
+        slug: request.slug,
+        type: request.type,
+      })
       .pipe(map((res) => res.data));
   }
 

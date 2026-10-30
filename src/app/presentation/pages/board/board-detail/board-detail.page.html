@@ -12,7 +12,11 @@
   ></div>
 
   <!-- 1. Top Board Header Sub-Component -->
-  <app-board-header [board]="currentBoard()" (togglePin)="onToggleBoardPin()" />
+  <app-board-header
+    [board]="currentBoard()"
+    (togglePin)="onToggleBoardPin()"
+    (openMenu)="openBoardMenu()"
+  />
 
   <!-- 2. Main Kanban Board Canvas (Columns & Cards Body) -->
   <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 pb-20 flex items-start gap-3.5 min-h-0">
@@ -68,4 +72,21 @@
       (close)="closeSwitchBoardModal()"
     />
   }
+
+  <!-- Board Menu Drawer (Right-side Panel) -->
+  <app-board-menu-drawer
+    [isOpen]="showBoardMenu()"
+    [board]="currentBoard()"
+    (closed)="closeBoardMenu()"
+    (openEditBoard)="openEditBoardModal()"
+    (leaveBoard)="onLeaveBoard()"
+  />
+
+  <!-- Board Settings Modal (Cập nhật thông tin bảng) -->
+  <app-board-settings-modal
+    [isOpen]="showEditBoardModal()"
+    [board]="currentBoard()"
+    (closed)="closeEditBoardModal()"
+    (saved)="onBoardUpdated($event)"
+  />
 </div>

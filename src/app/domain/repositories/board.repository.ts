@@ -8,10 +8,16 @@ import {
   MoveCardRequest,
   ReorderColumnsRequest,
 } from '../models/board-detail.model';
-import { BoardPreference, UpdateBoardPreferenceRequest } from '../models/project.model';
+import {
+  Board,
+  BoardPreference,
+  UpdateBoardPreferenceRequest,
+  UpdateBoardRequest,
+} from '../models/project.model';
 
 export abstract class BoardRepository {
   abstract getBoardDetail(slug: string, projectId: string): Observable<BoardDetail>;
+  abstract updateBoard(boardId: string, request: UpdateBoardRequest): Observable<Board>;
   abstract createColumn(boardId: string, request: CreateColumnRequest): Observable<ColumnSummary>;
   abstract reorderColumns(boardId: string, request: ReorderColumnsRequest): Observable<boolean>;
   abstract createCard(request: CreateCardRequest): Observable<CardSummary>;

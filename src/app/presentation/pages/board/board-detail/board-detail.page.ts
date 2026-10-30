@@ -15,6 +15,8 @@ import { Board } from '../../../../domain/models/project.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
 import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
 import { BoardHeaderComponent } from './components/board-header/board-header.component';
+import { BoardMenuDrawerComponent } from './components/board-menu-drawer/board-menu-drawer.component';
+import { BoardSettingsModalComponent } from './components/board-settings-modal/board-settings-modal.component';
 
 @Component({
   selector: 'app-board-detail-page',
@@ -25,6 +27,8 @@ import { BoardHeaderComponent } from './components/board-header/board-header.com
     RouterModule,
     BoardHeaderComponent,
     BoardCanvasComponent,
+    BoardMenuDrawerComponent,
+    BoardSettingsModalComponent,
     SwitchBoardModalComponent,
   ],
   host: {
@@ -51,6 +55,12 @@ export class BoardDetailPage implements OnInit {
 
   // Trạng thái modal đổi bảng (Switch board modal)
   readonly showSwitchBoardModal = signal<boolean>(false);
+
+  // Trạng thái menu cạnh phải (Board Menu Drawer)
+  readonly showBoardMenu = signal<boolean>(false);
+
+  // Trạng thái modal cập nhật thông tin bảng
+  readonly showEditBoardModal = signal<boolean>(false);
 
   // Thêm nhanh Thẻ (ID cột đang mở form nhập thẻ)
   readonly activeAddCardColumnId = signal<string | null>(null);
@@ -214,5 +224,56 @@ export class BoardDetailPage implements OnInit {
   // Đóng modal Switch Board
   closeSwitchBoardModal(): void {
     this.showSwitchBoardModal.set(false);
+  }
+
+  // Điều khiển Drawer Menu bảng
+  openBoardMenu(): void {
+    this.showBoardMenu.set(true);
+  }
+
+  closeBoardMenu(): void {
+    this.showBoardMenu.set(false);
+  }
+
+  // Mở modal cập nhật thông tin bảng từ Menu
+  openEditBoardModal(): void {
+    this.showBoardMenu.set(false);
+    this.showEditBoardModal.set(true);
+  }
+
+  closeEditBoardModal(): void {
+    this.showEditBoardModal.set(false);
+  }
+
+  // Xử lý sau khi cập nhật thành công thông tin bảng
+  onBoardUpdated(updated: Board): void {
+    this.projectStore.updateBoardLocally(updated);
+    const currentSlug = this.route.snapshot.paramMap.get('boardSlug');
+    if (updated.slug && updated.slug !== currentSlug) {
+      void this.router.navigate(['/boards', updated.slug], {
+        queryParams: { projectId: updated.projectId },
+        replaceUrl: true,
+      });
+    }
+  }
+
+  // Thoát khỏi bảng và return về project hiện tại của bảng
+  onLeaveBoard(): void {
+    this.closeBoardMenu();
+    const board = this.currentBoard();
+    if (!board) {
+      void this.router.navigate(['/workspaces']);
+      return;
+    }
+
+    if (board.workspaceId && board.projectKey) {
+      void this.router.navigate(['/workspaces', board.workspaceId, 'projects', board.projectKey]);
+    } else if (board.projectKey) {
+      void this.router.navigate(['/projects', board.projectKey]);
+    } else if (board.projectId) {
+      void this.router.navigate(['/projects', board.projectId]);
+    } else {
+      void this.router.navigate(['/workspaces']);
+    }
   }
 }

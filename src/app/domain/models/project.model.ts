@@ -90,3 +90,9 @@ export interface CreateBoardRequest {
   slug: string;
   type: number | string;
 }
+
+export interface UpdateBoardRequest {
+  title: string;
+  slug: string;
+  type?: BoardType | string;
+}
