@@ -56,10 +56,63 @@
         ></mat-icon>
       </button>
 
+      <!-- Item 2: Xoá board (Chỉ cho ProjectLeader thao tác) -->
+      @if (isProjectLeader) {
+        <button
+          type="button"
+          (click)="onOpenDeleteBoard()"
+          class="w-full flex items-start gap-3 p-3 rounded-xl text-left hover:bg-rose-50/80 dark:hover:bg-rose-500/10 transition cursor-pointer group"
+        >
+          <div
+            class="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
+          >
+            <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div
+              class="text-sm font-semibold text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors"
+            >
+              Xóa bảng
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+              Xóa bảng công việc cùng toàn bộ cột và thẻ trực thuộc
+            </p>
+          </div>
+          <mat-icon
+            fontIcon="chevron_right"
+            class="text-rose-400 group-hover:translate-x-0.5 transition-transform shrink-0 mt-1"
+          ></mat-icon>
+        </button>
+      } @else {
+        <div
+          class="w-full flex items-start gap-3 p-3 rounded-xl text-left opacity-50 cursor-not-allowed select-none bg-slate-50/60 dark:bg-slate-800/20"
+          title="Chỉ Trưởng dự án mới có quyền xoá bảng này"
+        >
+          <div
+            class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0"
+          >
+            <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">Xóa bảng</span>
+              <span
+                class="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20"
+              >
+                Trưởng dự án
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+              Chỉ Trưởng dự án mới có quyền xoá bảng này
+            </p>
+          </div>
+        </div>
+      }
+
       <!-- Divider -->
       <div class="h-px bg-slate-200/80 dark:bg-slate-800/80 my-2"></div>
 
-      <!-- Item 2: Thoát khỏi bảng -->
+      <!-- Item 3: Thoát khỏi bảng -->
       <button
         type="button"
         (click)="onLeaveBoard()"

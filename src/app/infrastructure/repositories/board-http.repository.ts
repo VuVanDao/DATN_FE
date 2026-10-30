@@ -45,6 +45,12 @@ export class BoardHttpRepository implements BoardRepository {
       .pipe(map((res) => res.data));
   }
 
+  deleteBoard(boardId: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.boardUrl}/${boardId}`)
+      .pipe(map((res) => res.data));
+  }
+
   createColumn(boardId: string, request: CreateColumnRequest): Observable<ColumnSummary> {
     return this.http
       .post<ApiResponse<ColumnSummary>>(`${this.boardUrl}/${boardId}/columns`, {

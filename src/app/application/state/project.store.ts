@@ -289,6 +289,10 @@ export class ProjectStore {
     );
   }
 
+  removeBoardLocally(boardId: string): void {
+    this.boardsSignal.update((boards) => boards.filter((b) => b.id !== boardId));
+  }
+
   markBoardViewed(boardId: string): void {
     this.updateBoardPreferenceUseCase.execute(boardId, { markViewed: true }).subscribe({
       next: (pref) => {

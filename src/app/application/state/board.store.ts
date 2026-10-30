@@ -10,6 +10,7 @@ import {
 import { Board, UpdateBoardRequest } from '../../domain/models/project.model';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
+import { DeleteBoardUseCase } from '../board/delete-board.use-case';
 import { DeleteCardUseCase } from '../board/delete-card.use-case';
 import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
@@ -29,6 +30,7 @@ export class BoardStore {
   private readonly createCardUseCase = inject(CreateCardUseCase);
   private readonly moveCardUseCase = inject(MoveCardUseCase);
   private readonly deleteCardUseCase = inject(DeleteCardUseCase);
+  private readonly deleteBoardUseCase = inject(DeleteBoardUseCase);
   private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
   private readonly updateBoardUseCase = inject(UpdateBoardUseCase);
 
@@ -44,6 +46,7 @@ export class BoardStore {
   private readonly isAddingColumnSignal = signal<boolean>(false);
   private readonly isAddingCardSignal = signal<boolean>(false);
   private readonly isUpdatingBoardSignal = signal<boolean>(false);
+  private readonly isDeletingBoardSignal = signal<boolean>(false);
 
   readonly currentBoard = this.boardSignal.asReadonly();
   readonly columns = this.columnsSignal.asReadonly();
@@ -52,6 +55,7 @@ export class BoardStore {
   readonly isAddingColumn = this.isAddingColumnSignal.asReadonly();
   readonly isAddingCard = this.isAddingCardSignal.asReadonly();
   readonly isUpdatingBoard = this.isUpdatingBoardSignal.asReadonly();
+  readonly isDeletingBoard = this.isDeletingBoardSignal.asReadonly();
 
   loadBoard(slug: string, projectId: string, onSuccess?: (board: BoardDetail) => void): void {
     this.cancel$.next();
@@ -270,6 +274,22 @@ export class BoardStore {
         });
         this.notifications.success('Đã cập nhật thông tin bảng thành công!');
         onSuccess?.(updated);
+      },
+      onError: (err) => {
+        onError?.(err);
+      },
+    });
+  }
+
+  deleteBoard(boardId: string, onSuccess?: () => void, onError?: (error: string) => void): void {
+    this.requests.run({
+      loading: this.isDeletingBoardSignal,
+      request$: this.deleteBoardUseCase.execute(boardId),
+      cancel$: this.cancel$,
+      fallbackErrorMessage: 'Xoá bảng thất bại.',
+      onSuccess: () => {
+        this.notifications.success('Đã xoá bảng và toàn bộ dữ liệu trực thuộc thành công.');
+        onSuccess?.();
       },
       onError: (err) => {
         onError?.(err);

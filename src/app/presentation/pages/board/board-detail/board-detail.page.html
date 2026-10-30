@@ -77,8 +77,10 @@
   <app-board-menu-drawer
     [isOpen]="showBoardMenu()"
     [board]="currentBoard()"
+    [isProjectLeader]="isProjectLeader()"
     (closed)="closeBoardMenu()"
     (openEditBoard)="openEditBoardModal()"
+    (openDeleteBoard)="openDeleteBoardModal()"
     (leaveBoard)="onLeaveBoard()"
   />
 
@@ -88,5 +90,13 @@
     [board]="currentBoard()"
     (closed)="closeEditBoardModal()"
     (saved)="onBoardUpdated($event)"
+  />
+
+  <!-- Board Delete Modal (Xóa bảng - Chỉ cho ProjectLeader) -->
+  <app-board-delete-modal
+    [isOpen]="showDeleteBoardModal()"
+    [board]="currentBoard()"
+    (closed)="closeDeleteBoardModal()"
+    (deleted)="onBoardDeleted()"
   />
 </div>

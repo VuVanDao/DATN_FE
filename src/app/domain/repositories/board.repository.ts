@@ -18,6 +18,7 @@ import {
 export abstract class BoardRepository {
   abstract getBoardDetail(slug: string, projectId: string): Observable<BoardDetail>;
   abstract updateBoard(boardId: string, request: UpdateBoardRequest): Observable<Board>;
+  abstract deleteBoard(boardId: string): Observable<boolean>;
   abstract createColumn(boardId: string, request: CreateColumnRequest): Observable<ColumnSummary>;
   abstract reorderColumns(boardId: string, request: ReorderColumnsRequest): Observable<boolean>;
   abstract createCard(request: CreateCardRequest): Observable<CardSummary>;

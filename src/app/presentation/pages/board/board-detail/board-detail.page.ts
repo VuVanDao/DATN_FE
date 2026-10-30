@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest } from 'rxjs';
+import { SessionService } from '../../../../application/auth/session.service';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { BoardStore } from '../../../../application/state/board.store';
@@ -14,6 +15,7 @@ import { CardSummary, ColumnSummary } from '../../../../domain/models/board-deta
 import { Board } from '../../../../domain/models/project.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
 import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
+import { BoardDeleteModalComponent } from './components/board-delete-modal/board-delete-modal.component';
 import { BoardHeaderComponent } from './components/board-header/board-header.component';
 import { BoardMenuDrawerComponent } from './components/board-menu-drawer/board-menu-drawer.component';
 import { BoardSettingsModalComponent } from './components/board-settings-modal/board-settings-modal.component';
@@ -29,6 +31,7 @@ import { BoardSettingsModalComponent } from './components/board-settings-modal/b
     BoardCanvasComponent,
     BoardMenuDrawerComponent,
     BoardSettingsModalComponent,
+    BoardDeleteModalComponent,
     SwitchBoardModalComponent,
   ],
   host: {
@@ -47,6 +50,7 @@ export class BoardDetailPage implements OnInit {
   readonly router = inject(Router);
   readonly destroyRef = inject(DestroyRef);
   readonly notifications = inject(NotificationService);
+  readonly session = inject(SessionService);
 
   readonly currentBoard = this.boardStore.currentBoard;
   readonly columns = this.boardStore.columns;
@@ -61,6 +65,23 @@ export class BoardDetailPage implements OnInit {
 
   // Trạng thái modal cập nhật thông tin bảng
   readonly showEditBoardModal = signal<boolean>(false);
+
+  // Trạng thái modal xóa bảng
+  readonly showDeleteBoardModal = signal<boolean>(false);
+
+  // Kiểm tra vai trò ProjectLeader đối với dự án của bảng hiện tại
+  readonly isProjectLeader = computed<boolean>(() => {
+    const currentUserId = this.session.currentUser()?.id;
+    if (!currentUserId) return false;
+    const isMemberLeader = this.projectStore
+      .members()
+      .some(
+        (m) =>
+          m.userId.toLowerCase() === currentUserId.toLowerCase() && m.roleName === 'ProjectLeader',
+      );
+    const isRoleLeader = this.projectStore.currentProject()?.currentUserRole === 'ProjectLeader';
+    return isMemberLeader || isRoleLeader;
+  });
 
   // Thêm nhanh Thẻ (ID cột đang mở form nhập thẻ)
   readonly activeAddCardColumnId = signal<string | null>(null);
@@ -95,9 +116,10 @@ export class BoardDetailPage implements OnInit {
 
   loadBoard(slug: string, projectId: string): void {
     this.boardStore.loadBoard(slug, projectId, (board) => {
-      // Khi tải xong chi tiết board, nạp danh sách boards của dự án để phục vụ Switch Boards modal
+      // Khi tải xong chi tiết board, nạp danh sách boards và thành viên của dự án
       if (board.projectId) {
         this.projectStore.loadBoards(board.projectId);
+        this.projectStore.loadMembers(board.projectId);
       }
     });
   }
@@ -243,6 +265,25 @@ export class BoardDetailPage implements OnInit {
 
   closeEditBoardModal(): void {
     this.showEditBoardModal.set(false);
+  }
+
+  // Mở modal xóa bảng từ Menu (chỉ ProjectLeader)
+  openDeleteBoardModal(): void {
+    this.showBoardMenu.set(false);
+    this.showDeleteBoardModal.set(true);
+  }
+
+  closeDeleteBoardModal(): void {
+    this.showDeleteBoardModal.set(false);
+  }
+
+  // Xử lý sau khi xóa bảng thành công
+  onBoardDeleted(): void {
+    const board = this.currentBoard();
+    if (board) {
+      this.projectStore.removeBoardLocally(board.id);
+    }
+    this.onLeaveBoard();
   }
 
   // Xử lý sau khi cập nhật thành công thông tin bảng

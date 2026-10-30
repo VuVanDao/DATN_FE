@@ -12,9 +12,11 @@ import { BoardDetail } from '../../../../../../domain/models/board-detail.model'
 export class BoardMenuDrawerComponent {
   @Input() isOpen = false;
   @Input() board: BoardDetail | null = null;
+  @Input() isProjectLeader = false;
 
   @Output() closed = new EventEmitter<void>();
   @Output() openEditBoard = new EventEmitter<void>();
+  @Output() openDeleteBoard = new EventEmitter<void>();
   @Output() leaveBoard = new EventEmitter<void>();
 
   onClose(): void {
@@ -23,6 +25,10 @@ export class BoardMenuDrawerComponent {
 
   onOpenEditBoard(): void {
     this.openEditBoard.emit();
+  }
+
+  onOpenDeleteBoard(): void {
+    this.openDeleteBoard.emit();
   }
 
   onLeaveBoard(): void {
