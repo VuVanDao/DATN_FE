@@ -46,14 +46,14 @@ export function getBoardBadgeColor(type: string): { bg: string; text: string; bo
   const normalized = (type || '').toLowerCase();
   if (normalized.includes('scrum')) {
     return {
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-400',
-      border: 'border-emerald-500/20',
+      bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+      text: 'text-emerald-700 dark:text-emerald-400',
+      border: 'border-emerald-200 dark:border-emerald-500/20',
     };
   }
   return {
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
-    border: 'border-blue-500/20',
+    bg: 'bg-blue-50 dark:bg-blue-500/10',
+    text: 'text-blue-700 dark:text-blue-400',
+    border: 'border-blue-200 dark:border-blue-500/20',
   };
 }

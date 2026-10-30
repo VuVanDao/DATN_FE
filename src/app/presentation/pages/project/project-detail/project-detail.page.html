@@ -43,7 +43,7 @@
       <button
         type="button"
         (click)="goBack()"
-        class="inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-400 hover:text-white transition cursor-pointer group"
+        class="inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition cursor-pointer group"
       >
         <mat-icon
           fontIcon="arrow_back"
@@ -55,7 +55,7 @@
 
     <!-- 2. Hero Banner Card -->
     <div
-      class="relative w-full rounded-2xl overflow-hidden bg-linear-to-r from-purple-950 via-indigo-950 to-slate-900 border border-purple-500/20 p-6 shadow-xl"
+      class="relative w-full rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50/80 via-indigo-50/50 to-white dark:from-purple-950 dark:via-indigo-950 dark:to-slate-900 border border-purple-100 dark:border-purple-500/20 p-6 shadow-xs dark:shadow-xl"
     >
       <!-- Background ambient glow -->
       <div
@@ -71,7 +71,7 @@
           <!-- Initial Badge (Tối đa 3 ký tự, không bị tràn chữ) -->
           <div
             [class]="proj.gradientColor"
-            class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shrink-0 flex items-center justify-center text-white text-xl md:text-2xl font-black shadow-lg shadow-purple-900/40 border border-white/10 overflow-hidden select-none tracking-wider"
+            class="w-16 h-16 md:w-20 md:h-20 rounded-2xl shrink-0 flex items-center justify-center text-white text-xl md:text-2xl font-black shadow-lg shadow-purple-900/20 dark:shadow-purple-900/40 border border-white/20 overflow-hidden select-none tracking-wider"
           >
             {{ proj.initial }}
           </div>
@@ -79,33 +79,37 @@
           <!-- Project Title, Key & Description -->
           <div class="space-y-1.5 min-w-0 flex-1">
             <div class="flex items-center gap-2.5 flex-wrap">
-              <h1 class="text-xl md:text-2xl font-bold text-white tracking-tight truncate">
+              <h1
+                class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate"
+              >
                 {{ proj.name }}
               </h1>
               <span
-                class="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold tracking-wider bg-white/10 text-purple-200 border border-purple-400/20 shadow-xs"
+                class="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold tracking-wider bg-purple-100 text-purple-700 border border-purple-200 dark:bg-white/10 dark:text-purple-200 dark:border-purple-400/20 shadow-xs"
               >
                 {{ proj.projectKey }}
               </span>
             </div>
 
             <p
-              class="text-xs md:text-sm text-slate-300 line-clamp-2 max-w-2xl font-normal leading-relaxed"
+              class="text-xs md:text-sm text-slate-600 dark:text-slate-300 line-clamp-2 max-w-2xl font-normal leading-relaxed"
             >
               {{ proj.description || 'Chưa có mô tả cho dự án này.' }}
             </p>
 
             <!-- Meta Row: Creator, Created Date, Member Count -->
-            <div class="flex items-center gap-4 md:gap-6 pt-1 text-xs text-slate-400 flex-wrap">
+            <div
+              class="flex items-center gap-4 md:gap-6 pt-1 text-xs text-slate-500 dark:text-slate-400 flex-wrap"
+            >
               <div class="flex items-center gap-1.5">
                 <div
-                  class="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px] font-bold"
+                  class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-white flex items-center justify-center text-[10px] font-bold"
                 >
                   {{ proj.createdByName ? proj.createdByName.charAt(0).toUpperCase() : '?' }}
                 </div>
                 <span
                   >Tạo bởi
-                  <strong class="text-slate-200 font-medium">{{
+                  <strong class="text-slate-700 dark:text-slate-200 font-medium">{{
                     proj.createdByName || 'Không xác định'
                   }}</strong></span
                 >
@@ -115,7 +119,7 @@
                 <mat-icon fontIcon="calendar_today" class="text-sm text-slate-400"></mat-icon>
                 <span
                   >Ngày tạo
-                  <strong class="text-slate-200 font-medium">{{
+                  <strong class="text-slate-700 dark:text-slate-200 font-medium">{{
                     proj.createdAt | date: 'dd/MM/yyyy'
                   }}</strong></span
                 >
@@ -124,8 +128,10 @@
               <div class="flex items-center gap-1.5">
                 <mat-icon fontIcon="group" class="text-sm text-slate-400"></mat-icon>
                 <span
-                  ><strong class="text-slate-200 font-medium">{{ proj.membersCount }}</strong> thành
-                  viên</span
+                  ><strong class="text-slate-700 dark:text-slate-200 font-medium">{{
+                    proj.membersCount
+                  }}</strong>
+                  thành viên</span
                 >
               </div>
             </div>
@@ -138,7 +144,7 @@
           <button
             type="button"
             (click)="openAddMemberModal()"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-slate-200 bg-slate-800/90 hover:bg-slate-700 hover:text-white active:bg-slate-800 transition cursor-pointer border border-slate-700/80"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs dark:text-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 dark:hover:text-white dark:border-slate-700/80 transition cursor-pointer"
           >
             <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
             <span>Thêm thành viên</span>
@@ -149,7 +155,7 @@
             type="button"
             (click)="openSettingsModal()"
             title="Cài đặt chi tiết dự án"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-slate-200 bg-slate-800/90 hover:bg-slate-700 hover:text-white active:bg-slate-800 transition cursor-pointer border border-slate-700/80"
+            class="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs md:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs dark:text-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 dark:hover:text-white dark:border-slate-700/80 transition cursor-pointer"
           >
             <mat-icon fontIcon="settings" class="icon-sm"></mat-icon>
             <span>Cài đặt</span>
@@ -162,88 +168,102 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- Card 1: Bảng -->
       <div
-        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-indigo-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+        class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-indigo-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
       >
         <div
-          class="w-13 h-13 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-indigo-500/20 transition"
+          class="w-13 h-13 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 transition"
         >
           <mat-icon fontIcon="dashboard" class="text-2xl"></mat-icon>
         </div>
         <div class="min-w-0 flex-1">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <span
+            class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+          >
             Bảng công việc
           </span>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-2xl font-bold text-white tracking-tight">
+            <span class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {{ proj.boardsCount }}
             </span>
-            <span class="text-xs text-indigo-400 font-medium">Kanban & Scrum</span>
+            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-medium"
+              >Kanban & Scrum</span
+            >
           </div>
         </div>
       </div>
 
       <!-- Card 2: Thành viên -->
       <div
-        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-sky-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+        class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-sky-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
       >
         <div
-          class="w-13 h-13 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-sky-500/20 transition"
+          class="w-13 h-13 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-sky-100 dark:group-hover:bg-sky-500/20 transition"
         >
           <mat-icon fontIcon="group" class="text-2xl"></mat-icon>
         </div>
         <div class="min-w-0 flex-1">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <span
+            class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+          >
             Thành viên dự án
           </span>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-2xl font-bold text-white tracking-tight">
+            <span class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {{ proj.membersCount }}
             </span>
-            <span class="text-xs text-sky-400 font-medium">Đang cộng tác</span>
+            <span class="text-xs text-sky-600 dark:text-sky-400 font-medium">Đang cộng tác</span>
           </div>
         </div>
       </div>
 
       <!-- Card 3: Sprint -->
       <div
-        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-purple-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+        class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-purple-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
       >
         <div
-          class="w-13 h-13 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-500/20 transition"
+          class="w-13 h-13 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20 transition"
         >
           <mat-icon fontIcon="rocket_launch" class="text-2xl"></mat-icon>
         </div>
         <div class="min-w-0 flex-1">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <span
+            class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+          >
             Chu kỳ Sprint
           </span>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-2xl font-bold text-white tracking-tight">
+            <span class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {{ proj.sprintCount }}
             </span>
-            <span class="text-xs text-purple-400 font-medium">Đang triển khai</span>
+            <span class="text-xs text-purple-600 dark:text-purple-400 font-medium"
+              >Đang triển khai</span
+            >
           </div>
         </div>
       </div>
 
       <!-- Card 4: Task -->
       <div
-        class="bg-[#111827]/80 backdrop-blur-xs border border-slate-800/90 hover:border-emerald-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-md group"
+        class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-emerald-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
       >
         <div
-          class="w-13 h-13 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-500/20 transition"
+          class="w-13 h-13 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20 transition"
         >
           <mat-icon fontIcon="check_circle" class="text-2xl"></mat-icon>
         </div>
         <div class="min-w-0 flex-1">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+          <span
+            class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+          >
             Tổng số thẻ (Task)
           </span>
           <div class="flex items-baseline gap-2 mt-0.5">
-            <span class="text-2xl font-bold text-white tracking-tight">
+            <span class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {{ proj.cardCount }}
             </span>
-            <span class="text-xs text-emerald-400 font-medium">Công việc</span>
+            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium"
+              >Công việc</span
+            >
           </div>
         </div>
       </div>
@@ -290,14 +310,14 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="change-project-role-title"
-          class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 space-y-5 shadow-2xl"
+          class="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 shadow-2xl"
           (click)="$event.stopPropagation()"
         >
           <!-- Header -->
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400"
+                class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 dark:text-amber-400"
               >
                 <mat-icon
                   fontIcon="published_with_changes"
@@ -305,11 +325,17 @@
                 ></mat-icon>
               </div>
               <div>
-                <h2 id="change-project-role-title" class="text-base font-semibold text-white">
+                <h2
+                  id="change-project-role-title"
+                  class="text-base font-semibold text-slate-900 dark:text-white"
+                >
                   Chuyển giao vai trò thành viên
                 </h2>
-                <p class="text-xs text-slate-400 mt-0.5">
-                  Dự án: <span class="text-slate-300 font-medium">{{ proj.name }}</span>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Dự án:
+                  <span class="text-slate-700 dark:text-slate-300 font-medium">{{
+                    proj.name
+                  }}</span>
                 </p>
               </div>
             </div>
@@ -317,7 +343,7 @@
               type="button"
               (click)="closeChangeRoleModal()"
               [disabled]="projectStore.isUpdatingMemberRole()"
-              class="text-slate-500 hover:text-slate-300 transition cursor-pointer disabled:opacity-50"
+              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer disabled:opacity-50"
             >
               <mat-icon fontIcon="close" class="text-lg! w-auto! h-auto!"></mat-icon>
             </button>
@@ -325,13 +351,13 @@
 
           <!-- Target member info card -->
           <div
-            class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-800"
+            class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800"
           >
             @if (member.avatarUrl) {
               <img
                 [src]="member.avatarUrl"
                 [alt]="member.username"
-                class="w-10 h-10 rounded-full object-cover ring-1 ring-slate-700"
+                class="w-10 h-10 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
               />
             } @else {
               <div
@@ -341,16 +367,20 @@
               </div>
             }
             <div class="min-w-0 flex-1">
-              <div class="text-sm font-semibold text-white truncate">{{ member.username }}</div>
-              <div class="text-xs text-slate-400 truncate">{{ member.email }}</div>
+              <div class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                {{ member.username }}
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                {{ member.email }}
+              </div>
             </div>
             <div class="shrink-0 text-right">
               <span
                 class="text-[11px] px-2 py-0.5 rounded-md font-medium"
                 [class]="
                   member.roleName === 'ProjectLeader'
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                    ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                 "
               >
                 {{ member.roleName === 'ProjectLeader' ? 'Leader' : 'Thành viên' }}
@@ -360,7 +390,9 @@
 
           <!-- Role Selection -->
           <div class="space-y-2">
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <label
+              class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+            >
               Chọn vai trò mới
             </label>
             <div class="space-y-2">
@@ -369,8 +401,8 @@
                   class="flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer"
                   [class]="
                     selectedNewRoleId() === role.id
-                      ? 'border-indigo-500/80 bg-indigo-500/10 ring-1 ring-indigo-500/40'
-                      : 'border-slate-800 bg-slate-800/20 hover:bg-slate-800/40'
+                      ? 'border-indigo-500/80 bg-indigo-50 dark:bg-indigo-500/10 ring-1 ring-indigo-500/40'
+                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/20 dark:hover:bg-slate-800/40'
                   "
                 >
                   <input
@@ -383,7 +415,7 @@
                   />
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                      <span class="text-sm font-medium text-white">
+                      <span class="text-sm font-medium text-slate-900 dark:text-white">
                         {{
                           role.name === 'ProjectLeader'
                             ? 'Trưởng dự án (Project Leader)'
@@ -392,7 +424,7 @@
                       </span>
                       @if (role.name === 'ProjectLeader') {
                         <span
-                          class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.2 rounded font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.2 rounded font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20"
                         >
                           <mat-icon
                             fontIcon="stars"
@@ -402,7 +434,7 @@
                         </span>
                       }
                     </div>
-                    <p class="text-xs text-slate-400 mt-0.5">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {{
                         role.description ||
                           (role.name === 'ProjectLeader'
@@ -419,11 +451,11 @@
           <!-- Warning notice when selecting ProjectLeader -->
           @if (selectedRole()?.name === 'ProjectLeader') {
             <div
-              class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-amber-300"
+              class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300"
             >
               <mat-icon
                 fontIcon="warning"
-                class="text-amber-400 text-sm! shrink-0 mt-0.5"
+                class="text-amber-500 dark:text-amber-400 text-sm! shrink-0 mt-0.5"
               ></mat-icon>
               <div class="text-[11px] leading-relaxed">
                 <strong>Chuyển giao quyền Trưởng dự án:</strong> Dự án chỉ có một Trưởng dự án duy
@@ -436,9 +468,12 @@
           <!-- Error message if any -->
           @if (changeRoleError(); as error) {
             <div
-              class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2"
+              class="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2"
             >
-              <mat-icon fontIcon="error" class="text-rose-400 text-sm! shrink-0"></mat-icon>
+              <mat-icon
+                fontIcon="error"
+                class="text-rose-500 dark:text-rose-400 text-sm! shrink-0"
+              ></mat-icon>
               <span>{{ error }}</span>
             </div>
           }
@@ -449,7 +484,7 @@
               type="button"
               (click)="closeChangeRoleModal()"
               [disabled]="projectStore.isUpdatingMemberRole()"
-              class="rounded-xl px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
+              class="rounded-xl px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
             >
               Hủy
             </button>
@@ -487,13 +522,16 @@
           role="dialog"
           aria-modal="true"
           aria-labelledby="remove-project-member-title"
-          class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 space-y-4"
+          class="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4 shadow-2xl"
           (click)="$event.stopPropagation()"
         >
-          <h2 id="remove-project-member-title" class="text-lg font-semibold text-white">
+          <h2
+            id="remove-project-member-title"
+            class="text-lg font-semibold text-slate-900 dark:text-white"
+          >
             {{ isSelf(member) ? 'Rời dự án' : 'Xóa thành viên khỏi dự án' }}
           </h2>
-          <p class="text-sm text-slate-300">
+          <p class="text-sm text-slate-600 dark:text-slate-300">
             {{
               isSelf(member)
                 ? 'Bạn muốn rời dự án'
@@ -502,19 +540,19 @@
             <strong>{{ proj.name }}</strong
             >?
           </p>
-          <p class="text-xs text-slate-400">
+          <p class="text-xs text-slate-500 dark:text-slate-400">
             Thành viên vẫn thuộc workspace. Các thẻ trong dự án đang giao cho thành viên này sẽ được
             bỏ gán.
           </p>
           @if (memberRemovalError(); as error) {
-            <p role="alert" class="text-sm text-rose-300">{{ error }}</p>
+            <p role="alert" class="text-sm text-rose-500 dark:text-rose-300">{{ error }}</p>
           }
           <div class="flex justify-end gap-3">
             <button
               type="button"
               (click)="closeRemoveMember()"
               [disabled]="projectStore.isRemovingMember()"
-              class="rounded-xl px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 cursor-pointer disabled:opacity-50"
+              class="rounded-xl px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer disabled:opacity-50"
             >
               Hủy
             </button>
