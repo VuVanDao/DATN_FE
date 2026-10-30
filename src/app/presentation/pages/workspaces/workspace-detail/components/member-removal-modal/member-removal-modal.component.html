@@ -3,46 +3,63 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-150"
   >
     <div
-      class="bg-[#131b2e] rounded-2xl border border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      class="bg-white dark:bg-[#131b2e] rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
     >
       <!-- 1. MODAL HEADER -->
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div
+        class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
           @if (workspaceStore.isLoadingMemberImpact()) {
             <div
-              class="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center"
+              class="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-500 dark:text-blue-400 flex items-center justify-center"
             >
-              <mat-icon fontIcon="sync" class="icon-sm text-blue-400 animate-spin"></mat-icon>
+              <mat-icon
+                fontIcon="sync"
+                class="icon-sm text-blue-500 dark:text-blue-400 animate-spin"
+              ></mat-icon>
             </div>
             <div>
-              <h3 class="font-bold text-white text-base">Kiểm tra thông tin thành viên</h3>
-              <p class="text-xs text-slate-400 mt-0.5">
+              <h3 class="font-bold text-slate-900 dark:text-white text-base">
+                Kiểm tra thông tin thành viên
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Đang xác thực quyền và các dự án phụ trách...
               </p>
             </div>
           } @else if (workspaceStore.memberRemovalImpact()?.isProjectLeader) {
             <div
-              class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0"
+              class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0"
             >
-              <mat-icon fontIcon="warning" class="icon-sm text-amber-400"></mat-icon>
+              <mat-icon
+                fontIcon="warning"
+                class="icon-sm text-amber-500 dark:text-amber-400"
+              ></mat-icon>
             </div>
             <div>
-              <h3 class="font-bold text-white text-base">Không thể xoá thành viên</h3>
-              <p class="text-xs text-slate-400 mt-0.5">
+              <h3 class="font-bold text-slate-900 dark:text-white text-base">
+                Không thể xoá thành viên
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Thành viên đang đảm nhận vai trò Trưởng dự án
               </p>
             </div>
           } @else {
             <div
-              class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center shrink-0"
+              class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-500 dark:text-rose-400 flex items-center justify-center shrink-0"
             >
-              <mat-icon fontIcon="delete_forever" class="icon-sm text-rose-400"></mat-icon>
+              <mat-icon
+                fontIcon="delete_forever"
+                class="icon-sm text-rose-500 dark:text-rose-400"
+              ></mat-icon>
             </div>
             <div>
-              <h3 class="font-bold text-white text-base">
+              <h3 class="font-bold text-slate-900 dark:text-white text-base">
                 {{ isSelf ? 'Rời khỏi không gian làm việc' : 'Xác nhận xoá thành viên' }}
               </h3>
-              <p class="text-xs text-slate-400 mt-0.5">Hành động quan trọng cần xác nhận</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Hành động quan trọng cần xác nhận
+              </p>
             </div>
           }
         </div>
@@ -50,7 +67,7 @@
           type="button"
           (click)="close()"
           [disabled]="workspaceStore.isRemovingMember()"
-          class="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer disabled:opacity-50"
         >
           <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
         </button>
@@ -64,29 +81,33 @@
             <div
               class="w-10 h-10 border-3 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"
             ></div>
-            <p class="text-sm text-slate-300">
+            <p class="text-sm text-slate-600 dark:text-slate-300">
               Đang kiểm tra vai trò và số thẻ công việc được phân công...
             </p>
-            <p class="text-xs text-slate-500">Vui lòng chờ trong giây lát</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Vui lòng chờ trong giây lát</p>
           </div>
         }
 
         <!-- Trạng thái 2: Lỗi tải thông tin ảnh hưởng -->
         @else if (workspaceStore.memberRemovalImpactError()) {
           <div
-            class="p-4 bg-rose-950/30 border border-rose-800/50 rounded-xl text-xs text-rose-300 leading-relaxed flex items-start gap-3"
+            class="p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 rounded-xl text-xs text-rose-700 dark:text-rose-300 leading-relaxed flex items-start gap-3"
           >
             <mat-icon
               fontIcon="error_outline"
-              class="icon-sm text-rose-400 shrink-0 mt-0.5"
+              class="icon-sm text-rose-500 dark:text-rose-400 shrink-0 mt-0.5"
             ></mat-icon>
             <div class="flex-1">
-              <p class="font-semibold text-rose-200">Không thể tải thông tin ảnh hưởng</p>
-              <p class="mt-1 text-rose-300/90">{{ workspaceStore.memberRemovalImpactError() }}</p>
+              <p class="font-semibold text-rose-900 dark:text-rose-200">
+                Không thể tải thông tin ảnh hưởng
+              </p>
+              <p class="mt-1 text-rose-800/90 dark:text-rose-300/90">
+                {{ workspaceStore.memberRemovalImpactError() }}
+              </p>
               <button
                 type="button"
                 (click)="loadImpact()"
-                class="mt-3 px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 font-medium text-xs transition cursor-pointer"
+                class="mt-3 px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 dark:bg-rose-500/20 dark:hover:bg-rose-500/30 text-rose-800 dark:text-rose-200 font-medium text-xs transition cursor-pointer"
               >
                 Thử lại
               </button>
@@ -98,16 +119,23 @@
         @else if (workspaceStore.memberRemovalImpact()?.isProjectLeader) {
           <!-- Hộp thông báo cảnh báo -->
           <div
-            class="p-4 bg-amber-950/30 border border-amber-800/50 rounded-xl text-xs text-amber-300 leading-relaxed space-y-2"
+            class="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl text-xs text-amber-800 dark:text-amber-300 leading-relaxed space-y-2"
           >
             <div class="flex items-start gap-2.5">
-              <mat-icon fontIcon="shield" class="icon-sm text-amber-400 shrink-0 mt-0.5"></mat-icon>
+              <mat-icon
+                fontIcon="shield"
+                class="icon-sm text-amber-500 dark:text-amber-400 shrink-0 mt-0.5"
+              ></mat-icon>
               <div>
-                <p class="font-semibold text-amber-200">Ràng buộc trách nhiệm dự án</p>
-                <p class="mt-1 text-amber-300/90">
-                  Thành viên <strong class="text-white">{{ member.username }}</strong> hiện đang giữ
-                  vai trò <span class="text-amber-200 font-semibold">Trưởng dự án</span> tại các dự
-                  án sau:
+                <p class="font-semibold text-amber-900 dark:text-amber-200">
+                  Ràng buộc trách nhiệm dự án
+                </p>
+                <p class="mt-1 text-amber-800/90 dark:text-amber-300/90">
+                  Thành viên
+                  <strong class="text-slate-900 dark:text-white">{{ member.username }}</strong> hiện
+                  đang giữ vai trò
+                  <span class="text-amber-700 dark:text-amber-200 font-semibold">Trưởng dự án</span>
+                  tại các dự án sau:
                 </p>
               </div>
             </div>
@@ -115,7 +143,9 @@
 
           <!-- Danh sách các dự án đang giữ chức Trưởng dự án -->
           <div class="space-y-2">
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <div
+              class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+            >
               Dự án đang làm Trưởng dự án ({{
                 workspaceStore.memberRemovalImpact()?.leaderProjects?.length ?? 0
               }})
@@ -126,23 +156,26 @@
                 track proj.projectId
               ) {
                 <div
-                  class="flex items-center justify-between p-3 rounded-xl bg-slate-900/90 border border-slate-800"
+                  class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800"
                 >
                   <div class="flex items-center gap-2.5 min-w-0">
                     <div
-                      class="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center shrink-0"
+                      class="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0"
                     >
-                      <mat-icon fontIcon="folder" class="icon-xs text-blue-400"></mat-icon>
+                      <mat-icon
+                        fontIcon="folder"
+                        class="icon-xs text-blue-500 dark:text-blue-400"
+                      ></mat-icon>
                     </div>
                     <span
-                      class="text-sm font-medium text-white truncate"
+                      class="text-sm font-medium text-slate-900 dark:text-white truncate"
                       [title]="proj.projectName"
                     >
                       {{ proj.projectName }}
                     </span>
                   </div>
                   <span
-                    class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0"
+                    class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 shrink-0"
                   >
                     Trưởng dự án
                   </span>
@@ -153,9 +186,12 @@
 
           <!-- Hướng dẫn xử lý -->
           <div
-            class="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-xs text-slate-300 leading-relaxed flex items-start gap-2.5"
+            class="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-600 dark:text-slate-300 leading-relaxed flex items-start gap-2.5"
           >
-            <mat-icon fontIcon="info" class="icon-xs text-blue-400 shrink-0 mt-0.5"></mat-icon>
+            <mat-icon
+              fontIcon="info"
+              class="icon-xs text-blue-500 dark:text-blue-400 shrink-0 mt-0.5"
+            ></mat-icon>
             <div>
               <strong>Hướng dẫn:</strong> Để xoá hoặc rời khỏi Workspace, vui lòng vào từng dự án
               liệt kê ở trên và chuyển giao vai trò <strong>Trưởng dự án</strong> cho một thành viên
@@ -167,31 +203,37 @@
         <!-- Trạng thái 4: THÀNH VIÊN KHÔNG LÀ LEADER (CHO PHÉP XÁC NHẬN XOÁ) -->
         @else if (workspaceStore.memberRemovalImpact(); as impact) {
           <div
-            class="p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center gap-3.5"
+            class="p-3.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center gap-3.5"
           >
             @if (member.avatarUrl) {
               <img
                 [src]="member.avatarUrl"
-                class="w-11 h-11 rounded-full object-cover ring-1 ring-slate-700 shrink-0"
+                class="w-11 h-11 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
                 alt=""
               />
             } @else {
               <div
-                class="w-11 h-11 rounded-full bg-slate-800 text-slate-200 flex items-center justify-center font-bold text-base ring-1 ring-slate-700 shrink-0"
+                class="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-base ring-1 ring-slate-200 dark:ring-slate-700 shrink-0"
               >
                 {{ member.username.charAt(0).toUpperCase() }}
               </div>
             }
             <div class="min-w-0 flex-1">
-              <div class="font-semibold text-white truncate text-sm" [title]="member.username">
+              <div
+                class="font-semibold text-slate-900 dark:text-white truncate text-sm"
+                [title]="member.username"
+              >
                 {{ member.username }}
               </div>
-              <div class="text-xs text-slate-400 truncate" [title]="member.email">
+              <div
+                class="text-xs text-slate-500 dark:text-slate-400 truncate"
+                [title]="member.email"
+              >
                 {{ member.email }}
               </div>
             </div>
             <span
-              class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 border border-slate-700 text-slate-300 shrink-0"
+              class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shrink-0"
             >
               {{ member.roleName || 'Thành viên' }}
             </span>
@@ -200,16 +242,16 @@
           <!-- Thông báo ảnh hưởng về thẻ công việc (Card) nếu có -->
           @if (impact.assignedCardsCount > 0) {
             <div
-              class="p-3 bg-amber-950/25 border border-amber-800/40 rounded-xl text-xs text-amber-300 leading-relaxed flex items-start gap-2.5"
+              class="p-3 bg-amber-50 dark:bg-amber-950/25 border border-amber-200 dark:border-amber-800/40 rounded-xl text-xs text-amber-800 dark:text-amber-300 leading-relaxed flex items-start gap-2.5"
             >
               <mat-icon
                 fontIcon="assignment_late"
-                class="icon-xs text-amber-400 shrink-0 mt-0.5"
+                class="icon-xs text-amber-500 dark:text-amber-400 shrink-0 mt-0.5"
               ></mat-icon>
               <div>
                 <strong>Cảnh báo thẻ công việc:</strong> Thành viên này đang được phân công phụ
                 trách
-                <span class="font-bold text-white"
+                <span class="font-bold text-slate-900 dark:text-white"
                   >{{ impact.assignedCardsCount }} thẻ công việc</span
                 >
                 trong Không gian làm việc. Khi xoá, hệ thống sẽ tự động gỡ người phụ trách của các
@@ -218,22 +260,25 @@
             </div>
           }
           <div
-            class="p-3 bg-rose-950/20 border border-rose-900/30 rounded-xl text-xs text-rose-300 leading-relaxed flex items-start gap-2.5"
+            class="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded-xl text-xs text-rose-700 dark:text-rose-300 leading-relaxed flex items-start gap-2.5"
           >
-            <mat-icon fontIcon="warning" class="icon-xs text-rose-400 shrink-0 mt-0.5"></mat-icon>
+            <mat-icon
+              fontIcon="warning"
+              class="icon-xs text-rose-500 dark:text-rose-400 shrink-0 mt-0.5"
+            ></mat-icon>
             <div>
               Thao tác này sẽ gỡ thành viên khỏi Không gian làm việc này và tất cả các dự án trực
               thuộc. Hành động này không thể hoàn tác.
             </div>
           </div>
 
-          <p class="text-xs text-slate-400 pt-1">Bạn có chắc chắn không?</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 pt-1">Bạn có chắc chắn không?</p>
         }
       </div>
 
       <!-- 3. MODAL FOOTER -->
       <div
-        class="p-4 bg-slate-900/60 border-t border-slate-800 flex items-center justify-end gap-3"
+        class="p-4 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3"
       >
         @if (workspaceStore.memberRemovalImpact()?.isProjectLeader) {
           <button
@@ -249,7 +294,7 @@
             type="button"
             (click)="close()"
             [disabled]="workspaceStore.isRemovingMember() || workspaceStore.isLoadingMemberImpact()"
-            class="px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 rounded-xl transition cursor-pointer disabled:opacity-50"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer disabled:opacity-50"
           >
             Hủy
           </button>

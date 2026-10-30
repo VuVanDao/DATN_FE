@@ -3,25 +3,31 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
   >
     <div
-      class="bg-[#131b2e] rounded-2xl border border-slate-800 max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
+      class="bg-white dark:bg-[#131b2e] rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150"
     >
       <!-- Modal Header -->
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div
+        class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between"
+      >
         <div class="flex items-center gap-3">
           <div
-            class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center"
+            class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center"
           >
             <mat-icon fontIcon="warning" class="icon-sm text-rose-500"></mat-icon>
           </div>
           <div>
-            <h3 class="font-bold text-white text-base">Xóa không gian làm việc</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Hành động quan trọng cần xác nhận</p>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">
+              Xóa không gian làm việc
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Hành động quan trọng cần xác nhận
+            </p>
           </div>
         </div>
         <button
           type="button"
           (click)="close()"
-          class="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
         >
           <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
         </button>
@@ -31,25 +37,28 @@
       <div class="p-5 space-y-4">
         <!-- Warning alert box -->
         <div
-          class="p-3.5 bg-rose-950/30 border border-rose-800/40 rounded-xl text-xs text-rose-300 leading-relaxed flex gap-2.5"
+          class="p-3.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 rounded-xl text-xs text-rose-700 dark:text-rose-300 leading-relaxed flex gap-2.5"
         >
           <mat-icon
             fontIcon="error_outline"
-            class="icon-xs text-rose-400 shrink-0 mt-0.5"
+            class="icon-xs text-rose-500 dark:text-rose-400 shrink-0 mt-0.5"
           ></mat-icon>
           <div>
             <strong>Cảnh báo:</strong> Thao tác này sẽ xóa không gian làm việc
-            <span class="font-semibold text-rose-200">"{{ workspace.name }}"</span>. Toàn bộ dự án,
-            bảng Kanban, cột và thẻ công việc trực thuộc sẽ bị ẩn khỏi mọi thành viên.
+            <span class="font-semibold text-rose-900 dark:text-rose-200"
+              >"{{ workspace.name }}"</span
+            >. Toàn bộ dự án, bảng Kanban, cột và thẻ công việc trực thuộc sẽ bị ẩn khỏi mọi thành
+            viên.
           </div>
         </div>
 
         <div class="space-y-2">
-          <label class="block text-xs text-slate-300 font-medium">
+          <label class="block text-xs text-slate-700 dark:text-slate-300 font-medium">
             Vui lòng nhập
-            <strong class="text-white select-all underline underline-offset-2">{{
-              workspace.name
-            }}</strong>
+            <strong
+              class="text-slate-900 dark:text-white select-all underline underline-offset-2"
+              >{{ workspace.name }}</strong
+            >
             để xác nhận:
           </label>
           <input
@@ -57,20 +66,20 @@
             [ngModel]="confirmNameInput()"
             (ngModelChange)="confirmNameInput.set($event)"
             placeholder="Nhập chính xác tên workspace..."
-            class="w-full bg-slate-900 border border-slate-700/80 focus:border-rose-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden transition-all"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 focus:border-rose-500 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden transition-all"
           />
         </div>
       </div>
 
       <!-- Modal Footer -->
       <div
-        class="p-4 bg-slate-900/60 border-t border-slate-800 flex items-center justify-end gap-3"
+        class="p-4 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3"
       >
         <button
           type="button"
           (click)="close()"
           [disabled]="isDeleting"
-          class="px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-800 rounded-xl transition cursor-pointer disabled:opacity-50"
+          class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer disabled:opacity-50"
         >
           Hủy
         </button>
