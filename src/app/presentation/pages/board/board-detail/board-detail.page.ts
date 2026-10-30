@@ -121,6 +121,7 @@ export class BoardDetailPage implements OnInit {
         this.projectStore.loadBoards(board.projectId);
         this.projectStore.loadMembers(board.projectId);
       }
+      this.projectStore.markBoardViewed(board.id);
     });
   }
 
@@ -204,7 +205,6 @@ export class BoardDetailPage implements OnInit {
   // Điều hướng khi chọn bảng trong Switch Boards modal
   onSelectBoardFromModal(board: Board): void {
     this.showSwitchBoardModal.set(false);
-    this.projectStore.markBoardViewed(board.id);
     void this.router.navigate(['/boards', board.slug], {
       queryParams: { projectId: board.projectId },
     });

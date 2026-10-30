@@ -30,21 +30,13 @@ export class ProjectBoardsComponent {
     const query = this.searchQuery().trim().toLowerCase();
     const tab = this.activeBoardTab();
 
-    const filtered = list.filter((board) => {
+    return list.filter((board) => {
       const matchTab = tab === 'all' || board.type.toLowerCase() === tab.toLowerCase();
       const matchQuery =
         !query ||
         board.title.toLowerCase().includes(query) ||
         board.slug.toLowerCase().includes(query);
       return matchTab && matchQuery;
-    });
-
-    // Pinned boards appear first, then sorted by created date / default order
-    return filtered.slice().sort((a, b) => {
-      if (!!a.isPinned !== !!b.isPinned) {
-        return a.isPinned ? -1 : 1;
-      }
-      return 0;
     });
   });
 

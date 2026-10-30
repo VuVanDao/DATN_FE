@@ -332,7 +332,6 @@ export class ProjectDetailPage implements OnInit {
   }
 
   onBoardClick(board: Board): void {
-    this.projectStore.markBoardViewed(board.id);
     void this.router.navigate(['/boards', board.slug], {
       queryParams: { projectId: board.projectId },
     });
