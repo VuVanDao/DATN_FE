@@ -399,25 +399,25 @@
   <!-- Board Footer Bar ("cái chân board") -->
   <!-- Theo yêu cầu: Chỉ giữ lại mục Board và SwitchBoard, ấn vào SwitchBoard hiện modal như ảnh 2 -->
   <div
-    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#161a1d]/90 backdrop-blur-md border border-slate-700/70 rounded-xl px-2 py-1 shadow-2xl flex items-center gap-1.5"
+    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-[#161a1d]/90 backdrop-blur-md border border-slate-700/70 rounded-xl px-1.5 py-1 shadow-2xl flex items-center gap-1"
   >
     <!-- Item 1: Board (Active Tab) -->
     <button
       type="button"
-      class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-600/30 text-blue-400 border border-blue-500/30 transition shadow-xs cursor-default"
+      class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold leading-none bg-blue-600/30 text-blue-400 border border-blue-500/30 transition shadow-xs cursor-default"
     >
-      <mat-icon fontIcon="dashboard" class="text-sm! w-4! h-4!"></mat-icon>
-      <span>Board</span>
+      <mat-icon fontIcon="dashboard" class="icon-xs shrink-0"></mat-icon>
+      <span class="leading-none inline-block">Board</span>
     </button>
 
     <!-- Item 2: Switch boards (Opens Modal as requested) -->
     <button
       type="button"
       (click)="openSwitchBoardModal()"
-      class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition cursor-pointer"
+      class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium leading-none text-slate-300 hover:text-white hover:bg-slate-800/80 transition cursor-pointer"
     >
-      <mat-icon fontIcon="swap_horiz" class="text-sm! w-4! h-4!"></mat-icon>
-      <span>Switch boards</span>
+      <mat-icon fontIcon="swap_horiz" class="icon-xs shrink-0"></mat-icon>
+      <span class="leading-none inline-block">Switch boards</span>
     </button>
   </div>
 
