@@ -163,15 +163,26 @@ export class BoardDetailPage implements OnInit {
 
   // Ghim / Bỏ ghim bảng hiện tại
   onToggleBoardPin(): void {
-    this.boardStore.toggleBoardPin();
-    // Đồng thời cập nhật trạng thái trong projectStore nếu có
     const board = this.currentBoard();
-    if (board) {
-      const matchInProject = this.projectStore.boards().find((b) => b.id === board.id);
-      if (matchInProject) {
-        this.projectStore.toggleBoardPin(matchInProject);
-      }
-    }
+    if (!board) return;
+
+    const previousPinned = !!board.isPinned;
+    const nextPinned = !previousPinned;
+
+    // 1. Đồng bộ lạc quan cục bộ vào projectStore (nếu có board trong danh sách) mà KHÔNG gửi thêm API request
+    this.projectStore.setBoardPinnedLocally(board.id, nextPinned);
+
+    // 2. Chỉ gọi toggleBoardPin qua boardStore (đây là nơi duy nhất gửi HTTP request API)
+    this.boardStore.toggleBoardPin(
+      (isPinned) => {
+        // Khi API thành công, đồng bộ lại giá trị từ server
+        this.projectStore.setBoardPinnedLocally(board.id, isPinned);
+      },
+      () => {
+        // Nếu lỗi, hoàn tác state trong projectStore
+        this.projectStore.setBoardPinnedLocally(board.id, previousPinned);
+      },
+    );
   }
 
   // Điều hướng khi chọn bảng trong Switch Boards modal
@@ -183,14 +194,32 @@ export class BoardDetailPage implements OnInit {
     });
   }
 
-  // Ghim bảng từ modal
+  // Ghim bảng từ modal Switch Board
   onTogglePinFromModal(board: Board): void {
-    this.projectStore.toggleBoardPin(board);
-    // Nếu bảng được ghim/bỏ ghim trùng với bảng hiện tại đang xem
     const current = this.currentBoard();
-    if (current && current.id === board.id) {
-      this.boardStore.toggleBoardPin();
+    const isCurrentBoard = !!current && current.id === board.id;
+    const previousPinned = !!board.isPinned;
+    const nextPinned = !previousPinned;
+
+    // 1. Nếu bảng được ghim trùng với bảng đang xem, đồng bộ lạc quan lên boardStore
+    if (isCurrentBoard) {
+      this.boardStore.setBoardPinnedLocally(nextPinned);
     }
+
+    // 2. Chỉ gọi toggleBoardPin qua projectStore (đây là nơi duy nhất gửi HTTP request API)
+    this.projectStore.toggleBoardPin(
+      board,
+      (isPinned) => {
+        if (isCurrentBoard) {
+          this.boardStore.setBoardPinnedLocally(isPinned);
+        }
+      },
+      () => {
+        if (isCurrentBoard) {
+          this.boardStore.setBoardPinnedLocally(previousPinned);
+        }
+      },
+    );
   }
 
   // Mở modal Switch Board

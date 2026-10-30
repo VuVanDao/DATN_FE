@@ -239,7 +239,11 @@ export class ProjectStore {
     });
   }
 
-  toggleBoardPin(board: Board): void {
+  toggleBoardPin(
+    board: Board,
+    onSuccess?: (isPinned: boolean) => void,
+    onError?: (previousPinned: boolean) => void,
+  ): void {
     const nextPinned = !board.isPinned;
     const previousPinned = !!board.isPinned;
 
@@ -260,6 +264,7 @@ export class ProjectStore {
         this.notifications.success(
           nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
         );
+        onSuccess?.(pref.isPinned);
       },
       error: () => {
         // Hoàn tác cập nhật lạc quan khi gặp lỗi
@@ -267,8 +272,15 @@ export class ProjectStore {
           boards.map((b) => (b.id === board.id ? { ...b, isPinned: previousPinned } : b)),
         );
         this.notifications.error('Không thể cập nhật tùy chọn ghim bảng. Vui lòng thử lại.');
+        onError?.(previousPinned);
       },
     });
+  }
+
+  setBoardPinnedLocally(boardId: string, isPinned: boolean): void {
+    this.boardsSignal.update((boards) =>
+      boards.map((b) => (b.id === boardId ? { ...b, isPinned } : b)),
+    );
   }
 
   markBoardViewed(boardId: string): void {

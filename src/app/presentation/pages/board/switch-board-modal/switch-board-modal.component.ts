@@ -79,11 +79,11 @@ export class SwitchBoardModalComponent {
 
   getBoardGradient(board: Board): string {
     const gradients = [
-      'from-blue-600 to-cyan-500',
       'from-indigo-600 to-purple-600',
-      'from-teal-600 to-emerald-600',
-      'from-amber-600 to-rose-600',
-      'from-sky-600 to-blue-700',
+      'from-violet-600 to-indigo-700',
+      'from-emerald-600 to-teal-700',
+      'from-amber-500 to-orange-600',
+      'from-indigo-500 via-purple-500 to-pink-500',
     ];
     let hash = 0;
     for (let i = 0; i < board.title.length; i++) {

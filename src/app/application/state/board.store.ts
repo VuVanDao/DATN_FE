@@ -216,11 +216,14 @@ export class BoardStore {
     });
   }
 
-  toggleBoardPin(): void {
+  toggleBoardPin(
+    onSuccess?: (isPinned: boolean) => void,
+    onError?: (previousPinned: boolean) => void,
+  ): void {
     const board = this.boardSignal();
     if (!board) return;
-
-    const nextPinned = !board.isPinned;
+    const previousPinned = !!board.isPinned;
+    const nextPinned = !previousPinned;
     this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
 
     this.updateBoardPreferenceUseCase.execute(board.id, { isPinned: nextPinned }).subscribe({
@@ -229,12 +232,18 @@ export class BoardStore {
         this.notifications.success(
           nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
         );
+        onSuccess?.(pref.isPinned);
       },
       error: () => {
-        this.boardSignal.update((b) => (b ? { ...b, isPinned: !nextPinned } : null));
+        this.boardSignal.update((b) => (b ? { ...b, isPinned: previousPinned } : null));
         this.notifications.error('Không thể cập nhật tùy chọn ghim bảng.');
+        onError?.(previousPinned);
       },
     });
+  }
+
+  setBoardPinnedLocally(isPinned: boolean): void {
+    this.boardSignal.update((b) => (b ? { ...b, isPinned } : null));
   }
 
   clear(): void {
