@@ -46,7 +46,9 @@ export class BoardCanvasComponent {
     this.addColumn.emit({
       title,
       isDoneColumn: false,
-      onSuccess: () => this.cancelAddList(),
+      onSuccess: () => {
+        this.newColumnTitle.set('');
+      },
     });
   }
 
