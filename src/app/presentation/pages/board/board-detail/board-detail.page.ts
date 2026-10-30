@@ -1,8 +1,7 @@
-import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest } from 'rxjs';
@@ -14,18 +13,18 @@ import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { CardSummary, ColumnSummary } from '../../../../domain/models/board-detail.model';
 import { Board } from '../../../../domain/models/project.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
+import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
+import { BoardHeaderComponent } from './components/board-header/board-header.component';
 
 @Component({
   selector: 'app-board-detail-page',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     MatIconModule,
     RouterModule,
-    CdkDropListGroup,
-    CdkDropList,
-    CdkDrag,
+    BoardHeaderComponent,
+    BoardCanvasComponent,
     SwitchBoardModalComponent,
   ],
   host: {
@@ -53,13 +52,8 @@ export class BoardDetailPage implements OnInit {
   // Trạng thái modal đổi bảng (Switch board modal)
   readonly showSwitchBoardModal = signal<boolean>(false);
 
-  // Thêm nhanh Cột (Add List inline form)
-  readonly isAddingList = signal<boolean>(false);
-  readonly newColumnTitle = signal<string>('');
-
-  // Thêm nhanh Thẻ (Add Card inline form theo cột)
+  // Thêm nhanh Thẻ (ID cột đang mở form nhập thẻ)
   readonly activeAddCardColumnId = signal<string | null>(null);
-  readonly newCardTitle = signal<string>('');
 
   // Danh sách các bảng cho modal Switch Boards
   readonly projectBoards = computed<Board[]>(() => {
@@ -67,7 +61,7 @@ export class BoardDetailPage implements OnInit {
   });
 
   ngOnInit(): void {
-    // Kích hoạt chế độ full bleed & thu gọn sidebar cho giao diện Kanban Board như Trello
+    // Kích hoạt chế độ full bleed & thu gọn sidebar cho giao diện Kanban Board
     this.layoutService.setFullBleed(true);
     this.layoutService.setSidebarCollapsed(true, false);
 
@@ -98,8 +92,21 @@ export class BoardDetailPage implements OnInit {
     });
   }
 
+  onRetry(): void {
+    const board = this.currentBoard();
+    if (board) {
+      this.loadBoard(board.slug, board.projectId);
+    }
+  }
+
   // Xử lý kéo thả Card giữa các cột hoặc trong cùng cột
-  onCardDrop(event: CdkDragDrop<CardSummary[]>, targetColumn: ColumnSummary): void {
+  onCardDrop({
+    event,
+    targetColumn,
+  }: {
+    event: CdkDragDrop<CardSummary[]>;
+    targetColumn: ColumnSummary;
+  }): void {
     const sourceColumnId = event.previousContainer.id;
     const targetColumnId = targetColumn.id;
     const card = event.item.data as CardSummary;
@@ -115,49 +122,28 @@ export class BoardDetailPage implements OnInit {
     );
   }
 
-  // Xử lý kéo thả cột
-  onColumnDrop(event: CdkDragDrop<ColumnSummary[]>): void {
-    this.boardStore.reorderColumns(event.previousIndex, event.currentIndex);
-  }
-
-  // Add List handlers
-  openAddList(): void {
-    this.isAddingList.set(true);
-    this.newColumnTitle.set('');
-  }
-
-  cancelAddList(): void {
-    this.isAddingList.set(false);
-    this.newColumnTitle.set('');
-  }
-
-  confirmAddList(): void {
-    const title = this.newColumnTitle().trim();
-    const board = this.currentBoard();
-    if (!title || !board) return;
-
-    this.boardStore.createColumn(board.id, title, () => {
-      this.cancelAddList();
-    });
-  }
-
   // Add Card handlers
   openAddCard(columnId: string): void {
     this.activeAddCardColumnId.set(columnId);
-    this.newCardTitle.set('');
   }
 
   cancelAddCard(): void {
     this.activeAddCardColumnId.set(null);
-    this.newCardTitle.set('');
   }
 
-  confirmAddCard(columnId: string): void {
-    const title = this.newCardTitle().trim();
-    if (!title) return;
-
+  confirmAddCard({ columnId, title }: { columnId: string; title: string }): void {
     this.boardStore.createCard(columnId, title, undefined, () => {
       this.cancelAddCard();
+    });
+  }
+
+  // Add Column handler
+  confirmAddColumn({ title, onSuccess }: { title: string; onSuccess: () => void }): void {
+    const board = this.currentBoard();
+    if (!title || !board) return;
+
+    this.boardStore.createColumn(board.id, title, () => {
+      onSuccess();
     });
   }
 
@@ -169,17 +155,15 @@ export class BoardDetailPage implements OnInit {
     const previousPinned = !!board.isPinned;
     const nextPinned = !previousPinned;
 
-    // 1. Đồng bộ lạc quan cục bộ vào projectStore (nếu có board trong danh sách) mà KHÔNG gửi thêm API request
+    // 1. Đồng bộ lạc quan cục bộ vào projectStore mà KHÔNG gửi thêm API request
     this.projectStore.setBoardPinnedLocally(board.id, nextPinned);
 
-    // 2. Chỉ gọi toggleBoardPin qua boardStore (đây là nơi duy nhất gửi HTTP request API)
+    // 2. Chỉ gọi toggleBoardPin qua boardStore (nơi duy nhất gửi HTTP request API)
     this.boardStore.toggleBoardPin(
       (isPinned) => {
-        // Khi API thành công, đồng bộ lại giá trị từ server
         this.projectStore.setBoardPinnedLocally(board.id, isPinned);
       },
       () => {
-        // Nếu lỗi, hoàn tác state trong projectStore
         this.projectStore.setBoardPinnedLocally(board.id, previousPinned);
       },
     );
@@ -206,7 +190,7 @@ export class BoardDetailPage implements OnInit {
       this.boardStore.setBoardPinnedLocally(nextPinned);
     }
 
-    // 2. Chỉ gọi toggleBoardPin qua projectStore (đây là nơi duy nhất gửi HTTP request API)
+    // 2. Chỉ gọi toggleBoardPin qua projectStore (nơi duy nhất gửi HTTP request API)
     this.projectStore.toggleBoardPin(
       board,
       (isPinned) => {

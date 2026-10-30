@@ -1,0 +1,103 @@
+<div
+  class="w-72 shrink-0 max-h-full flex flex-col rounded-2xl bg-slate-200/60 dark:bg-[#111827]/90 border border-slate-300/70 dark:border-slate-800/80 shadow-sm dark:shadow-xl backdrop-blur-xs overflow-hidden text-slate-800 dark:text-slate-100"
+>
+  <!-- Column Header -->
+  <div class="p-3 pb-2 flex items-center justify-between gap-2 shrink-0">
+    <div class="flex items-center gap-2 truncate">
+      <h2 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+        {{ column().title }}
+      </h2>
+      <!-- Card Count Badge -->
+      <span
+        class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-300/70 dark:bg-slate-800 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-700/60"
+      >
+        {{ column().cards.length }}
+      </span>
+    </div>
+
+    <!-- Column Menu Button -->
+    <button
+      type="button"
+      class="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-300/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/60 transition cursor-pointer"
+      title="Tùy chọn danh sách"
+    >
+      <mat-icon fontIcon="more_horiz" class="text-xs! w-4! h-4!"></mat-icon>
+    </button>
+  </div>
+
+  <!-- Cards Drag & Drop List Container -->
+  <div
+    cdkDropList
+    [id]="column().id"
+    [cdkDropListData]="column().cards"
+    (cdkDropListDropped)="onCardDropped($event)"
+    class="flex-1 overflow-y-auto px-2.5 py-1 space-y-2.5 min-h-12 no-scrollbar"
+  >
+    @for (card of column().cards; track card.id) {
+      <app-board-card cdkDrag [cdkDragData]="card" [card]="card" class="block cursor-pointer" />
+    }
+  </div>
+
+  <!-- Column Footer: Add Card / Quick Input Form -->
+  <div class="p-2 pt-1 shrink-0">
+    @if (isActiveAddCard()) {
+      <!-- Quick Add Card Form -->
+      <div
+        class="space-y-2 bg-white dark:bg-[#1f2937] p-2 rounded-xl border border-indigo-500/60 shadow-md animate-in fade-in duration-100"
+      >
+        <textarea
+          [ngModel]="newCardTitle()"
+          (ngModelChange)="newCardTitle.set($event)"
+          (keydown.enter)="$event.preventDefault(); onConfirmAdd()"
+          (keydown.escape)="onCancelAdd()"
+          placeholder="Nhập tiêu đề cho thẻ này..."
+          rows="2"
+          autofocus
+          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-hidden resize-none focus:border-indigo-500 transition"
+        ></textarea>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="onConfirmAdd()"
+            [disabled]="!newCardTitle().trim() || isAddingCard()"
+            class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer transition shadow-xs"
+          >
+            Add card
+          </button>
+          <button
+            type="button"
+            (click)="onCancelAdd()"
+            class="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60 transition cursor-pointer"
+          >
+            <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Normal Add a card button -->
+      <div class="flex items-center justify-between">
+        <button
+          type="button"
+          (click)="onOpenAdd()"
+          class="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold leading-none text-slate-600 hover:text-slate-900 hover:bg-slate-300/50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition cursor-pointer"
+        >
+          <mat-icon
+            fontIcon="add"
+            class="icon-xs shrink-0 flex items-center justify-center leading-none"
+          ></mat-icon>
+          <span class="leading-none inline-block">Add a card</span>
+        </button>
+
+        <!-- Create from template icon button -->
+        <button
+          type="button"
+          class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-300/50 dark:hover:bg-slate-800/80 transition cursor-pointer"
+          title="Tạo từ mẫu"
+        >
+          <mat-icon fontIcon="filter_none" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+        </button>
+      </div>
+    }
+  </div>
+</div>
