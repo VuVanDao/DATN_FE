@@ -57,6 +57,10 @@ export class BoardDetailPage implements OnInit {
   readonly isLoading = this.boardStore.isLoading;
   readonly error = this.boardStore.error;
 
+  // Lưu giữ slug và projectId hiện tại để phục vụ tính năng retry
+  private currentSlug = '';
+  private currentProjectId = '';
+
   // Trạng thái modal đổi bảng (Switch board modal)
   readonly showSwitchBoardModal = signal<boolean>(false);
 
@@ -115,6 +119,8 @@ export class BoardDetailPage implements OnInit {
   }
 
   loadBoard(slug: string, projectId: string): void {
+    this.currentSlug = slug;
+    this.currentProjectId = projectId;
     this.boardStore.loadBoard(slug, projectId, (board) => {
       // Khi tải xong chi tiết board, nạp danh sách boards và thành viên của dự án
       if (board.projectId) {
@@ -126,9 +132,20 @@ export class BoardDetailPage implements OnInit {
   }
 
   onRetry(): void {
-    const board = this.currentBoard();
-    if (board) {
-      this.loadBoard(board.slug, board.projectId);
+    const slug =
+      this.currentSlug ||
+      this.route.snapshot.paramMap.get('boardSlug') ||
+      this.currentBoard()?.slug ||
+      '';
+    const projectId =
+      this.currentProjectId ||
+      this.route.snapshot.queryParamMap.get('projectId') ||
+      this.projectStore.currentProject()?.id ||
+      this.currentBoard()?.projectId ||
+      '';
+
+    if (slug && projectId) {
+      this.loadBoard(slug, projectId);
     }
   }
 
