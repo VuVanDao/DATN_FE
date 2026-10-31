@@ -205,6 +205,19 @@ export class BoardDetailPage implements OnInit {
     });
   }
 
+  // Update Column handler (Cập nhật tiêu đề cột inline)
+  onUpdateColumn({
+    columnId,
+    title,
+    isDoneColumn,
+  }: {
+    columnId: string;
+    title: string;
+    isDoneColumn: boolean;
+  }): void {
+    this.boardStore.updateColumn(columnId, title, isDoneColumn);
+  }
+
   // Ghim / Bỏ ghim bảng hiện tại
   onToggleBoardPin(): void {
     const board = this.currentBoard();

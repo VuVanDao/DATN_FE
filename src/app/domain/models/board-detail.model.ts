@@ -48,6 +48,11 @@ export interface CreateColumnRequest {
   isDoneColumn?: boolean;
 }
 
+export interface UpdateColumnRequest {
+  title: string;
+  isDoneColumn: boolean;
+}
+
 export interface ReorderColumnsRequest {
   orderedColumnIds: string[];
 }

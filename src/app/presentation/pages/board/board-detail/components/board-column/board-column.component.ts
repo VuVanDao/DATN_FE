@@ -1,6 +1,6 @@
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, input, output, signal } from '@angular/core';
+import { Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CardSummary, ColumnSummary } from '../../../../../../domain/models/board-detail.model';
@@ -21,8 +21,45 @@ export class BoardColumnComponent {
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
   readonly confirmAddCard = output<{ columnId: string; title: string }>();
+  readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
+
+  readonly titleInputRef = viewChild<ElementRef<HTMLInputElement>>('titleInput');
+  readonly isEditingTitle = signal<boolean>(false);
+  readonly editingTitleValue = signal<string>('');
 
   readonly newCardTitle = signal<string>('');
+
+  startEditingTitle(): void {
+    this.editingTitleValue.set(this.column().title);
+    this.isEditingTitle.set(true);
+    setTimeout(() => {
+      const el = this.titleInputRef()?.nativeElement;
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    });
+  }
+
+  saveTitle(): void {
+    if (!this.isEditingTitle()) return;
+    this.isEditingTitle.set(false);
+    const newTitle = this.editingTitleValue().trim();
+    if (!newTitle || newTitle === this.column().title) {
+      return;
+    }
+    this.updateColumn.emit({
+      columnId: this.column().id,
+      title: newTitle,
+      isDoneColumn: this.column().isDoneColumn,
+    });
+  }
+
+  cancelEditingTitle(): void {
+    if (!this.isEditingTitle()) return;
+    this.isEditingTitle.set(false);
+    this.editingTitleValue.set(this.column().title);
+  }
 
   onOpenAdd(): void {
     this.newCardTitle.set('');

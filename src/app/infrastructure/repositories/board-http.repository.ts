@@ -10,6 +10,7 @@ import {
   CreateColumnRequest,
   MoveCardRequest,
   ReorderColumnsRequest,
+  UpdateColumnRequest,
 } from '../../domain/models/board-detail.model';
 import {
   Board,
@@ -58,6 +59,21 @@ export class BoardHttpRepository implements BoardRepository {
         boardId,
         title: request.title,
         isDoneColumn: request.isDoneColumn ?? false,
+      })
+      .pipe(map((res) => res.data));
+  }
+
+  updateColumn(
+    boardId: string,
+    columnId: string,
+    request: UpdateColumnRequest,
+  ): Observable<ColumnSummary> {
+    return this.http
+      .put<ApiResponse<ColumnSummary>>(`${this.boardUrl}/${boardId}/columns/${columnId}`, {
+        boardId,
+        columnId,
+        title: request.title,
+        isDoneColumn: request.isDoneColumn,
       })
       .pipe(map((res) => res.data));
   }

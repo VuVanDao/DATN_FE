@@ -18,6 +18,7 @@ import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
 import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
 import { UpdateBoardUseCase } from '../board/update-board.use-case';
+import { UpdateColumnUseCase } from '../board/update-column.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
 
@@ -27,6 +28,7 @@ import { StoreRequestRunner } from './store-request.util';
 export class BoardStore {
   private readonly getBoardDetailUseCase = inject(GetBoardDetailUseCase);
   private readonly createColumnUseCase = inject(CreateColumnUseCase);
+  private readonly updateColumnUseCase = inject(UpdateColumnUseCase);
   private readonly reorderColumnsUseCase = inject(ReorderColumnsUseCase);
   private readonly createCardUseCase = inject(CreateCardUseCase);
   private readonly moveCardUseCase = inject(MoveCardUseCase);
@@ -110,6 +112,93 @@ export class BoardStore {
         onSuccess?.();
       },
     });
+  }
+
+  updateColumn(
+    columnId: string,
+    title: string,
+    isDoneColumn?: boolean,
+    onSuccess?: () => void,
+    onError?: (error: string) => void,
+  ): void {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+
+    const board = this.boardSignal();
+    if (!board) return;
+
+    const existingCol = this.columnsSignal().find((c) => c.id === columnId);
+    if (!existingCol) return;
+
+    const finalIsDone = isDoneColumn ?? existingCol.isDoneColumn;
+
+    if (existingCol.title === trimmedTitle && existingCol.isDoneColumn === finalIsDone) {
+      onSuccess?.();
+      return;
+    }
+
+    const previousTitle = existingCol.title;
+    const previousIsDone = existingCol.isDoneColumn;
+
+    this.columnsSignal.update((cols) =>
+      cols.map((c) =>
+        c.id === columnId ? { ...c, title: trimmedTitle, isDoneColumn: finalIsDone } : c,
+      ),
+    );
+    this.boardSignal.update((b) =>
+      b
+        ? {
+            ...b,
+            columns: (b.columns || []).map((c) =>
+              c.id === columnId ? { ...c, title: trimmedTitle, isDoneColumn: finalIsDone } : c,
+            ),
+          }
+        : null,
+    );
+
+    this.updateColumnUseCase
+      .execute(board.id, columnId, {
+        title: trimmedTitle,
+        isDoneColumn: finalIsDone,
+      })
+      .subscribe({
+        next: (updatedCol) => {
+          this.columnsSignal.update((cols) =>
+            cols.map((c) =>
+              c.id === columnId
+                ? {
+                    ...c,
+                    title: updatedCol.title,
+                    isDoneColumn: updatedCol.isDoneColumn,
+                  }
+                : c,
+            ),
+          );
+          onSuccess?.();
+        },
+        error: (err) => {
+          // Rollback khi lỗi
+          this.columnsSignal.update((cols) =>
+            cols.map((c) =>
+              c.id === columnId ? { ...c, title: previousTitle, isDoneColumn: previousIsDone } : c,
+            ),
+          );
+          this.boardSignal.update((b) =>
+            b
+              ? {
+                  ...b,
+                  columns: (b.columns || []).map((c) =>
+                    c.id === columnId
+                      ? { ...c, title: previousTitle, isDoneColumn: previousIsDone }
+                      : c,
+                  ),
+                }
+              : null,
+          );
+          this.notifications.error('Không thể cập nhật tên cột.');
+          onError?.(err?.message || 'Không thể cập nhật tên cột.');
+        },
+      });
   }
 
   reorderColumns(previousIndex: number, currentIndex: number): void {

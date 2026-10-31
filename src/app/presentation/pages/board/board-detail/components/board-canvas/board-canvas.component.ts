@@ -26,6 +26,7 @@ export class BoardCanvasComponent {
   readonly cancelAddCard = output<void>();
   readonly confirmAddCard = output<{ columnId: string; title: string }>();
   readonly addColumn = output<{ title: string; isDoneColumn: boolean; onSuccess: () => void }>();
+  readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
 
   readonly isAddingList = signal<boolean>(false);
   readonly newColumnTitle = signal<string>('');
