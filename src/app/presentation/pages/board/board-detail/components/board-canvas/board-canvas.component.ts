@@ -32,7 +32,7 @@ export class BoardCanvasComponent {
   readonly columnDrop = output<CdkDragDrop<ColumnSummary[]>>();
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
-  readonly confirmAddCard = output<{ columnId: string; title: string }>();
+  readonly confirmAddCard = output<{ columnId: string; title: string; onSuccess?: () => void }>();
   readonly addColumn = output<{ title: string; isDoneColumn: boolean; onSuccess: () => void }>();
   readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
   readonly deleteColumn = output<string>();

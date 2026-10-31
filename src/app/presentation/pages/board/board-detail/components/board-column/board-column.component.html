@@ -148,7 +148,10 @@
               (click)="onDeleteColumn()"
               class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition flex items-center gap-2 cursor-pointer group"
             >
-              <mat-icon fontIcon="delete_outline" class="text-xs! w-3.5! h-3.5! text-red-500 shrink-0"></mat-icon>
+              <mat-icon
+                fontIcon="delete_outline"
+                class="text-xs! w-3.5! h-3.5! text-red-500 shrink-0"
+              ></mat-icon>
               <span>Xoá cột này</span>
             </button>
 
@@ -203,11 +206,11 @@
     [cdkDropListConnectedTo]="connectedDropLists()"
     (cdkDropListDropped)="onCardDropped($event)"
     class="flex-1 overflow-y-auto px-2.5 no-scrollbar transition-all"
-    [class.py-1]="column().cards.length > 0"
-    [class.space-y-2.5]="column().cards.length > 0"
-    [class.min-h-8]="column().cards.length > 0"
-    [class.min-h-0]="column().cards.length === 0"
-    [class.py-0]="column().cards.length === 0"
+    [class.py-1]="(column().cards || []).length > 0"
+    [class.space-y-2.5]="(column().cards || []).length > 0"
+    [class.min-h-8]="(column().cards || []).length > 0"
+    [class.min-h-0]="(column().cards || []).length === 0"
+    [class.py-0]="(column().cards || []).length === 0"
   >
     @for (card of column().cards || []; track card.id) {
       <app-board-card cdkDrag [cdkDragData]="card" [card]="card" class="block cursor-pointer" />
@@ -222,13 +225,13 @@
         class="space-y-2 bg-white dark:bg-[#1f2937] p-2 rounded-xl border border-indigo-500/60 shadow-md animate-in fade-in duration-100"
       >
         <textarea
+          #cardTextarea
           [ngModel]="newCardTitle()"
           (ngModelChange)="newCardTitle.set($event)"
           (keydown.enter)="$event.preventDefault(); onConfirmAdd()"
           (keydown.escape)="onCancelAdd()"
           placeholder="Nhập tiêu đề cho thẻ này..."
           rows="2"
-          autofocus
           class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-hidden resize-none focus:border-indigo-500 transition"
         ></textarea>
 
@@ -237,14 +240,21 @@
             type="button"
             (click)="onConfirmAdd()"
             [disabled]="!newCardTitle().trim() || isAddingCard()"
-            class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer transition shadow-xs"
+            class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer transition shadow-xs inline-flex items-center gap-1.5"
           >
-            Thêm thẻ mới
+            @if (isAddingCard()) {
+              <mat-icon fontIcon="sync" class="text-xs! w-3.5! h-3.5! animate-spin"></mat-icon>
+              <span>Đang thêm...</span>
+            } @else {
+              <span>Thêm thẻ</span>
+            }
           </button>
           <button
             type="button"
             (click)="onCancelAdd()"
             class="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60 transition cursor-pointer"
+            title="Huỷ"
+            aria-label="Huỷ"
           >
             <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
           </button>
@@ -261,7 +271,7 @@
           fontIcon="add"
           class="icon-xs shrink-0 flex items-center justify-center leading-none"
         ></mat-icon>
-        <span class="leading-none inline-block">Add a card</span>
+        <span class="leading-none inline-block">Thêm thẻ mới</span>
       </button>
     }
   </div>

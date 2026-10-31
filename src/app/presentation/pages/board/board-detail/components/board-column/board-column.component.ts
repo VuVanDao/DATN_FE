@@ -37,11 +37,16 @@ export class BoardColumnComponent {
   readonly cardDrop = output<CdkDragDrop<CardSummary[]>>();
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
-  readonly confirmAddCard = output<{ columnId: string; title: string }>();
+  readonly confirmAddCard = output<{
+    columnId: string;
+    title: string;
+    onSuccess?: () => void;
+  }>();
   readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
   readonly deleteColumn = output<string>();
 
   readonly titleInputRef = viewChild<ElementRef<HTMLInputElement>>('titleInput');
+  readonly cardTextareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('cardTextarea');
   readonly isEditingTitle = signal<boolean>(false);
   readonly editingTitleValue = signal<string>('');
 
@@ -119,6 +124,9 @@ export class BoardColumnComponent {
   onOpenAdd(): void {
     this.newCardTitle.set('');
     this.openAddCard.emit(this.column().id);
+    setTimeout(() => {
+      this.cardTextareaRef()?.nativeElement?.focus();
+    });
   }
 
   onCancelAdd(): void {
@@ -129,8 +137,13 @@ export class BoardColumnComponent {
   onConfirmAdd(): void {
     const title = this.newCardTitle().trim();
     if (!title || this.isAddingCard()) return;
-    this.confirmAddCard.emit({ columnId: this.column().id, title });
-    this.newCardTitle.set('');
+    this.confirmAddCard.emit({
+      columnId: this.column().id,
+      title,
+      onSuccess: () => {
+        this.newCardTitle.set('');
+      },
+    });
   }
 
   onCardDropped(event: CdkDragDrop<CardSummary[]>): void {

@@ -214,11 +214,7 @@ export class BoardStore {
       });
   }
 
-  deleteColumn(
-    columnId: string,
-    onSuccess?: () => void,
-    onError?: (error: string) => void,
-  ): void {
+  deleteColumn(columnId: string, onSuccess?: () => void, onError?: (error: string) => void): void {
     const board = this.boardSignal();
     if (!board) return;
 
@@ -284,12 +280,14 @@ export class BoardStore {
     title: string,
     description?: string,
     onSuccess?: (card: CardSummary) => void,
+    onError?: (error: string) => void,
   ): void {
-    if (!title.trim() || this.isAddingCardSignal()) return;
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle || this.isAddingCardSignal()) return;
 
     const request: CreateCardRequest = {
       columnId,
-      title: title.trim(),
+      title: trimmedTitle,
       description,
     };
 
@@ -298,11 +296,24 @@ export class BoardStore {
       request$: this.createCardUseCase.execute(request),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Tạo thẻ thất bại.',
+      onError: (err) => {
+        onError?.(err);
+      },
       onSuccess: (newCard) => {
         this.columnsSignal.update((cols) =>
           cols.map((col) =>
-            col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col,
+            col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
           ),
+        );
+        this.boardSignal.update((b) =>
+          b
+            ? {
+                ...b,
+                columns: (b.columns || []).map((col) =>
+                  col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
+                ),
+              }
+            : null,
         );
         this.notifications.success('Đã tạo thẻ mới');
         onSuccess?.(newCard);

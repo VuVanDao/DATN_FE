@@ -187,8 +187,17 @@ export class BoardDetailPage implements OnInit {
     this.activeAddCardColumnId.set(null);
   }
 
-  confirmAddCard({ columnId, title }: { columnId: string; title: string }): void {
+  confirmAddCard({
+    columnId,
+    title,
+    onSuccess,
+  }: {
+    columnId: string;
+    title: string;
+    onSuccess?: () => void;
+  }): void {
     this.boardStore.createCard(columnId, title, undefined, () => {
+      onSuccess?.();
       this.cancelAddCard();
     });
   }
