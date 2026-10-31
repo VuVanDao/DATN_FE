@@ -20,21 +20,44 @@
 
   <!-- 2. Main Kanban Board Canvas (Columns & Cards Body) -->
   <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 pb-20 flex items-start gap-3.5 min-h-0">
-    <app-board-canvas
-      class="h-full flex items-start"
-      [columns]="columns()"
-      [isLoading]="isLoading()"
-      [error]="error()"
-      [activeAddCardColumnId]="activeAddCardColumnId()"
-      [isAddingCard]="boardStore.isAddingCard()"
-      [isAddingColumn]="boardStore.isAddingColumn()"
-      (retry)="onRetry()"
-      (cardDrop)="onCardDrop($event)"
-      (openAddCard)="openAddCard($event)"
-      (cancelAddCard)="cancelAddCard()"
-      (confirmAddCard)="confirmAddCard($event)"
-      (addColumn)="confirmAddColumn($event)"
-    />
+    @if (error()) {
+      <!-- Error State: Căn giữa màn hình hoàn hảo cả chiều dọc và chiều ngang -->
+      <div class="flex-1 w-full h-full self-stretch flex items-center justify-center p-4">
+        <div
+          class="p-6 bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-500/40 rounded-2xl shadow-xl text-center max-w-md w-full shadow-rose-500/5"
+        >
+          <mat-icon
+            fontIcon="error_outline"
+            class="text-rose-500 dark:text-rose-400 text-3xl! w-8! h-8! mb-2"
+          ></mat-icon>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">
+            Không thể tải bảng
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 mb-4">{{ error() }}</p>
+          <button
+            type="button"
+            (click)="onRetry()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    } @else {
+      <app-board-canvas
+        class="h-full flex items-start"
+        [columns]="columns()"
+        [isLoading]="isLoading()"
+        [activeAddCardColumnId]="activeAddCardColumnId()"
+        [isAddingCard]="boardStore.isAddingCard()"
+        [isAddingColumn]="boardStore.isAddingColumn()"
+        (cardDrop)="onCardDrop($event)"
+        (openAddCard)="openAddCard($event)"
+        (cancelAddCard)="cancelAddCard()"
+        (confirmAddCard)="confirmAddCard($event)"
+        (addColumn)="confirmAddColumn($event)"
+      />
+    }
   </main>
 
   <!-- 3. Board Footer Bar ("cái chân board") -->
