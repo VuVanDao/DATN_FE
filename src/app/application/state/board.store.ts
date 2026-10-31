@@ -210,6 +210,7 @@ export class BoardStore {
 
     // Cập nhật vị trí hiển thị ngay lập tức (optimistic)
     this.columnsSignal.set(reordered);
+    this.boardSignal.update((b) => (b ? { ...b, columns: reordered } : null));
 
     const board = this.boardSignal();
     if (!board) return;
@@ -222,6 +223,7 @@ export class BoardStore {
       error: () => {
         // Rollback
         this.columnsSignal.set(previousCols);
+        this.boardSignal.update((b) => (b ? { ...b, columns: previousCols } : null));
         this.notifications.error('Không thể cập nhật thứ tự cột. Vui lòng thử lại.');
       },
     });

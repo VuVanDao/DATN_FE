@@ -1,4 +1,4 @@
-import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,11 +9,23 @@ import { BoardCardComponent } from '../board-card/board-card.component';
 @Component({
   selector: 'app-board-column',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, CdkDropList, CdkDrag, BoardCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    BoardCardComponent,
+  ],
   templateUrl: './board-column.component.html',
+  host: {
+    class: 'w-72 shrink-0 max-h-full flex flex-col',
+  },
 })
 export class BoardColumnComponent {
   readonly column = input.required<ColumnSummary>();
+  readonly connectedDropLists = input<string[]>([]);
   readonly isActiveAddCard = input<boolean>(false);
   readonly isAddingCard = input<boolean>(false);
 

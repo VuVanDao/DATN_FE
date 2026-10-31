@@ -172,6 +172,12 @@ export class BoardDetailPage implements OnInit {
     );
   }
 
+  // Xử lý kéo thả sắp xếp lại Column trên Canvas
+  onColumnDrop(event: CdkDragDrop<ColumnSummary[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    this.boardStore.reorderColumns(event.previousIndex, event.currentIndex);
+  }
+
   // Add Card handlers
   openAddCard(columnId: string): void {
     this.activeAddCardColumnId.set(columnId);

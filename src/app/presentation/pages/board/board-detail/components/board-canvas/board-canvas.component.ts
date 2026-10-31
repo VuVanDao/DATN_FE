@@ -1,6 +1,6 @@
-import { CdkDragDrop, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { CardSummary, ColumnSummary } from '../../../../../../domain/models/board-detail.model';
@@ -9,7 +9,14 @@ import { BoardColumnComponent } from '../board-column/board-column.component';
 @Component({
   selector: 'app-board-canvas',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule, CdkDropListGroup, BoardColumnComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    BoardColumnComponent,
+    CdkDrag,
+    CdkDropList,
+  ],
   templateUrl: './board-canvas.component.html',
 })
 export class BoardCanvasComponent {
@@ -22,11 +29,14 @@ export class BoardCanvasComponent {
 
   readonly retry = output<void>();
   readonly cardDrop = output<{ event: CdkDragDrop<CardSummary[]>; targetColumn: ColumnSummary }>();
+  readonly columnDrop = output<CdkDragDrop<ColumnSummary[]>>();
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
   readonly confirmAddCard = output<{ columnId: string; title: string }>();
   readonly addColumn = output<{ title: string; isDoneColumn: boolean; onSuccess: () => void }>();
   readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
+
+  readonly connectedColumnIds = computed(() => this.columns().map((c) => c.id));
 
   readonly isAddingList = signal<boolean>(false);
   readonly newColumnTitle = signal<string>('');
@@ -55,5 +65,9 @@ export class BoardCanvasComponent {
 
   onColumnCardDrop(event: CdkDragDrop<CardSummary[]>, targetColumn: ColumnSummary): void {
     this.cardDrop.emit({ event, targetColumn });
+  }
+
+  onColumnDrop(event: CdkDragDrop<ColumnSummary[]>): void {
+    this.columnDrop.emit(event);
   }
 }

@@ -34,20 +34,31 @@
   </div>
 } @else {
   <!-- CDK Drag & Drop Connected Columns Canvas -->
-  <div cdkDropListGroup class="flex items-start gap-3.5 h-full">
+  <div class="flex items-start gap-3.5 h-full">
     <!-- Columns List -->
-    @for (column of columns(); track column.id) {
-      <app-board-column
-        [column]="column"
-        [isActiveAddCard]="activeAddCardColumnId() === column.id"
-        [isAddingCard]="isAddingCard()"
-        (cardDrop)="onColumnCardDrop($event, column)"
-        (openAddCard)="openAddCard.emit($event)"
-        (cancelAddCard)="cancelAddCard.emit()"
-        (confirmAddCard)="confirmAddCard.emit($event)"
-        (updateColumn)="updateColumn.emit($event)"
-      />
-    }
+    <div
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      [cdkDropListData]="columns()"
+      (cdkDropListDropped)="onColumnDrop($event)"
+      class="flex items-start gap-3.5 h-full"
+    >
+      @for (column of columns(); track column.id) {
+        <app-board-column
+          cdkDrag
+          [cdkDragData]="column"
+          [column]="column"
+          [connectedDropLists]="connectedColumnIds()"
+          [isActiveAddCard]="activeAddCardColumnId() === column.id"
+          [isAddingCard]="isAddingCard()"
+          (cardDrop)="onColumnCardDrop($event, column)"
+          (openAddCard)="openAddCard.emit($event)"
+          (cancelAddCard)="cancelAddCard.emit()"
+          (confirmAddCard)="confirmAddCard.emit($event)"
+          (updateColumn)="updateColumn.emit($event)"
+        />
+      }
+    </div>
 
     <!-- Add Another List Column Action -->
     <div class="w-72 shrink-0">
