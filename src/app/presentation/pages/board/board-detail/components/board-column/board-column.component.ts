@@ -39,6 +39,7 @@ export class BoardColumnComponent {
   readonly cancelAddCard = output<void>();
   readonly confirmAddCard = output<{ columnId: string; title: string }>();
   readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
+  readonly deleteColumn = output<string>();
 
   readonly titleInputRef = viewChild<ElementRef<HTMLInputElement>>('titleInput');
   readonly isEditingTitle = signal<boolean>(false);
@@ -158,6 +159,13 @@ export class BoardColumnComponent {
       title: col.title,
       isDoneColumn: newDoneState,
     });
+  }
+
+  onDeleteColumn(): void {
+    this.closeMenu();
+    if (confirm(`Bạn có chắc chắn muốn xoá cột "${this.column().title}" và toàn bộ thẻ thuộc cột này?`)) {
+      this.deleteColumn.emit(this.column().id);
+    }
   }
 
   onPlaceholderAction(actionName: string): void {

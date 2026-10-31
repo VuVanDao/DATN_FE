@@ -27,6 +27,7 @@ export abstract class BoardRepository {
     columnId: string,
     request: UpdateColumnRequest,
   ): Observable<ColumnSummary>;
+  abstract deleteColumn(boardId: string, columnId: string): Observable<boolean>;
   abstract reorderColumns(boardId: string, request: ReorderColumnsRequest): Observable<boolean>;
   abstract createCard(request: CreateCardRequest): Observable<CardSummary>;
   abstract moveCard(cardId: string, request: MoveCardRequest): Observable<boolean>;

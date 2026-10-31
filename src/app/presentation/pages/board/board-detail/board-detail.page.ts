@@ -224,6 +224,11 @@ export class BoardDetailPage implements OnInit {
     this.boardStore.updateColumn(columnId, title, isDoneColumn);
   }
 
+  // Delete Column handler
+  onDeleteColumn(columnId: string): void {
+    this.boardStore.deleteColumn(columnId);
+  }
+
   // Ghim / Bỏ ghim bảng hiện tại
   onToggleBoardPin(): void {
     const board = this.currentBoard();

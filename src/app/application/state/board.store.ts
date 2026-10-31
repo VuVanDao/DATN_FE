@@ -12,6 +12,7 @@ import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
 import { DeleteBoardUseCase } from '../board/delete-board.use-case';
 import { DeleteCardUseCase } from '../board/delete-card.use-case';
+import { DeleteColumnUseCase } from '../board/delete-column.use-case';
 import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
 import { GetMyBoardsUseCase } from '../board/get-my-boards.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
@@ -29,6 +30,7 @@ export class BoardStore {
   private readonly getBoardDetailUseCase = inject(GetBoardDetailUseCase);
   private readonly createColumnUseCase = inject(CreateColumnUseCase);
   private readonly updateColumnUseCase = inject(UpdateColumnUseCase);
+  private readonly deleteColumnUseCase = inject(DeleteColumnUseCase);
   private readonly reorderColumnsUseCase = inject(ReorderColumnsUseCase);
   private readonly createCardUseCase = inject(CreateCardUseCase);
   private readonly moveCardUseCase = inject(MoveCardUseCase);
@@ -210,6 +212,43 @@ export class BoardStore {
           onError?.(err?.message || errorMsg);
         },
       });
+  }
+
+  deleteColumn(
+    columnId: string,
+    onSuccess?: () => void,
+    onError?: (error: string) => void,
+  ): void {
+    const board = this.boardSignal();
+    if (!board) return;
+
+    const existingCol = this.columnsSignal().find((c) => c.id === columnId);
+    if (!existingCol) return;
+
+    const previousCols = [...this.columnsSignal()];
+    const previousBoardCols = board.columns ? [...board.columns] : [];
+
+    // Cập nhật giao diện ngay lập tức (optimistic)
+    this.columnsSignal.update((cols) => cols.filter((c) => c.id !== columnId));
+    this.boardSignal.update((b) =>
+      b ? { ...b, columns: (b.columns || []).filter((c) => c.id !== columnId) } : null,
+    );
+
+    this.deleteColumnUseCase.execute(board.id, columnId).subscribe({
+      next: () => {
+        this.notifications.success(`Đã xoá cột "${existingCol.title}" thành công.`);
+        onSuccess?.();
+      },
+      error: (err) => {
+        // Rollback nếu thất bại
+        this.columnsSignal.set(previousCols);
+        this.boardSignal.update((b) => (b ? { ...b, columns: previousBoardCols } : null));
+        const errorMsg =
+          err?.error?.message || err?.message || 'Không thể xoá cột. Vui lòng thử lại.';
+        this.notifications.error(errorMsg);
+        onError?.(errorMsg);
+      },
+    });
   }
 
   reorderColumns(previousIndex: number, currentIndex: number): void {

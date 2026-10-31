@@ -35,6 +35,7 @@ export class BoardCanvasComponent {
   readonly confirmAddCard = output<{ columnId: string; title: string }>();
   readonly addColumn = output<{ title: string; isDoneColumn: boolean; onSuccess: () => void }>();
   readonly updateColumn = output<{ columnId: string; title: string; isDoneColumn: boolean }>();
+  readonly deleteColumn = output<string>();
 
   readonly connectedColumnIds = computed(() => this.columns().map((c) => c.id));
 

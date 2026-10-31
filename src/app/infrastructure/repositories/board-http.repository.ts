@@ -78,6 +78,12 @@ export class BoardHttpRepository implements BoardRepository {
       .pipe(map((res) => res.data));
   }
 
+  deleteColumn(boardId: string, columnId: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.boardUrl}/${boardId}/columns/${columnId}`)
+      .pipe(map((res) => res.data));
+  }
+
   reorderColumns(boardId: string, request: ReorderColumnsRequest): Observable<boolean> {
     return this.http
       .put<ApiResponse<boolean>>(`${this.boardUrl}/${boardId}/columns/reorder`, {

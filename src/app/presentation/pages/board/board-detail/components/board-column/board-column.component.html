@@ -104,7 +104,7 @@
               (click)="onAddCardFromMenu()"
               class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
             >
-              <span>Add card</span>
+              <span>Thêm thẻ mới</span>
             </button>
 
             <!-- Toggle Done Column (Đánh dấu là đã xong) -->
@@ -120,27 +120,36 @@
             >
               <span class="flex items-center gap-2">
                 @if (column().isDoneColumn) {
-                  <mat-icon fontIcon="check_circle" class="text-xs! w-3.5! h-3.5! text-emerald-500 shrink-0"></mat-icon>
+                  <mat-icon
+                    fontIcon="check_circle"
+                    class="text-xs! w-3.5! h-3.5! text-emerald-500 shrink-0"
+                  ></mat-icon>
                   <span>Cột đã xong (Bỏ đánh dấu)</span>
                 } @else {
-                  <mat-icon fontIcon="radio_button_unchecked" class="text-xs! w-3.5! h-3.5! text-slate-400 group-hover:text-emerald-500 shrink-0 transition-colors"></mat-icon>
+                  <mat-icon
+                    fontIcon="radio_button_unchecked"
+                    class="text-xs! w-3.5! h-3.5! text-slate-400 group-hover:text-emerald-500 shrink-0 transition-colors"
+                  ></mat-icon>
                   <span>Đánh dấu là đã xong</span>
                 }
               </span>
               @if (column().isDoneColumn) {
-                <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
+                <span
+                  class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300"
+                >
                   Done
                 </span>
               }
             </button>
 
-            <!-- Copy list -->
+            <!-- Xoá cột này -->
             <button
               type="button"
-              (click)="onPlaceholderAction('Copy list')"
-              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+              (click)="onDeleteColumn()"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition flex items-center gap-2 cursor-pointer group"
             >
-              <span>Copy list</span>
+              <mat-icon fontIcon="delete_outline" class="text-xs! w-3.5! h-3.5! text-red-500 shrink-0"></mat-icon>
+              <span>Xoá cột này</span>
             </button>
 
             <!-- Move list -->
@@ -230,7 +239,7 @@
             [disabled]="!newCardTitle().trim() || isAddingCard()"
             class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white text-xs font-semibold cursor-pointer transition shadow-xs"
           >
-            Add card
+            Thêm thẻ mới
           </button>
           <button
             type="button"
