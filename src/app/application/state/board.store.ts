@@ -174,6 +174,13 @@ export class BoardStore {
                 : c,
             ),
           );
+          if (finalIsDone !== previousIsDone) {
+            this.notifications.success(
+              finalIsDone
+                ? `Đã đánh dấu cột "${updatedCol.title}" là hoàn thành.`
+                : `Đã bỏ đánh dấu hoàn thành cột "${updatedCol.title}".`,
+            );
+          }
           onSuccess?.();
         },
         error: (err) => {
@@ -195,8 +202,12 @@ export class BoardStore {
                 }
               : null,
           );
-          this.notifications.error('Không thể cập nhật tên cột.');
-          onError?.(err?.message || 'Không thể cập nhật tên cột.');
+          const errorMsg =
+            finalIsDone !== previousIsDone
+              ? 'Không thể cập nhật trạng thái hoàn thành của cột.'
+              : 'Không thể cập nhật tên cột.';
+          this.notifications.error(errorMsg);
+          onError?.(err?.message || errorMsg);
         },
       });
   }

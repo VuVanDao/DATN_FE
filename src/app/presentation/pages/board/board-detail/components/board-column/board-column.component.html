@@ -50,12 +50,139 @@
         {{ column().cards.length }}
       </span>
       <button
+        #menuTrigger="cdkOverlayOrigin"
+        cdkOverlayOrigin
         type="button"
+        (click)="toggleMenu()"
         class="p-1 rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-300/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/60 transition cursor-pointer"
+        [class.bg-slate-300/60]="isMenuOpen()"
+        [class.dark:bg-slate-700/60]="isMenuOpen()"
+        [class.text-slate-800]="isMenuOpen()"
+        [class.dark:text-white]="isMenuOpen()"
         title="Tùy chọn danh sách"
+        aria-label="Tùy chọn danh sách"
       >
         <mat-icon fontIcon="more_horiz" class="text-xs! w-4! h-4!"></mat-icon>
       </button>
+
+      <!-- Trello-like List Actions Menu (CDK Connected Overlay) -->
+      <ng-template
+        cdkConnectedOverlay
+        [cdkConnectedOverlayOrigin]="menuTrigger"
+        [cdkConnectedOverlayOpen]="isMenuOpen()"
+        [cdkConnectedOverlayHasBackdrop]="true"
+        cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+        [cdkConnectedOverlayPositions]="overlayPositions"
+        (backdropClick)="closeMenu()"
+      >
+        <div
+          class="w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl overflow-hidden py-1.5 text-slate-700 dark:text-[#b6c2cf] animate-in fade-in zoom-in-95 duration-100 select-none z-50"
+        >
+          <!-- Menu Header: Centered title and close button -->
+          <div
+            class="relative px-4 py-2 border-b border-slate-200/80 dark:border-[#38414a] flex items-center justify-center"
+          >
+            <h3 class="text-xs sm:text-sm font-semibold text-slate-700 dark:text-[#9fadbc]">
+              List actions
+            </h3>
+            <button
+              type="button"
+              (click)="closeMenu()"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 transition cursor-pointer"
+              title="Đóng menu"
+              aria-label="Đóng menu"
+            >
+              <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+            </button>
+          </div>
+
+          <!-- Menu Action Items -->
+          <div class="p-2 space-y-0.5">
+            <!-- Add card -->
+            <button
+              type="button"
+              (click)="onAddCardFromMenu()"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+            >
+              <span>Add card</span>
+            </button>
+
+            <!-- Toggle Done Column (Đánh dấu là đã xong) -->
+            <button
+              type="button"
+              (click)="onToggleDoneColumn()"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm transition flex items-center justify-between cursor-pointer group"
+              [class]="
+                column().isDoneColumn
+                  ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                  : 'text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white'
+              "
+            >
+              <span class="flex items-center gap-2">
+                @if (column().isDoneColumn) {
+                  <mat-icon fontIcon="check_circle" class="text-xs! w-3.5! h-3.5! text-emerald-500 shrink-0"></mat-icon>
+                  <span>Cột đã xong (Bỏ đánh dấu)</span>
+                } @else {
+                  <mat-icon fontIcon="radio_button_unchecked" class="text-xs! w-3.5! h-3.5! text-slate-400 group-hover:text-emerald-500 shrink-0 transition-colors"></mat-icon>
+                  <span>Đánh dấu là đã xong</span>
+                }
+              </span>
+              @if (column().isDoneColumn) {
+                <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
+                  Done
+                </span>
+              }
+            </button>
+
+            <!-- Copy list -->
+            <button
+              type="button"
+              (click)="onPlaceholderAction('Copy list')"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+            >
+              <span>Copy list</span>
+            </button>
+
+            <!-- Move list -->
+            <button
+              type="button"
+              (click)="onPlaceholderAction('Move list')"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+            >
+              <span>Move list</span>
+            </button>
+
+            <!-- Move all cards in this list -->
+            <button
+              type="button"
+              (click)="onPlaceholderAction('Move all cards in this list')"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+            >
+              <span>Move all cards in this list</span>
+            </button>
+
+            <div class="my-1 border-t border-slate-200/80 dark:border-[#38414a]"></div>
+
+            <!-- Sort by -->
+            <button
+              type="button"
+              (click)="onPlaceholderAction('Sort by')"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+            >
+              <span>Sort by</span>
+            </button>
+
+            <!-- Pin list -->
+            <button
+              type="button"
+              (click)="onPlaceholderAction('Pin list')"
+              class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+            >
+              <span>Pin list</span>
+            </button>
+          </div>
+        </div>
+      </ng-template>
     </div>
   </div>
 
