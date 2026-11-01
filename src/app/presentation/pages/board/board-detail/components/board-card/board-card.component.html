@@ -1,6 +1,6 @@
 <div
   (click)="cardClick.emit(card())"
-  class="group bg-white dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 hover:border-indigo-400/80 dark:hover:border-indigo-500/60 rounded-xl shadow-2xs hover:shadow-md transition-all duration-150 cursor-pointer overflow-hidden flex flex-col"
+  class="group relative bg-white dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 hover:border-indigo-400/80 dark:hover:border-indigo-500/60 rounded-xl shadow-2xs hover:shadow-md transition-all duration-150 cursor-pointer overflow-hidden flex flex-col"
 >
   <!-- Card Cover Image (if available) -->
   @if (card().coverUrl) {
@@ -13,73 +13,177 @@
     </div>
   }
 
-  <!-- Card Body -->
-  <div class="p-2.5 space-y-2">
-    <!-- Template Badge (if applicable) -->
-    @if (card().type === 3 || card().type === 'Template') {
-      <div
-        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 text-[10px] font-medium"
-      >
-        <mat-icon fontIcon="sync" class="text-[11px]! w-3! h-3!"></mat-icon>
-        <span>This card is a template.</span>
+  <!-- Card Body: Chỉ hiển thị tiêu đề và nút thao tác 3 chấm (đã loại bỏ toàn bộ badge) -->
+  <div class="px-3 py-2 flex flex-col justify-center">
+    <!-- Inline Title Editor vs Normal Title + 3-dots Menu Button -->
+    @if (isEditingTitle()) {
+      <div class="space-y-1.5" (click)="$event.stopPropagation()">
+        <textarea
+          #titleInput
+          [ngModel]="editingTitleValue()"
+          (ngModelChange)="editingTitleValue.set($event)"
+          (keydown.enter)="$event.preventDefault(); saveTitle()"
+          (keydown.escape)="cancelEditingTitle()"
+          rows="2"
+          class="w-full bg-white dark:bg-slate-900 border-2 border-indigo-500 rounded-lg p-1.5 text-xs font-medium text-slate-900 dark:text-white outline-hidden shadow-xs resize-none transition"
+        ></textarea>
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            (click)="saveTitle()"
+            class="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-[11px] font-semibold cursor-pointer shadow-xs transition"
+          >
+            Lưu
+          </button>
+          <button
+            type="button"
+            (click)="cancelEditingTitle()"
+            class="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60 transition cursor-pointer"
+            title="Huỷ"
+            aria-label="Huỷ"
+          >
+            <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Card Title & 3-Dots Action Button -->
+      <div class="flex items-start justify-between gap-1.5">
+        <p
+          class="text-xs sm:text-[13px] font-medium text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors leading-snug wrap-break-word flex-1 select-none"
+        >
+          {{ card().title }}
+        </p>
+
+        <!-- 3-Dots / Edit Action Button (Như dấu 3 chấm của cột) -->
+        <button
+          #cardMenuTrigger="cdkOverlayOrigin"
+          cdkOverlayOrigin
+          type="button"
+          (mousedown)="$event.stopPropagation()"
+          (click)="toggleMenu($event)"
+          class="opacity-0 group-hover:opacity-100 w-5 h-5 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-200/80 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/70 transition-all cursor-pointer shrink-0"
+          [class.opacity-100]="isMenuOpen()"
+          [class.bg-slate-200/80]="isMenuOpen()"
+          [class.dark:bg-slate-700/70]="isMenuOpen()"
+          title="Tùy chọn thẻ"
+          aria-label="Tùy chọn thẻ"
+        >
+          <mat-icon fontIcon="more_horiz" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+        </button>
+
+        <!-- Card Actions Menu (CDK Connected Overlay) -->
+        <ng-template
+          cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="cardMenuTrigger"
+          [cdkConnectedOverlayOpen]="isMenuOpen()"
+          [cdkConnectedOverlayHasBackdrop]="true"
+          cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+          [cdkConnectedOverlayPositions]="overlayPositions"
+          (backdropClick)="closeMenu()"
+        >
+          <div
+            (click)="$event.stopPropagation()"
+            class="w-64 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl overflow-hidden py-1.5 text-slate-700 dark:text-[#b6c2cf] animate-in fade-in zoom-in-95 duration-100 select-none z-50 text-xs"
+          >
+            <!-- Menu Header -->
+            <div
+              class="relative px-3.5 py-2 border-b border-slate-200/80 dark:border-[#38414a] flex items-center justify-between"
+            >
+              <h3 class="text-xs sm:text-[13px] font-semibold text-slate-700 dark:text-[#9fadbc]">
+                Thao tác thẻ
+              </h3>
+              <button
+                type="button"
+                (click)="closeMenu()"
+                class="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 transition cursor-pointer"
+                title="Đóng menu"
+                aria-label="Đóng menu"
+              >
+                <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+              </button>
+            </div>
+
+            <!-- Menu Action Items -->
+            <div class="p-1.5 space-y-0.5">
+              <!-- Mở chi tiết thẻ -->
+              <button
+                type="button"
+                (click)="onOpenCard()"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="open_in_new" class="text-xs! w-3.5! h-3.5! text-slate-400 shrink-0"></mat-icon>
+                <span>Mở chi tiết thẻ</span>
+              </button>
+
+              <!-- Chỉnh sửa tiêu đề -->
+              <button
+                type="button"
+                (click)="startEditingTitle($event)"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="edit" class="text-xs! w-3.5! h-3.5! text-slate-400 shrink-0"></mat-icon>
+                <span>Chỉnh sửa tiêu đề</span>
+              </button>
+
+              <!-- Thay đổi thành viên -->
+              <button
+                type="button"
+                (click)="onPlaceholderAction('Thay đổi thành viên')"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="person_outline" class="text-xs! w-3.5! h-3.5! text-slate-400 shrink-0"></mat-icon>
+                <span>Thay đổi thành viên</span>
+              </button>
+
+              <!-- Thay đổi ngày hết hạn -->
+              <button
+                type="button"
+                (click)="onPlaceholderAction('Thay đổi ngày hết hạn')"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="schedule" class="text-xs! w-3.5! h-3.5! text-slate-400 shrink-0"></mat-icon>
+                <span>Thay đổi ngày hết hạn</span>
+              </button>
+
+              <!-- Di chuyển thẻ -->
+              <button
+                type="button"
+                (click)="onPlaceholderAction('Di chuyển thẻ')"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="arrow_forward" class="text-xs! w-3.5! h-3.5! text-slate-400 shrink-0"></mat-icon>
+                <span>Di chuyển thẻ</span>
+              </button>
+
+              <!-- Sao chép thẻ -->
+              <button
+                type="button"
+                (click)="onPlaceholderAction('Sao chép thẻ')"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="content_copy" class="text-xs! w-3.5! h-3.5! text-slate-400 shrink-0"></mat-icon>
+                <span>Sao chép thẻ</span>
+              </button>
+
+              <div class="my-1 border-t border-slate-200/80 dark:border-[#38414a]"></div>
+
+              <!-- Xoá thẻ này -->
+              <button
+                type="button"
+                (click)="onDeleteCard()"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition flex items-center gap-2 cursor-pointer group"
+              >
+                <mat-icon
+                  fontIcon="delete_outline"
+                  class="text-xs! w-3.5! h-3.5! text-red-500 shrink-0"
+                ></mat-icon>
+                <span>Xoá thẻ này</span>
+              </button>
+            </div>
+          </div>
+        </ng-template>
       </div>
     }
-
-    <!-- Card Title -->
-    <p
-      class="text-xs sm:text-[13px] font-medium text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors leading-snug break-words"
-    >
-      {{ card().title }}
-    </p>
-
-    <!-- Badges Row (Description, Comments, Attachments, Assignee) -->
-    <div
-      class="flex items-center justify-between gap-2 pt-1 text-slate-400 dark:text-slate-400 text-xs"
-    >
-      <div class="flex items-center gap-2.5">
-        <!-- Description indicator -->
-        @if (card().description) {
-          <span title="Thẻ có mô tả">
-            <mat-icon
-              fontIcon="notes"
-              class="text-xs! w-3.5! h-3.5! text-slate-400 dark:text-slate-400"
-            ></mat-icon>
-          </span>
-        }
-
-        <!-- Comments Count -->
-        @if (card().commentsCount > 0) {
-          <span
-            class="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400"
-            title="Bình luận"
-          >
-            <mat-icon fontIcon="chat_bubble_outline" class="text-xs! w-3.5! h-3.5!"></mat-icon>
-            <span>{{ card().commentsCount }}</span>
-          </span>
-        }
-
-        <!-- Watch / Eye Icon -->
-        <span title="Theo dõi">
-          <mat-icon
-            fontIcon="visibility"
-            class="text-xs! w-3.5! h-3.5! text-slate-400 dark:text-slate-400"
-          ></mat-icon>
-        </span>
-      </div>
-
-      <!-- Assignee Avatar -->
-      @if (card().assigneeName) {
-        <div
-          class="w-5 h-5 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0 shadow-2xs"
-          [title]="card().assigneeName"
-        >
-          @if (card().assigneeAvatarUrl) {
-            <img [src]="card().assigneeAvatarUrl" class="w-full h-full rounded-full object-cover" />
-          } @else {
-            {{ (card().assigneeName || '').slice(0, 2).toUpperCase() }}
-          }
-        </div>
-      }
-    </div>
   </div>
 </div>

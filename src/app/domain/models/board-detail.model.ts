@@ -72,3 +72,16 @@ export interface MoveCardRequest {
   targetColumnId: string;
   newPosition: number;
 }
+
+export interface UpdateCardRequest {
+  title?: string;
+  description?: string | null;
+  coverUrl?: string | null;
+  type?: number | string;
+  priority?: number | string;
+  assigneeId?: string | null;
+  startDate?: string | null;
+  dueDate?: string | null;
+  storyPoints?: number | null;
+  progressPercentage?: number;
+}

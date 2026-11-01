@@ -10,6 +10,7 @@ import {
   CreateColumnRequest,
   MoveCardRequest,
   ReorderColumnsRequest,
+  UpdateCardRequest,
   UpdateColumnRequest,
 } from '../../domain/models/board-detail.model';
 import {
@@ -96,6 +97,15 @@ export class BoardHttpRepository implements BoardRepository {
   createCard(request: CreateCardRequest): Observable<CardSummary> {
     return this.http
       .post<ApiResponse<CardSummary>>(this.cardsUrl, request)
+      .pipe(map((res) => res.data));
+  }
+
+  updateCard(cardId: string, request: Partial<UpdateCardRequest>): Observable<CardSummary> {
+    return this.http
+      .put<ApiResponse<CardSummary>>(`${this.cardsUrl}/${cardId}`, {
+        cardId,
+        ...request,
+      })
       .pipe(map((res) => res.data));
   }
 

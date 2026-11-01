@@ -238,6 +238,27 @@ export class BoardDetailPage implements OnInit {
     this.boardStore.deleteColumn(columnId);
   }
 
+  // Card handlers
+  onCardClick(card: CardSummary): void {
+    this.notifications.warning(`Chi tiết thẻ "${card.title}" đang được hoàn thiện.`);
+  }
+
+  onDeleteCard({ cardId, columnId }: { cardId: string; columnId: string }): void {
+    this.boardStore.deleteCard(cardId, columnId);
+  }
+
+  onUpdateCardTitle({
+    cardId,
+    columnId,
+    title,
+  }: {
+    cardId: string;
+    columnId: string;
+    title: string;
+  }): void {
+    this.boardStore.updateCardTitle(cardId, columnId, title);
+  }
+
   // Ghim / Bỏ ghim bảng hiện tại
   onToggleBoardPin(): void {
     const board = this.currentBoard();

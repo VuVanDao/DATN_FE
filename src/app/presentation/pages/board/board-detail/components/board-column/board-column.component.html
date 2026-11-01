@@ -213,7 +213,15 @@
     [class.py-0]="(column().cards || []).length === 0"
   >
     @for (card of column().cards || []; track card.id) {
-      <app-board-card cdkDrag [cdkDragData]="card" [card]="card" class="block cursor-pointer" />
+      <app-board-card
+        cdkDrag
+        [cdkDragData]="card"
+        [card]="card"
+        (cardClick)="cardClick.emit($event)"
+        (deleteCard)="deleteCard.emit($event)"
+        (updateTitle)="updateCardTitle.emit($event)"
+        class="block cursor-pointer"
+      />
     }
   </div>
 

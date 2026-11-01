@@ -19,6 +19,7 @@ import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
 import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
 import { UpdateBoardUseCase } from '../board/update-board.use-case';
+import { UpdateCardUseCase } from '../board/update-card.use-case';
 import { UpdateColumnUseCase } from '../board/update-column.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
@@ -34,6 +35,7 @@ export class BoardStore {
   private readonly reorderColumnsUseCase = inject(ReorderColumnsUseCase);
   private readonly createCardUseCase = inject(CreateCardUseCase);
   private readonly moveCardUseCase = inject(MoveCardUseCase);
+  private readonly updateCardUseCase = inject(UpdateCardUseCase);
   private readonly deleteCardUseCase = inject(DeleteCardUseCase);
   private readonly deleteBoardUseCase = inject(DeleteBoardUseCase);
   private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
@@ -370,6 +372,35 @@ export class BoardStore {
           this.notifications.error('Không thể di chuyển thẻ. Đã khôi phục lại vị trí.');
         },
       });
+  }
+
+  updateCardTitle(cardId: string, columnId: string, title: string): void {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+
+    const previousCols = this.columnsSignal();
+    this.columnsSignal.update((cols) =>
+      cols.map((col) =>
+        col.id === columnId
+          ? {
+              ...col,
+              cards: col.cards.map((card) =>
+                card.id === cardId ? { ...card, title: trimmedTitle } : card,
+              ),
+            }
+          : col,
+      ),
+    );
+
+    this.updateCardUseCase.execute(cardId, { title: trimmedTitle }).subscribe({
+      next: () => {
+        this.notifications.success('Đã cập nhật tiêu đề thẻ');
+      },
+      error: () => {
+        this.columnsSignal.set(previousCols);
+        this.notifications.error('Không thể cập nhật thẻ. Vui lòng thử lại.');
+      },
+    });
   }
 
   deleteCard(cardId: string, columnId: string): void {
