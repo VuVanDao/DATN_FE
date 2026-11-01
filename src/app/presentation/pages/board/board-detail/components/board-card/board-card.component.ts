@@ -34,6 +34,7 @@ export class BoardCardComponent {
       overlayX: 'end',
       overlayY: 'top',
       offsetY: 4,
+      offsetX: 124,
     },
     {
       originX: 'start',
@@ -41,6 +42,7 @@ export class BoardCardComponent {
       overlayX: 'start',
       overlayY: 'top',
       offsetY: 4,
+      offsetX: 124,
     },
     {
       originX: 'end',
@@ -48,6 +50,7 @@ export class BoardCardComponent {
       overlayX: 'end',
       overlayY: 'bottom',
       offsetY: -4,
+      offsetX: 124,
     },
     {
       originX: 'start',
@@ -55,6 +58,7 @@ export class BoardCardComponent {
       overlayX: 'start',
       overlayY: 'bottom',
       offsetY: -4,
+      offsetX: 124,
     },
   ];
 
