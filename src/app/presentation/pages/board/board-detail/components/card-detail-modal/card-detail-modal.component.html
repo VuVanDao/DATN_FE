@@ -1162,7 +1162,7 @@
               @if (currentUserAvatar()) {
                 <img [src]="currentUserAvatar()" [alt]="currentUserName()" class="w-full h-full object-cover" />
               } @else {
-                {{ currentUserName().charAt(0) }}
+                {{ currentUserName().charAt(0).toUpperCase() }}
               }
             </div>
 
@@ -1220,9 +1220,14 @@
                     class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs overflow-hidden"
                   >
                     @if (item.authorAvatarUrl) {
-                      <img [src]="item.authorAvatarUrl" [alt]="item.authorName" class="w-full h-full object-cover" />
+                      <img
+                        [src]="item.authorAvatarUrl"
+                        [alt]="item.authorName"
+                        (error)="item.authorAvatarUrl = null"
+                        class="w-full h-full object-cover"
+                      />
                     } @else {
-                      {{ item.authorName.charAt(0) }}
+                      {{ item.authorName.charAt(0).toUpperCase() }}
                     }
                   </div>
 

@@ -290,6 +290,7 @@ export class CardDetailModalComponent implements OnInit {
     const defaultActivity: CardDetailActivity = {
       id: 'initial-act',
       authorName: d.reporterName || 'Thành viên',
+      authorAvatarUrl: d.reporterAvatarUrl,
       actionText: 'đã tạo thẻ',
       createdAt: this.formatDisplayDate(d.createdAt),
     };
@@ -379,6 +380,7 @@ export class CardDetailModalComponent implements OnInit {
     const defaultActivity: CardDetailActivity = {
       id: 'initial-act',
       authorName: c.reporterName || userName,
+      authorAvatarUrl: c.reporterAvatarUrl || (c.reporterId === user?.id ? user?.avatarUrl : null),
       actionText: 'đã tạo thẻ',
       createdAt: this.formatDisplayDate(c.createdAt),
     };

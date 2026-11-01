@@ -16,6 +16,7 @@ export interface CardSummary {
   assigneeAvatarUrl?: string | null;
   reporterId: string;
   reporterName: string;
+  reporterAvatarUrl?: string | null;
   sprintId?: string | null;
   createdAt: string;
   commentsCount: number;
