@@ -12,13 +12,14 @@ import { BoardStore } from '../../../../application/state/board.store';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { CardSummary, ColumnSummary } from '../../../../domain/models/board-detail.model';
-import { Board } from '../../../../domain/models/project.model';
+import { Board, ProjectMember } from '../../../../domain/models/project.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
 import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
 import { BoardDeleteModalComponent } from './components/board-delete-modal/board-delete-modal.component';
 import { BoardHeaderComponent } from './components/board-header/board-header.component';
 import { BoardMenuDrawerComponent } from './components/board-menu-drawer/board-menu-drawer.component';
 import { BoardSettingsModalComponent } from './components/board-settings-modal/board-settings-modal.component';
+import { CardDetailModalComponent } from './components/card-detail-modal/card-detail-modal.component';
 
 @Component({
   selector: 'app-board-detail-page',
@@ -33,6 +34,7 @@ import { BoardSettingsModalComponent } from './components/board-settings-modal/b
     BoardSettingsModalComponent,
     BoardDeleteModalComponent,
     SwitchBoardModalComponent,
+    CardDetailModalComponent,
   ],
   host: {
     class: 'flex flex-col flex-1 h-full min-h-0 min-w-0 w-full overflow-hidden',
@@ -73,6 +75,10 @@ export class BoardDetailPage implements OnInit {
   // Trạng thái modal xóa bảng
   readonly showDeleteBoardModal = signal<boolean>(false);
 
+  // Trạng thái modal chi tiết thẻ (Card Detail Modal)
+  readonly selectedCardForDetail = signal<CardSummary | null>(null);
+  readonly showCardDetailModal = signal<boolean>(false);
+
   // Kiểm tra vai trò ProjectLeader đối với dự án của bảng hiện tại
   readonly isProjectLeader = computed<boolean>(() => {
     const currentUserId = this.session.currentUser()?.id;
@@ -93,6 +99,11 @@ export class BoardDetailPage implements OnInit {
   // Danh sách các bảng cho modal Switch Boards
   readonly projectBoards = computed<Board[]>(() => {
     return this.projectStore.boards();
+  });
+
+  // Danh sách thành viên dự án
+  readonly projectMembers = computed<ProjectMember[]>(() => {
+    return this.projectStore.members();
   });
 
   ngOnInit(): void {
@@ -240,7 +251,63 @@ export class BoardDetailPage implements OnInit {
 
   // Card handlers
   onCardClick(card: CardSummary): void {
-    this.notifications.warning(`Chi tiết thẻ "${card.title}" đang được hoàn thiện.`);
+    console.log('[BoardDetailPage] Opening card detail modal for:', card);
+    this.selectedCardForDetail.set(card);
+    this.showCardDetailModal.set(true);
+  }
+
+  closeCardDetailModal(): void {
+    console.log('[BoardDetailPage] Closing card detail modal');
+    this.showCardDetailModal.set(false);
+    this.selectedCardForDetail.set(null);
+  }
+
+  onCardDetailColumnChanged(event: { cardId: string; columnId: string; columnTitle: string }): void {
+    console.log('[BoardDetailPage] Card column changed (console.log only as requested):', event);
+  }
+
+  onCardDetailTitleChanged(event: { cardId: string; title: string }): void {
+    console.log('[BoardDetailPage] Card title changed (console.log only as requested):', event);
+  }
+
+  onCardDetailDescriptionChanged(event: { cardId: string; description: string }): void {
+    console.log('[BoardDetailPage] Card description changed (console.log only as requested):', event);
+  }
+
+  onCardDetailCoverChanged(event: { cardId: string; coverUrl: string | null }): void {
+    console.log('[BoardDetailPage] Card cover changed (console.log only as requested):', event);
+  }
+
+  onCardDetailCommentAdded(event: { cardId: string; content: string }): void {
+    console.log('[BoardDetailPage] Card comment added (console.log only as requested):', event);
+  }
+
+  onCardDetailPriorityChanged(event: { cardId: string; priority: string }): void {
+    console.log('[BoardDetailPage] Card priority changed (console.log only as requested):', event);
+  }
+
+  onCardDetailTypeChanged(event: { cardId: string; type: string }): void {
+    console.log('[BoardDetailPage] Card type changed (console.log only as requested):', event);
+  }
+
+  onCardDetailDatesChanged(event: {
+    cardId: string;
+    startDate: string | null;
+    dueDate: string | null;
+  }): void {
+    console.log('[BoardDetailPage] Card dates changed (console.log only as requested):', event);
+  }
+
+  onCardDetailAssigneeChanged(event: {
+    cardId: string;
+    assigneeId: string | null;
+    assigneeName: string | null;
+  }): void {
+    console.log('[BoardDetailPage] Card assignee changed (console.log only as requested):', event);
+  }
+
+  onCardDetailProgressChanged(event: { cardId: string; progress: number }): void {
+    console.log('[BoardDetailPage] Card progress changed (console.log only as requested):', event);
   }
 
   onDeleteCard({ cardId, columnId }: { cardId: string; columnId: string }): void {

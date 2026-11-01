@@ -130,4 +130,25 @@
     (closed)="closeDeleteBoardModal()"
     (deleted)="onBoardDeleted()"
   />
+
+  <!-- Card Detail Modal (Xem & chỉnh sửa chi tiết thẻ) -->
+  @if (showCardDetailModal() && selectedCardForDetail()) {
+    <app-card-detail-modal
+      [isOpen]="showCardDetailModal()"
+      [card]="selectedCardForDetail()!"
+      [columns]="columns()"
+      [members]="projectMembers()"
+      (closed)="closeCardDetailModal()"
+      (columnChanged)="onCardDetailColumnChanged($event)"
+      (titleChanged)="onCardDetailTitleChanged($event)"
+      (descriptionChanged)="onCardDetailDescriptionChanged($event)"
+      (coverChanged)="onCardDetailCoverChanged($event)"
+      (commentAdded)="onCardDetailCommentAdded($event)"
+      (priorityChanged)="onCardDetailPriorityChanged($event)"
+      (typeChanged)="onCardDetailTypeChanged($event)"
+      (datesChanged)="onCardDetailDatesChanged($event)"
+      (assigneeChanged)="onCardDetailAssigneeChanged($event)"
+      (progressChanged)="onCardDetailProgressChanged($event)"
+    />
+  }
 </div>
