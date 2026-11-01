@@ -755,24 +755,6 @@ export class CardDetailModalComponent implements OnInit {
     this.notificationService.warning('Đã gỡ ảnh bìa thẻ');
   }
 
-  toggleAttachmentAsCover(attachment: CardDetailAttachment): void {
-    if (attachment.isCover) {
-      console.log('[CardDetail] Attachment cover removed:', attachment.name);
-      this.currentCoverUrl.set(null);
-      this.attachments.update((list) =>
-        list.map((a) => (a.id === attachment.id ? { ...a, isCover: false } : a)),
-      );
-      this.coverChanged.emit({ cardId: this.card().id, coverUrl: null });
-    } else {
-      console.log('[CardDetail] Attachment set as cover:', attachment.name);
-      this.currentCoverUrl.set(attachment.url);
-      this.attachments.update((list) =>
-        list.map((a) => ({ ...a, isCover: a.id === attachment.id })),
-      );
-      this.coverChanged.emit({ cardId: this.card().id, coverUrl: attachment.url });
-    }
-  }
-
   // Add Comment & Activity
   startWritingComment(): void {
     this.isWritingComment.set(true);
