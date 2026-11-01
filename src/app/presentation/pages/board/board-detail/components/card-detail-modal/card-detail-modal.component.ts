@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   effect,
   ElementRef,
   HostListener,
@@ -143,6 +144,12 @@ export class CardDetailModalComponent implements OnInit {
   readonly newCommentText = signal<string>('');
   readonly isWritingComment = signal<boolean>(false);
   readonly showActivityDetails = signal<boolean>(true);
+  readonly currentUser = computed(() => this.sessionService.currentUser());
+  readonly currentUserName = computed(() => {
+    const u = this.currentUser();
+    return u?.userName || 'Tôi';
+  });
+  readonly currentUserAvatar = computed(() => this.currentUser()?.avatarUrl);
 
   // Cover State
   readonly isCoverMenuOpen = signal<boolean>(false);
@@ -280,22 +287,19 @@ export class CardDetailModalComponent implements OnInit {
     }
 
     // Sync Comments from Backend API
-    const currentCol = this.columns().find((col) => col.id === d.columnId);
-    const colName = currentCol?.title || 'Doing';
-
     const defaultActivity: CardDetailActivity = {
       id: 'initial-act',
-      authorName: d.reporterName || 'Đạo Vũ Văn',
-      actionText: `đã thêm thẻ vào ${colName}`,
+      authorName: d.reporterName || 'Thành viên',
+      actionText: 'đã tạo thẻ',
       createdAt: this.formatDisplayDate(d.createdAt),
     };
 
     if (d.comments && d.comments.length > 0) {
       const commentActivities: CardDetailActivity[] = d.comments.map((c) => ({
         id: c.id,
-        authorName: c.username,
+        authorName: c.username || 'Thành viên',
         authorAvatarUrl: c.userAvatarUrl,
-        actionText: 'bình luận',
+        actionText: 'đã bình luận',
         commentContent: c.contentText,
         createdAt: this.formatDisplayDate(c.createdAt),
         isComment: true,
@@ -353,18 +357,11 @@ export class CardDetailModalComponent implements OnInit {
     // Progress
     this.currentProgress.set(c.progressPercentage || 0);
 
-    // Current user details for activity stream
-    const user = this.sessionService.currentUser();
-    const userName = user?.userName || c.reporterName || 'Đạo Vũ Văn';
-
-    const currentCol = this.columns().find((col) => col.id === c.columnId);
-    const colName = currentCol?.title || 'Doing';
-
-    // Seed sample attachments if cover exists
+    // Attachments
     if (c.coverUrl) {
       this.attachments.set([
         {
-          id: 'att-1',
+          id: 'cover-att',
           name: 'Cover Image',
           url: c.coverUrl,
           createdAt: this.formatDisplayDate(c.createdAt),
@@ -375,15 +372,18 @@ export class CardDetailModalComponent implements OnInit {
       this.attachments.set([]);
     }
 
-    // Seed activities
-    this.activities.set([
-      {
-        id: 'act-1',
-        authorName: userName,
-        actionText: `added this card to ${colName}`,
-        createdAt: 'May 3, 2025, 11:07 PM',
-      },
-    ]);
+    // Initial activities
+    const user = this.sessionService.currentUser();
+    const userName = user?.userName || c.reporterName || 'Thành viên';
+
+    const defaultActivity: CardDetailActivity = {
+      id: 'initial-act',
+      authorName: c.reporterName || userName,
+      actionText: 'đã tạo thẻ',
+      createdAt: this.formatDisplayDate(c.createdAt),
+    };
+
+    this.activities.set([defaultActivity]);
   }
 
   private normalizePriority(val: number | string | undefined): PriorityType {
@@ -767,17 +767,16 @@ export class CardDetailModalComponent implements OnInit {
     const text = this.newCommentText().trim();
     if (!text) return;
 
-    console.log('[CardDetail] New comment added:', text);
-    const user = this.sessionService.currentUser();
-    const userName = user?.userName || 'Đạo Vũ Văn';
+    const userName = this.currentUserName();
+    const userAvatar = this.currentUserAvatar();
 
     const newActivity: CardDetailActivity = {
-      id: `comment-${Date.now()}`,
+      id: `temp-${Date.now()}`,
       authorName: userName,
-      authorAvatarUrl: user?.avatarUrl,
-      actionText: 'commented',
+      authorAvatarUrl: userAvatar,
+      actionText: 'đã bình luận',
       commentContent: text,
-      createdAt: 'Just now',
+      createdAt: 'Vừa xong',
       isComment: true,
     };
 
@@ -789,7 +788,6 @@ export class CardDetailModalComponent implements OnInit {
       cardId: this.card().id,
       content: text,
     });
-    this.notificationService.success('Đã gửi bình luận');
   }
 
   cancelComment(): void {
