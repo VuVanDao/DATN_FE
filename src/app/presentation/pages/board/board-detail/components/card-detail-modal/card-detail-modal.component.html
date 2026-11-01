@@ -24,18 +24,20 @@
     <!-- ========================================== -->
     @if (currentCoverUrl()) {
       <div
-        class="relative w-full h-40 sm:h-48 bg-[#c4b39b] dark:bg-[#282e33] flex items-center justify-center overflow-hidden shrink-0 group"
+        class="relative w-full h-40 sm:h-48 bg-[#c4b39b] dark:bg-[#282e33] flex items-center justify-center shrink-0 group z-30"
       >
-        <!-- Centered Cover Image (Matches Screenshot 1 abby.jpg banner) -->
-        <img
-          [src]="currentCoverUrl()"
-          alt="Card Cover"
-          class="h-full max-h-full object-contain mx-auto select-none pointer-events-none"
-        />
+        <!-- Centered Cover Image Container (handles rounded top corners & clipping) -->
+        <div class="absolute inset-0 overflow-hidden rounded-t-2xl flex items-center justify-center">
+          <img
+            [src]="currentCoverUrl()"
+            alt="Card Cover"
+            class="h-full max-h-full object-contain mx-auto select-none pointer-events-none"
+          />
+        </div>
 
         <!-- Top Floating Overlay Bar -->
         <div
-          class="absolute inset-x-0 top-0 p-3 sm:p-4 flex items-center justify-between pointer-events-auto"
+          class="absolute inset-x-0 top-0 p-3 sm:p-4 flex items-center justify-between pointer-events-auto z-40"
         >
           <!-- Column Status Dropdown Pill (e.g. "Done ⌵") -->
           <div class="relative">
@@ -98,7 +100,7 @@
               @if (isCoverMenuOpen()) {
                 <div
                   (click)="$event.stopPropagation()"
-                  class="absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-3 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-3"
+                  class="absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-3 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-3 max-h-[calc(85vh-100px)] overflow-y-auto"
                 >
                   <!-- Header -->
                   <div
@@ -277,7 +279,7 @@
     <!-- 2. TOP HEADER BAR (WHEN COVER DOES NOT EXIST)     -->
     <!-- ================================================== -->
     @if (!currentCoverUrl()) {
-      <div class="px-5 sm:px-6 pt-4 pb-2 flex items-center justify-between shrink-0">
+      <div class="relative z-30 px-5 sm:px-6 pt-4 pb-2 flex items-center justify-between shrink-0">
         <!-- Column Status Dropdown Pill (e.g. "Doing ⌵") -->
         <div class="relative">
           <button
@@ -342,7 +344,7 @@
             @if (isCoverMenuOpen()) {
               <div
                 (click)="$event.stopPropagation()"
-                class="absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-3 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-3"
+                class="absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-3 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-3 max-h-[calc(85vh-100px)] overflow-y-auto"
               >
                 <!-- Header -->
                 <div
