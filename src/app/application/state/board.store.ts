@@ -425,6 +425,18 @@ export class BoardStore {
               : col,
           ),
         );
+        this.boardSignal.update((b) =>
+          b
+            ? {
+                ...b,
+                columns: (b.columns || []).map((col) =>
+                  col.id === columnId
+                    ? { ...col, cards: (col.cards || []).filter((card) => card.id !== cardId) }
+                    : col,
+                ),
+              }
+            : null,
+        );
         if (this.cardDetailSignal()?.id === cardId) {
           this.cardDetailSignal.set(null);
         }

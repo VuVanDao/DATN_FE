@@ -257,6 +257,18 @@
                     ></mat-icon>
                     <span>Chia sẻ liên kết</span>
                   </button>
+                  <div class="my-1 border-t border-slate-100 dark:border-[#38414a]"></div>
+                  <button
+                    type="button"
+                    (click)="onDeleteCardFromModal()"
+                    class="w-full text-left px-3 py-2 flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                  >
+                    <mat-icon
+                      fontIcon="delete_outline"
+                      class="text-xs! w-3.5! h-3.5! text-rose-500"
+                    ></mat-icon>
+                    <span>Xoá thẻ này</span>
+                  </button>
                 </div>
               }
             </div>
@@ -500,6 +512,18 @@
                     class="text-xs! w-3.5! h-3.5! text-slate-400"
                   ></mat-icon>
                   <span>Chia sẻ liên kết</span>
+                </button>
+                <div class="my-1 border-t border-slate-100 dark:border-[#38414a]"></div>
+                <button
+                  type="button"
+                  (click)="onDeleteCardFromModal()"
+                  class="w-full text-left px-3 py-2 flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                >
+                  <mat-icon
+                    fontIcon="delete_outline"
+                    class="text-xs! w-3.5! h-3.5! text-rose-500"
+                  ></mat-icon>
+                  <span>Xoá thẻ này</span>
                 </button>
               </div>
             }

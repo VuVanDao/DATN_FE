@@ -98,6 +98,7 @@ export class CardDetailModalComponent implements OnInit {
     assigneeName: string | null;
   }>();
   readonly progressChanged = output<{ cardId: string; progress: number }>();
+  readonly deleteCard = output<{ cardId: string; columnId: string }>();
 
   // Element refs
   readonly titleInputRef = viewChild<ElementRef<HTMLTextAreaElement>>('titleInput');
@@ -805,6 +806,19 @@ export class CardDetailModalComponent implements OnInit {
     event.stopPropagation();
     this.isMoreMenuOpen.update((v) => !v);
     this.isColumnDropdownOpen.set(false);
+  }
+
+  onDeleteCardFromModal(): void {
+    const c = this.card();
+    if (!c) return;
+    this.closeAllDropdowns();
+    if (confirm(`Bạn có chắc chắn muốn xoá thẻ "${c.title}"?`)) {
+      this.closeModal();
+      this.deleteCard.emit({
+        cardId: c.id,
+        columnId: c.columnId,
+      });
+    }
   }
 
   onMoreAction(action: string): void {
