@@ -129,6 +129,16 @@
                 <span class="translate-y-px">Chỉnh sửa tiêu đề</span>
               </button>
 
+              <!-- Thay đổi ảnh bìa -->
+              <button
+                type="button"
+                (click)="openCoverPicker($event)"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+              >
+                <mat-icon fontIcon="image" class="icon-xxs text-slate-400 shrink-0"></mat-icon>
+                <span class="translate-y-px">Thay đổi ảnh bìa</span>
+              </button>
+
               <!-- Thay đổi thành viên -->
               <button
                 type="button"
@@ -192,6 +202,93 @@
                 ></mat-icon>
                 <span class="translate-y-px">Xoá thẻ này</span>
               </button>
+            </div>
+          </div>
+        </ng-template>
+
+        <!-- Cover Picker Overlay (CDK Connected Overlay) -->
+        <ng-template
+          cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="cardMenuTrigger"
+          [cdkConnectedOverlayOpen]="isCoverMenuOpen()"
+          [cdkConnectedOverlayHasBackdrop]="true"
+          cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+          [cdkConnectedOverlayPositions]="overlayPositions"
+          (backdropClick)="closeCoverPicker()"
+        >
+          <div
+            (click)="$event.stopPropagation()"
+            class="w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl overflow-hidden p-3 text-slate-700 dark:text-[#b6c2cf] animate-in fade-in zoom-in-95 duration-100 select-none z-50 text-xs space-y-3"
+          >
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-[#38414a]">
+              <span class="font-semibold text-slate-800 dark:text-[#9fadbc]">Ảnh bìa thẻ (Cover)</span>
+              <button
+                type="button"
+                (click)="closeCoverPicker()"
+                class="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
+              >
+                <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+              </button>
+            </div>
+
+            <!-- Preview -->
+            @if (previewCoverUrl()) {
+              <div class="w-full h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 relative group">
+                <img [src]="previewCoverUrl()!" alt="Cover preview" class="w-full h-full object-cover" />
+              </div>
+            }
+
+            <!-- URL Input -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Đường dẫn ảnh (URL):</label>
+              <input
+                type="url"
+                [ngModel]="coverUrlInput()"
+                (ngModelChange)="onCoverUrlChange($event)"
+                placeholder="https://example.com/image.jpg"
+                class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#38414a] bg-slate-50 dark:bg-[#1d2125] text-slate-800 dark:text-white outline-hidden focus:border-indigo-500 text-xs transition"
+              />
+            </div>
+
+            <!-- Upload File Option -->
+            <div>
+              <label class="w-full py-1.5 px-2.5 rounded-lg border border-dashed border-slate-300 dark:border-[#38414a] hover:border-indigo-500 dark:hover:border-indigo-400 bg-slate-50 dark:bg-[#1d2125]/50 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-indigo-600 cursor-pointer transition">
+                <mat-icon fontIcon="upload" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+                <span>Tải ảnh từ máy tính</span>
+                <input type="file" accept="image/*" (change)="onCoverFileSelected($event)" class="hidden" />
+              </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#38414a]">
+              @if (card().coverUrl || previewCoverUrl()) {
+                <button
+                  type="button"
+                  (click)="removeCover()"
+                  class="text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-medium cursor-pointer"
+                >
+                  Gỡ ảnh bìa
+                </button>
+              } @else {
+                <span></span>
+              }
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  (click)="closeCoverPicker()"
+                  class="px-2.5 py-1 rounded-md text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+                >
+                  Huỷ
+                </button>
+                <button
+                  type="button"
+                  (click)="saveCover()"
+                  class="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs cursor-pointer shadow-xs transition"
+                >
+                  Lưu
+                </button>
+              </div>
             </div>
           </div>
         </ng-template>

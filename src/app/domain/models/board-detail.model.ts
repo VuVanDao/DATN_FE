@@ -91,6 +91,7 @@ export interface UpdateCardRequest {
   title?: string;
   description?: string | null;
   coverUrl?: string | null;
+  coverImage?: File | null;
   type?: number | string;
   priority?: number | string;
   assigneeId?: string | null;

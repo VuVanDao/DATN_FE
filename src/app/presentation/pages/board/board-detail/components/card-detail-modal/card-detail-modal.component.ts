@@ -82,7 +82,7 @@ export class CardDetailModalComponent implements OnInit {
   readonly columnChanged = output<{ cardId: string; columnId: string; columnTitle: string }>();
   readonly titleChanged = output<{ cardId: string; title: string }>();
   readonly descriptionChanged = output<{ cardId: string; description: string }>();
-  readonly coverChanged = output<{ cardId: string; coverUrl: string | null }>();
+  readonly coverChanged = output<{ cardId: string; coverUrl: string | null; file?: File | null }>();
   readonly commentAdded = output<{ cardId: string; content: string }>();
   readonly priorityChanged = output<{ cardId: string; priority: PriorityType }>();
   readonly typeChanged = output<{ cardId: string; type: WorkType }>();
@@ -144,9 +144,11 @@ export class CardDetailModalComponent implements OnInit {
   readonly isWritingComment = signal<boolean>(false);
   readonly showActivityDetails = signal<boolean>(true);
 
-  // Sample default cover image
-  readonly defaultSampleCover =
-    'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80';
+  // Cover State
+  readonly isCoverMenuOpen = signal<boolean>(false);
+  readonly coverUrlInput = signal<string>('');
+  readonly previewCoverUrl = signal<string | null>(null);
+  readonly selectedFile = signal<File | null>(null);
 
   // Priority Options Definitions
   readonly priorityOptions: PriorityOption[] = [
@@ -363,9 +365,9 @@ export class CardDetailModalComponent implements OnInit {
       this.attachments.set([
         {
           id: 'att-1',
-          name: 'abby.jpg',
+          name: 'Cover Image',
           url: c.coverUrl,
-          createdAt: 'Nov 5, 2025, 8:33 PM',
+          createdAt: this.formatDisplayDate(c.createdAt),
           isCover: true,
         },
       ]);
@@ -444,6 +446,7 @@ export class CardDetailModalComponent implements OnInit {
     this.isTypeMenuOpen.set(false);
     this.isDatesMenuOpen.set(false);
     this.isMembersMenuOpen.set(false);
+    this.isCoverMenuOpen.set(false);
   }
 
   // Column Status Dropdown
@@ -543,6 +546,7 @@ export class CardDetailModalComponent implements OnInit {
     this.isTypeMenuOpen.set(false);
     this.isDatesMenuOpen.set(false);
     this.isMembersMenuOpen.set(false);
+    this.isCoverMenuOpen.set(false);
   }
 
   selectPriority(p: PriorityOption): void {
@@ -564,6 +568,7 @@ export class CardDetailModalComponent implements OnInit {
     this.isPriorityMenuOpen.set(false);
     this.isDatesMenuOpen.set(false);
     this.isMembersMenuOpen.set(false);
+    this.isCoverMenuOpen.set(false);
   }
 
   selectType(t: WorkTypeOption): void {
@@ -681,31 +686,73 @@ export class CardDetailModalComponent implements OnInit {
     this.isEditingDescription.set(false);
   }
 
-  // Cover Image Toggle & Actions
-  toggleCover(): void {
-    const hasCover = !!this.currentCoverUrl();
-    if (hasCover) {
-      console.log('[CardDetail] Cover removed');
-      this.currentCoverUrl.set(null);
-      this.attachments.update((list) => list.map((att) => ({ ...att, isCover: false })));
-      this.coverChanged.emit({ cardId: this.card().id, coverUrl: null });
-      this.notificationService.warning('Đã gỡ bỏ ảnh bìa (Cover Image)');
-    } else {
-      console.log('[CardDetail] Cover set to sample image');
-      const newCover = this.defaultSampleCover;
-      this.currentCoverUrl.set(newCover);
-      this.attachments.set([
-        {
-          id: `att-${Date.now()}`,
-          name: 'abby.jpg',
-          url: newCover,
-          createdAt: 'Just now',
-          isCover: true,
-        },
-      ]);
-      this.coverChanged.emit({ cardId: this.card().id, coverUrl: newCover });
-      this.notificationService.success('Đã thêm ảnh bìa mẫu (Cover Image)');
+  // Cover Image Actions & Picker
+  openCoverPicker(event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.closeAllDropdowns();
+    this.selectedFile.set(null);
+    this.coverUrlInput.set(this.currentCoverUrl() || '');
+    this.previewCoverUrl.set(this.currentCoverUrl() || null);
+    this.isCoverMenuOpen.set(true);
+  }
+
+  closeCoverPicker(): void {
+    this.isCoverMenuOpen.set(false);
+  }
+
+  onCoverUrlChange(val: string): void {
+    this.selectedFile.set(null);
+    this.coverUrlInput.set(val);
+    this.previewCoverUrl.set(val.trim() || null);
+  }
+
+  onCoverFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        this.notificationService.error('Kích thước ảnh tối đa là 5MB.');
+        return;
+      }
+      this.selectedFile.set(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        this.previewCoverUrl.set(result);
+        this.coverUrlInput.set(file.name);
+      };
+      reader.readAsDataURL(file);
     }
+  }
+
+  saveCover(): void {
+    const file = this.selectedFile();
+    const trimmed = this.coverUrlInput().trim();
+    const finalUrl = trimmed || null;
+    this.closeCoverPicker();
+
+    if (file) {
+      this.currentCoverUrl.set(this.previewCoverUrl());
+      this.coverChanged.emit({ cardId: this.card().id, coverUrl: this.previewCoverUrl(), file });
+    } else {
+      this.currentCoverUrl.set(finalUrl);
+      this.coverChanged.emit({ cardId: this.card().id, coverUrl: finalUrl });
+      if (finalUrl) {
+        this.notificationService.success('Đã cập nhật ảnh bìa thẻ');
+      } else {
+        this.notificationService.warning('Đã gỡ ảnh bìa thẻ');
+      }
+    }
+  }
+
+  removeCover(): void {
+    this.selectedFile.set(null);
+    this.currentCoverUrl.set(null);
+    this.coverUrlInput.set('');
+    this.previewCoverUrl.set(null);
+    this.closeCoverPicker();
+    this.coverChanged.emit({ cardId: this.card().id, coverUrl: null });
+    this.notificationService.warning('Đã gỡ ảnh bìa thẻ');
   }
 
   toggleAttachmentAsCover(attachment: CardDetailAttachment): void {

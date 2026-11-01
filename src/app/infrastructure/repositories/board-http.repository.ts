@@ -109,11 +109,44 @@ export class BoardHttpRepository implements BoardRepository {
   }
 
   updateCard(cardId: string, request: Partial<UpdateCardRequest>): Observable<CardSummary> {
+    const formData = new FormData();
+    formData.append('cardId', cardId);
+
+    if (request.title !== undefined && request.title !== null) {
+      formData.append('title', request.title.trim());
+    }
+    if (request.description !== undefined && request.description !== null) {
+      formData.append('description', request.description);
+    }
+    if (request.coverImage) {
+      formData.append('coverImage', request.coverImage, request.coverImage.name);
+    } else if (request.coverUrl !== undefined && request.coverUrl !== null) {
+      formData.append('coverUrl', request.coverUrl);
+    }
+    if (request.type !== undefined && request.type !== null) {
+      formData.append('type', String(request.type));
+    }
+    if (request.priority !== undefined && request.priority !== null) {
+      formData.append('priority', String(request.priority));
+    }
+    if (request.assigneeId) {
+      formData.append('assigneeId', request.assigneeId);
+    }
+    if (request.startDate) {
+      formData.append('startDate', request.startDate);
+    }
+    if (request.dueDate) {
+      formData.append('dueDate', request.dueDate);
+    }
+    if (request.storyPoints !== undefined && request.storyPoints !== null) {
+      formData.append('storyPoints', String(request.storyPoints));
+    }
+    if (request.progressPercentage !== undefined && request.progressPercentage !== null) {
+      formData.append('progressPercentage', String(request.progressPercentage));
+    }
+
     return this.http
-      .put<ApiResponse<CardSummary>>(`${this.cardsUrl}/${cardId}`, {
-        cardId,
-        ...request,
-      })
+      .put<ApiResponse<CardSummary>>(`${this.cardsUrl}/${cardId}`, formData)
       .pipe(map((res) => res.data));
   }
 

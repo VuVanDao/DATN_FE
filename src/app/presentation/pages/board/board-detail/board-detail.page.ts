@@ -278,10 +278,18 @@ export class BoardDetailPage implements OnInit {
     });
   }
 
-  onCardDetailCoverChanged(event: { cardId: string; coverUrl: string | null }): void {
-    this.boardStore.updateCard(event.cardId, { coverUrl: event.coverUrl }, (updated) => {
-      this.syncSelectedCard(updated);
-    });
+  onCardDetailCoverChanged(event: {
+    cardId: string;
+    coverUrl: string | null;
+    file?: File | null;
+  }): void {
+    this.boardStore.updateCard(
+      event.cardId,
+      { coverUrl: event.coverUrl, coverImage: event.file },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+    );
   }
 
   onCardDetailCommentAdded(event: { cardId: string; content: string }): void {
@@ -357,6 +365,21 @@ export class BoardDetailPage implements OnInit {
 
   onDeleteCard({ cardId, columnId }: { cardId: string; columnId: string }): void {
     this.boardStore.deleteCard(cardId, columnId);
+  }
+
+  onUpdateCardCover(event: {
+    cardId: string;
+    columnId: string;
+    coverUrl: string | null;
+    file?: File | null;
+  }): void {
+    this.boardStore.updateCard(
+      event.cardId,
+      { coverUrl: event.coverUrl, coverImage: event.file },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+    );
   }
 
   onUpdateCardTitle({

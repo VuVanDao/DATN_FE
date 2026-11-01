@@ -486,6 +486,7 @@ export class BoardStore {
       description:
         updates.description !== undefined ? updates.description : currentCard.description,
       coverUrl: updates.coverUrl !== undefined ? updates.coverUrl : currentCard.coverUrl,
+      coverImage: updates.coverImage !== undefined ? updates.coverImage : null,
       type: updates.type !== undefined ? updates.type : currentCard.type,
       priority: updates.priority !== undefined ? updates.priority : currentCard.priority,
       assigneeId: updates.assigneeId !== undefined ? updates.assigneeId : currentCard.assigneeId,

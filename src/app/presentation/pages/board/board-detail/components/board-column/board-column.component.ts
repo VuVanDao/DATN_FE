@@ -47,6 +47,12 @@ export class BoardColumnComponent {
   readonly cardClick = output<CardSummary>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();
   readonly updateCardTitle = output<{ cardId: string; columnId: string; title: string }>();
+  readonly updateCardCover = output<{
+    cardId: string;
+    columnId: string;
+    coverUrl: string | null;
+    file?: File | null;
+  }>();
 
   readonly titleInputRef = viewChild<ElementRef<HTMLInputElement>>('titleInput');
   readonly cardTextareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('cardTextarea');
