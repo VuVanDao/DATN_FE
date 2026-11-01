@@ -225,6 +225,19 @@ html.dark .custom-user-menu .admin-item mat-icon {
 }
 
 /* ===== TIỆN ÍCH CUSTOM KÍCH THƯỚC MAT-ICON TOÀN DỰ ÁN ===== */
+mat-icon.icon-xxs,
+mat-icon.icon-xs,
+mat-icon.icon-sm,
+mat-icon.icon-md,
+mat-icon.icon-lg,
+mat-icon.icon-xl,
+mat-icon.icon-2xl {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle;
+}
+
 mat-icon.icon-xxs {
   width: 0.875rem !important; /* 14px */
   height: 0.875rem !important;
