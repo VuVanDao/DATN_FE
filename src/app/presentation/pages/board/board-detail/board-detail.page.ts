@@ -251,43 +251,54 @@ export class BoardDetailPage implements OnInit {
 
   // Card handlers
   onCardClick(card: CardSummary): void {
-    console.log('[BoardDetailPage] Opening card detail modal for:', card);
     this.selectedCardForDetail.set(card);
     this.showCardDetailModal.set(true);
+    this.boardStore.loadCardDetail(card.id);
   }
 
   closeCardDetailModal(): void {
-    console.log('[BoardDetailPage] Closing card detail modal');
     this.showCardDetailModal.set(false);
     this.selectedCardForDetail.set(null);
+    this.boardStore.clearCardDetail();
   }
 
   onCardDetailColumnChanged(event: { cardId: string; columnId: string; columnTitle: string }): void {
-    console.log('[BoardDetailPage] Card column changed (console.log only as requested):', event);
+    this.boardStore.moveCardToColumn(event.cardId, event.columnId);
   }
 
   onCardDetailTitleChanged(event: { cardId: string; title: string }): void {
-    console.log('[BoardDetailPage] Card title changed (console.log only as requested):', event);
+    this.boardStore.updateCard(event.cardId, { title: event.title }, (updated) => {
+      this.syncSelectedCard(updated);
+    });
   }
 
   onCardDetailDescriptionChanged(event: { cardId: string; description: string }): void {
-    console.log('[BoardDetailPage] Card description changed (console.log only as requested):', event);
+    this.boardStore.updateCard(event.cardId, { description: event.description }, (updated) => {
+      this.syncSelectedCard(updated);
+    });
   }
 
   onCardDetailCoverChanged(event: { cardId: string; coverUrl: string | null }): void {
-    console.log('[BoardDetailPage] Card cover changed (console.log only as requested):', event);
+    this.boardStore.updateCard(event.cardId, { coverUrl: event.coverUrl }, (updated) => {
+      this.syncSelectedCard(updated);
+    });
   }
 
   onCardDetailCommentAdded(event: { cardId: string; content: string }): void {
-    console.log('[BoardDetailPage] Card comment added (console.log only as requested):', event);
+    this.boardStore.addCardComment(event.cardId, event.content);
   }
 
   onCardDetailPriorityChanged(event: { cardId: string; priority: string }): void {
-    console.log('[BoardDetailPage] Card priority changed (console.log only as requested):', event);
+    this.boardStore.updateCard(event.cardId, { priority: event.priority }, (updated) => {
+      this.syncSelectedCard(updated);
+    });
   }
 
   onCardDetailTypeChanged(event: { cardId: string; type: string }): void {
-    console.log('[BoardDetailPage] Card type changed (console.log only as requested):', event);
+    const backendType = event.type === 'Feature' ? 'Features' : event.type;
+    this.boardStore.updateCard(event.cardId, { type: backendType }, (updated) => {
+      this.syncSelectedCard(updated);
+    });
   }
 
   onCardDetailDatesChanged(event: {
@@ -295,7 +306,16 @@ export class BoardDetailPage implements OnInit {
     startDate: string | null;
     dueDate: string | null;
   }): void {
-    console.log('[BoardDetailPage] Card dates changed (console.log only as requested):', event);
+    this.boardStore.updateCard(
+      event.cardId,
+      {
+        startDate: event.startDate ? new Date(event.startDate).toISOString() : null,
+        dueDate: event.dueDate ? new Date(event.dueDate).toISOString() : null,
+      },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+    );
   }
 
   onCardDetailAssigneeChanged(event: {
@@ -303,11 +323,36 @@ export class BoardDetailPage implements OnInit {
     assigneeId: string | null;
     assigneeName: string | null;
   }): void {
-    console.log('[BoardDetailPage] Card assignee changed (console.log only as requested):', event);
+    const member = event.assigneeId
+      ? this.projectMembers().find((m) => m.userId === event.assigneeId)
+      : null;
+    this.boardStore.updateCard(
+      event.cardId,
+      {
+        assigneeId: event.assigneeId,
+        assigneeName: event.assigneeName,
+        assigneeAvatarUrl: member?.avatarUrl ?? null,
+      },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+    );
   }
 
   onCardDetailProgressChanged(event: { cardId: string; progress: number }): void {
-    console.log('[BoardDetailPage] Card progress changed (console.log only as requested):', event);
+    this.boardStore.updateCard(
+      event.cardId,
+      { progressPercentage: event.progress },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+    );
+  }
+
+  private syncSelectedCard(updated: CardSummary): void {
+    if (this.selectedCardForDetail()?.id === updated.id) {
+      this.selectedCardForDetail.set(updated);
+    }
   }
 
   onDeleteCard({ cardId, columnId }: { cardId: string; columnId: string }): void {

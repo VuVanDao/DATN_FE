@@ -3,17 +3,22 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import {
   BoardDetail,
+  CardComment,
+  CardDetail,
   CardSummary,
   ColumnSummary,
   CreateCardRequest,
+  UpdateCardRequest,
 } from '../../domain/models/board-detail.model';
 import { Board, MyBoards, UpdateBoardRequest } from '../../domain/models/project.model';
+import { AddCardCommentUseCase } from '../board/add-card-comment.use-case';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
 import { DeleteBoardUseCase } from '../board/delete-board.use-case';
 import { DeleteCardUseCase } from '../board/delete-card.use-case';
 import { DeleteColumnUseCase } from '../board/delete-column.use-case';
 import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
+import { GetCardDetailUseCase } from '../board/get-card-detail.use-case';
 import { GetMyBoardsUseCase } from '../board/get-my-boards.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
@@ -29,6 +34,8 @@ import { StoreRequestRunner } from './store-request.util';
 })
 export class BoardStore {
   private readonly getBoardDetailUseCase = inject(GetBoardDetailUseCase);
+  private readonly getCardDetailUseCase = inject(GetCardDetailUseCase);
+  private readonly addCardCommentUseCase = inject(AddCardCommentUseCase);
   private readonly createColumnUseCase = inject(CreateColumnUseCase);
   private readonly updateColumnUseCase = inject(UpdateColumnUseCase);
   private readonly deleteColumnUseCase = inject(DeleteColumnUseCase);
@@ -59,8 +66,13 @@ export class BoardStore {
   private readonly myBoardsSignal = signal<MyBoards>({ recentBoards: [], pinnedBoards: [] });
   private readonly isLoadingMyBoardsSignal = signal<boolean>(false);
 
+  private readonly cardDetailSignal = signal<CardDetail | null>(null);
+  private readonly isLoadingCardDetailSignal = signal<boolean>(false);
+
   readonly currentBoard = this.boardSignal.asReadonly();
   readonly columns = this.columnsSignal.asReadonly();
+  readonly currentCardDetail = this.cardDetailSignal.asReadonly();
+  readonly isLoadingCardDetail = this.isLoadingCardDetailSignal.asReadonly();
   readonly isLoading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
   readonly isAddingColumn = this.isAddingColumnSignal.asReadonly();
@@ -413,12 +425,176 @@ export class BoardStore {
               : col,
           ),
         );
+        if (this.cardDetailSignal()?.id === cardId) {
+          this.cardDetailSignal.set(null);
+        }
         this.notifications.success('Đã xoá thẻ thành công');
       },
       error: () => {
         this.notifications.error('Không thể xoá thẻ. Vui lòng thử lại.');
       },
     });
+  }
+
+  loadCardDetail(cardId: string, onError?: (err: string) => void): void {
+    this.isLoadingCardDetailSignal.set(true);
+    this.getCardDetailUseCase.execute(cardId).subscribe({
+      next: (detail) => {
+        this.cardDetailSignal.set(detail);
+        this.isLoadingCardDetailSignal.set(false);
+      },
+      error: (err) => {
+        this.isLoadingCardDetailSignal.set(false);
+        this.notifications.error('Không thể tải chi tiết thẻ.');
+        onError?.(err?.message || 'Lỗi tải chi tiết thẻ');
+      },
+    });
+  }
+
+  clearCardDetail(): void {
+    this.cardDetailSignal.set(null);
+    this.isLoadingCardDetailSignal.set(false);
+  }
+
+  updateCard(
+    cardId: string,
+    updates: Partial<UpdateCardRequest> & {
+      assigneeName?: string | null;
+      assigneeAvatarUrl?: string | null;
+    },
+    onSuccess?: (updated: CardSummary) => void,
+    onError?: (err: string) => void,
+  ): void {
+    let currentCard: CardSummary | null = null;
+    for (const col of this.columnsSignal()) {
+      const found = col.cards.find((c) => c.id === cardId);
+      if (found) {
+        currentCard = found;
+        break;
+      }
+    }
+    if (!currentCard) {
+      currentCard = this.cardDetailSignal();
+    }
+    if (!currentCard) return;
+
+    const previousCols = this.columnsSignal();
+    const previousDetail = this.cardDetailSignal();
+
+    const fullRequest: UpdateCardRequest = {
+      title: updates.title !== undefined ? updates.title : currentCard.title,
+      description:
+        updates.description !== undefined ? updates.description : currentCard.description,
+      coverUrl: updates.coverUrl !== undefined ? updates.coverUrl : currentCard.coverUrl,
+      type: updates.type !== undefined ? updates.type : currentCard.type,
+      priority: updates.priority !== undefined ? updates.priority : currentCard.priority,
+      assigneeId: updates.assigneeId !== undefined ? updates.assigneeId : currentCard.assigneeId,
+      startDate: updates.startDate !== undefined ? updates.startDate : currentCard.startDate,
+      dueDate: updates.dueDate !== undefined ? updates.dueDate : currentCard.dueDate,
+      storyPoints:
+        updates.storyPoints !== undefined ? updates.storyPoints : currentCard.storyPoints,
+      progressPercentage:
+        updates.progressPercentage !== undefined
+          ? updates.progressPercentage
+          : currentCard.progressPercentage,
+    };
+
+    // Optimistic update
+    this.columnsSignal.update((cols) =>
+      cols.map((col) => ({
+        ...col,
+        cards: col.cards.map((c) => (c.id === cardId ? { ...c, ...updates } : c)),
+      })),
+    );
+
+    if (this.cardDetailSignal()?.id === cardId) {
+      this.cardDetailSignal.update((d) => (d ? { ...d, ...updates } : null));
+    }
+
+    this.updateCardUseCase.execute(cardId, fullRequest).subscribe({
+      next: (updatedCard) => {
+        this.columnsSignal.update((cols) =>
+          cols.map((col) => ({
+            ...col,
+            cards: col.cards.map((c) => (c.id === cardId ? { ...c, ...updatedCard } : c)),
+          })),
+        );
+        if (this.cardDetailSignal()?.id === cardId) {
+          this.cardDetailSignal.update((d) => (d ? { ...d, ...updatedCard } : null));
+        }
+        this.notifications.success('Đã lưu thông tin thẻ thành công');
+        onSuccess?.(updatedCard);
+      },
+      error: (err) => {
+        this.columnsSignal.set(previousCols);
+        this.cardDetailSignal.set(previousDetail);
+        this.notifications.error('Không thể cập nhật thông tin thẻ.');
+        onError?.(err?.message || 'Lỗi cập nhật thẻ');
+      },
+    });
+  }
+
+  addCardComment(
+    cardId: string,
+    contentText: string,
+    onSuccess?: (comment: CardComment) => void,
+  ): void {
+    const trimmed = contentText.trim();
+    if (!trimmed) return;
+
+    this.addCardCommentUseCase.execute(cardId, trimmed).subscribe({
+      next: (newComment) => {
+        if (this.cardDetailSignal()?.id === cardId) {
+          this.cardDetailSignal.update((d) => {
+            if (!d) return null;
+            return {
+              ...d,
+              comments: [newComment, ...(d.comments || [])],
+              commentsCount: (d.commentsCount || 0) + 1,
+            };
+          });
+        }
+
+        this.columnsSignal.update((cols) =>
+          cols.map((col) => ({
+            ...col,
+            cards: col.cards.map((c) =>
+              c.id === cardId ? { ...c, commentsCount: (c.commentsCount || 0) + 1 } : c,
+            ),
+          })),
+        );
+
+        this.notifications.success('Đã gửi bình luận');
+        onSuccess?.(newComment);
+      },
+      error: () => {
+        this.notifications.error('Không thể gửi bình luận. Vui lòng thử lại.');
+      },
+    });
+  }
+
+  moveCardToColumn(
+    cardId: string,
+    targetColumnId: string,
+    onSuccess?: () => void,
+  ): void {
+    const cols = this.columnsSignal();
+    const sourceCol = cols.find((col) => col.cards.some((c) => c.id === cardId));
+    const targetCol = cols.find((col) => col.id === targetColumnId);
+
+    if (!sourceCol || !targetCol || sourceCol.id === targetColumnId) {
+      return;
+    }
+
+    const previousIndex = sourceCol.cards.findIndex((c) => c.id === cardId);
+    const targetIndex = targetCol.cards.length;
+
+    this.moveCard(cardId, sourceCol.id, targetColumnId, previousIndex, targetIndex);
+    if (this.cardDetailSignal()?.id === cardId) {
+      this.cardDetailSignal.update((d) => (d ? { ...d, columnId: targetColumnId } : null));
+    }
+    this.notifications.success(`Đã chuyển thẻ sang cột "${targetCol.title}"`);
+    onSuccess?.();
   }
 
   toggleBoardPin(

@@ -1,6 +1,8 @@
 import { Observable } from 'rxjs';
 import {
   BoardDetail,
+  CardComment,
+  CardDetail,
   CardSummary,
   ColumnSummary,
   CreateCardRequest,
@@ -31,9 +33,11 @@ export abstract class BoardRepository {
   abstract deleteColumn(boardId: string, columnId: string): Observable<boolean>;
   abstract reorderColumns(boardId: string, request: ReorderColumnsRequest): Observable<boolean>;
   abstract createCard(request: CreateCardRequest): Observable<CardSummary>;
+  abstract getCardDetail(cardId: string): Observable<CardDetail>;
   abstract updateCard(cardId: string, request: Partial<UpdateCardRequest>): Observable<CardSummary>;
   abstract moveCard(cardId: string, request: MoveCardRequest): Observable<boolean>;
   abstract deleteCard(cardId: string): Observable<boolean>;
+  abstract addCardComment(cardId: string, contentText: string): Observable<CardComment>;
   abstract updateBoardPreference(
     boardId: string,
     request: UpdateBoardPreferenceRequest,

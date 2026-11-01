@@ -4,6 +4,8 @@ import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   BoardDetail,
+  CardComment,
+  CardDetail,
   CardSummary,
   ColumnSummary,
   CreateCardRequest,
@@ -100,6 +102,12 @@ export class BoardHttpRepository implements BoardRepository {
       .pipe(map((res) => res.data));
   }
 
+  getCardDetail(cardId: string): Observable<CardDetail> {
+    return this.http
+      .get<ApiResponse<CardDetail>>(`${this.cardsUrl}/${cardId}`)
+      .pipe(map((res) => res.data));
+  }
+
   updateCard(cardId: string, request: Partial<UpdateCardRequest>): Observable<CardSummary> {
     return this.http
       .put<ApiResponse<CardSummary>>(`${this.cardsUrl}/${cardId}`, {
@@ -118,6 +126,12 @@ export class BoardHttpRepository implements BoardRepository {
   deleteCard(cardId: string): Observable<boolean> {
     return this.http
       .delete<ApiResponse<boolean>>(`${this.cardsUrl}/${cardId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  addCardComment(cardId: string, contentText: string): Observable<CardComment> {
+    return this.http
+      .post<ApiResponse<CardComment>>(`${this.cardsUrl}/${cardId}/comments`, { contentText })
       .pipe(map((res) => res.data));
   }
 

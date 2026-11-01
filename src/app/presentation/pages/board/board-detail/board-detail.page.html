@@ -136,6 +136,8 @@
     <app-card-detail-modal
       [isOpen]="showCardDetailModal()"
       [card]="selectedCardForDetail()!"
+      [cardDetail]="boardStore.currentCardDetail()"
+      [isLoading]="boardStore.isLoadingCardDetail()"
       [columns]="columns()"
       [members]="projectMembers()"
       (closed)="closeCardDetailModal()"

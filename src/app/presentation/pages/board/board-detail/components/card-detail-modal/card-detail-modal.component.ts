@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  effect,
   ElementRef,
   HostListener,
   inject,
@@ -14,7 +15,11 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { SessionService } from '../../../../../../application/auth/session.service';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
-import { CardSummary, ColumnSummary } from '../../../../../../domain/models/board-detail.model';
+import {
+  CardDetail,
+  CardSummary,
+  ColumnSummary,
+} from '../../../../../../domain/models/board-detail.model';
 import { ProjectMember } from '../../../../../../domain/models/project.model';
 
 export type PriorityType = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -67,6 +72,8 @@ export class CardDetailModalComponent implements OnInit {
   // Inputs
   readonly isOpen = input<boolean>(false);
   readonly card = input.required<CardSummary>();
+  readonly cardDetail = input<CardDetail | null>(null);
+  readonly isLoading = input<boolean>(false);
   readonly columns = input<ColumnSummary[]>([]);
   readonly members = input<ProjectMember[]>([]);
 
@@ -219,8 +226,99 @@ export class CardDetailModalComponent implements OnInit {
   // Activity list
   readonly activities = signal<CardDetailActivity[]>([]);
 
+  constructor() {
+    effect(() => {
+      const detail = this.cardDetail();
+      if (detail && detail.id === this.card().id) {
+        this.syncWithDetail(detail);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.initCardData();
+  }
+
+  private syncWithDetail(d: CardDetail): void {
+    if (!this.isEditingTitle()) {
+      this.currentTitle.set(d.title || '');
+    }
+    if (!this.isEditingDescription()) {
+      this.currentDescription.set(d.description || '');
+    }
+    this.currentCoverUrl.set(d.coverUrl || null);
+    this.currentColumnId.set(d.columnId || '');
+    this.currentPriority.set(this.normalizePriority(d.priority));
+    this.currentType.set(this.normalizeType(d.type));
+    this.currentStartDate.set(this.formatDateForInput(d.startDate));
+    this.currentDueDate.set(this.formatDateForInput(d.dueDate));
+    this.currentAssigneeId.set(d.assigneeId || null);
+    if (d.assigneeId) {
+      const member = this.members().find((m) => m.userId === d.assigneeId);
+      this.currentAssigneeName.set(d.assigneeName || member?.username || this.currentAssigneeName());
+    } else {
+      this.currentAssigneeName.set(null);
+    }
+    this.currentReporterName.set(d.reporterName || 'Đạo Vũ Văn');
+    this.currentProgress.set(d.progressPercentage || 0);
+
+    // Sync Attachments
+    if (d.coverUrl) {
+      this.attachments.set([
+        {
+          id: 'cover-att',
+          name: 'Cover Image',
+          url: d.coverUrl,
+          createdAt: this.formatDisplayDate(d.createdAt),
+          isCover: true,
+        },
+      ]);
+    } else {
+      this.attachments.set([]);
+    }
+
+    // Sync Comments from Backend API
+    const currentCol = this.columns().find((col) => col.id === d.columnId);
+    const colName = currentCol?.title || 'Doing';
+
+    const defaultActivity: CardDetailActivity = {
+      id: 'initial-act',
+      authorName: d.reporterName || 'Đạo Vũ Văn',
+      actionText: `đã thêm thẻ vào ${colName}`,
+      createdAt: this.formatDisplayDate(d.createdAt),
+    };
+
+    if (d.comments && d.comments.length > 0) {
+      const commentActivities: CardDetailActivity[] = d.comments.map((c) => ({
+        id: c.id,
+        authorName: c.username,
+        authorAvatarUrl: c.userAvatarUrl,
+        actionText: 'bình luận',
+        commentContent: c.contentText,
+        createdAt: this.formatDisplayDate(c.createdAt),
+        isComment: true,
+      }));
+      this.activities.set([...commentActivities, defaultActivity]);
+    } else {
+      this.activities.set([defaultActivity]);
+    }
+  }
+
+  private formatDisplayDate(dateStr: string): string {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleString('vi-VN', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return dateStr;
+    }
   }
 
   private initCardData(): void {
@@ -242,7 +340,12 @@ export class CardDetailModalComponent implements OnInit {
 
     // Map Assignee & Reporter
     this.currentAssigneeId.set(c.assigneeId || null);
-    this.currentAssigneeName.set(c.assigneeName || null);
+    if (c.assigneeId) {
+      const member = this.members().find((m) => m.userId === c.assigneeId);
+      this.currentAssigneeName.set(c.assigneeName || member?.username || null);
+    } else {
+      this.currentAssigneeName.set(null);
+    }
     this.currentReporterName.set(c.reporterName || 'Đạo Vũ Văn');
 
     // Progress

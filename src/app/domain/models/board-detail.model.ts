@@ -21,6 +21,20 @@ export interface CardSummary {
   commentsCount: number;
 }
 
+export interface CardComment {
+  id: string;
+  cardId: string;
+  userId: string;
+  username: string;
+  userAvatarUrl?: string | null;
+  contentText: string;
+  createdAt: string;
+}
+
+export interface CardDetail extends CardSummary {
+  comments: CardComment[];
+}
+
 export interface ColumnSummary {
   id: string;
   title: string;
