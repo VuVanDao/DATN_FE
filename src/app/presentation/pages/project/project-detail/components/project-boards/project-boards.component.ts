@@ -17,6 +17,7 @@ type BoardFilterTab = 'all' | 'Kanban' | 'Scrum';
 export class ProjectBoardsComponent {
   readonly boards = input<Board[]>([]);
   readonly isLoading = input<boolean>(false);
+  readonly canCreateBoard = input<boolean>(false);
 
   readonly createBoard = output<void>();
   readonly boardClick = output<Board>();

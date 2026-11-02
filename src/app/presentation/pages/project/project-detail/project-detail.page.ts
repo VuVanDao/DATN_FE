@@ -68,10 +68,12 @@ export class ProjectDetailPage implements OnInit {
   readonly isCurrentLeader = computed(() => {
     const currentUserId = this.session.currentUser()?.id;
     if (!currentUserId) return false;
-    return this.members().some(
+    const isMemberLeader = this.members().some(
       (m) =>
         m.userId.toLowerCase() === currentUserId.toLowerCase() && m.roleName === 'ProjectLeader',
     );
+    const isRoleLeader = this.project()?.currentUserRole === 'ProjectLeader';
+    return isMemberLeader || isRoleLeader;
   });
 
   // Check if current user is WorkspaceOwner
@@ -183,6 +185,10 @@ export class ProjectDetailPage implements OnInit {
   }
 
   openCreateBoardModal(): void {
+    if (!this.isCurrentLeader()) {
+      this.notifications.error('Chỉ Trưởng dự án mới có quyền tạo Bảng mới.');
+      return;
+    }
     this.showCreateBoardModal.set(true);
   }
 

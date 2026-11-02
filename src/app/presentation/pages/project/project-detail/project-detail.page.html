@@ -276,6 +276,7 @@
         class="block lg:col-span-2"
         [boards]="boards()"
         [isLoading]="projectStore.isLoadingBoards()"
+        [canCreateBoard]="isCurrentLeader()"
         (createBoard)="openCreateBoardModal()"
         (boardClick)="onBoardClick($event)"
         (togglePin)="onTogglePin($event)"
