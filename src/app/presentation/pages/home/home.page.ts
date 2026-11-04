@@ -53,7 +53,7 @@ export class HomePage implements OnInit {
   onTogglePin(event: Event, board: MyBoardItem): void {
     event.stopPropagation();
     event.preventDefault();
-    this.boardStore.toggleBoardPinById(board.boardId, board.isPinned, 12);
+    this.boardStore.toggleBoardPin(board.boardId, board.isPinned);
   }
 
   onBoardClick(board: MyBoardItem): void {

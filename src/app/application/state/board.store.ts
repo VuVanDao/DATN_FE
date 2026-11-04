@@ -611,18 +611,56 @@ export class BoardStore {
   }
 
   toggleBoardPin(
+    boardId?: string,
+    currentPinned?: boolean,
     onSuccess?: (isPinned: boolean) => void,
     onError?: (previousPinned: boolean) => void,
   ): void {
-    const board = this.boardSignal();
-    if (!board) return;
-    const previousPinned = !!board.isPinned;
-    const nextPinned = !previousPinned;
-    this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
+    const targetBoardId = boardId ?? this.boardSignal()?.id;
+    if (!targetBoardId) return;
 
-    this.updateBoardPreferenceUseCase.execute(board.id, { isPinned: nextPinned }).subscribe({
+    const previousPinned = currentPinned ?? !!this.boardSignal()?.isPinned;
+    const nextPinned = !previousPinned;
+
+    // 1. Cập nhật lạc quan bảng đang mở (nếu trùng ID)
+    if (this.boardSignal()?.id === targetBoardId) {
+      this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
+    }
+
+    // 2. Cập nhật lạc quan trong myBoardsSignal (cho Trang chủ & Sidebar)
+    this.myBoardsSignal.update((state) => {
+      const updateList = (list: MyBoardItem[]) =>
+        list.map((b) => (b.boardId === targetBoardId ? { ...b, isPinned: nextPinned } : b));
+
+      const updatedRecent = updateList(state.recentBoards);
+      let updatedPinned: MyBoardItem[];
+
+      if (nextPinned) {
+        const found = state.recentBoards.find((b) => b.boardId === targetBoardId);
+        if (found) {
+          updatedPinned = [
+            { ...found, isPinned: true },
+            ...state.pinnedBoards.filter((b) => b.boardId !== targetBoardId),
+          ];
+        } else {
+          updatedPinned = updateList(state.pinnedBoards);
+        }
+      } else {
+        updatedPinned = state.pinnedBoards.filter((b) => b.boardId !== targetBoardId);
+      }
+
+      return {
+        recentBoards: updatedRecent,
+        pinnedBoards: updatedPinned,
+      };
+    });
+
+    // 3. Gửi API cập nhật preference
+    this.updateBoardPreferenceUseCase.execute(targetBoardId, { isPinned: nextPinned }).subscribe({
       next: (pref) => {
-        this.boardSignal.update((b) => (b ? { ...b, isPinned: pref.isPinned } : null));
+        if (this.boardSignal()?.id === targetBoardId) {
+          this.boardSignal.update((b) => (b ? { ...b, isPinned: pref.isPinned } : null));
+        }
         this.notifications.success(
           nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
         );
@@ -630,8 +668,11 @@ export class BoardStore {
         onSuccess?.(pref.isPinned);
       },
       error: () => {
-        this.boardSignal.update((b) => (b ? { ...b, isPinned: previousPinned } : null));
+        if (this.boardSignal()?.id === targetBoardId) {
+          this.boardSignal.update((b) => (b ? { ...b, isPinned: previousPinned } : null));
+        }
         this.notifications.error('Không thể cập nhật tùy chọn ghim bảng.');
+        this.loadMyBoards();
         onError?.(previousPinned);
       },
     });
@@ -695,63 +736,6 @@ export class BoardStore {
       toastOnError: false,
       onSuccess: (data) => {
         this.myBoardsSignal.set(data || { recentBoards: [], pinnedBoards: [] });
-      },
-    });
-  }
-
-  toggleBoardPinById(
-    boardId: string,
-    currentPinned: boolean,
-    limit?: number,
-    onSuccess?: (isPinned: boolean) => void,
-    onError?: (previousPinned: boolean) => void,
-  ): void {
-    const nextPinned = !currentPinned;
-
-    // Cập nhật lạc quan (optimistic) trong myBoardsSignal
-    this.myBoardsSignal.update((state) => {
-      const updateList = (list: MyBoardItem[]) =>
-        list.map((b) => (b.boardId === boardId ? { ...b, isPinned: nextPinned } : b));
-
-      const updatedRecent = updateList(state.recentBoards);
-      let updatedPinned: MyBoardItem[];
-
-      if (nextPinned) {
-        const found = state.recentBoards.find((b) => b.boardId === boardId);
-        if (found) {
-          updatedPinned = [
-            { ...found, isPinned: true },
-            ...state.pinnedBoards.filter((b) => b.boardId !== boardId),
-          ];
-        } else {
-          updatedPinned = updateList(state.pinnedBoards);
-        }
-      } else {
-        updatedPinned = state.pinnedBoards.filter((b) => b.boardId !== boardId);
-      }
-
-      return {
-        recentBoards: updatedRecent,
-        pinnedBoards: updatedPinned,
-      };
-    });
-
-    if (this.boardSignal()?.id === boardId) {
-      this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
-    }
-
-    this.updateBoardPreferenceUseCase.execute(boardId, { isPinned: nextPinned }).subscribe({
-      next: (pref) => {
-        this.notifications.success(
-          nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
-        );
-        this.loadMyBoards(limit);
-        onSuccess?.(pref.isPinned);
-      },
-      error: () => {
-        this.notifications.error('Không thể cập nhật tùy chọn ghim bảng.');
-        this.loadMyBoards(limit);
-        onError?.(currentPinned);
       },
     });
   }

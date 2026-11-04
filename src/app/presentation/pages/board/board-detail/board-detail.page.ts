@@ -407,6 +407,8 @@ export class BoardDetailPage implements OnInit {
 
     // 2. Chỉ gọi toggleBoardPin qua boardStore (nơi duy nhất gửi HTTP request API)
     this.boardStore.toggleBoardPin(
+      board.id,
+      board.isPinned,
       (isPinned) => {
         this.projectStore.setBoardPinnedLocally(board.id, isPinned);
       },
