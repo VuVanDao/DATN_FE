@@ -1,0 +1,132 @@
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin()"
+  [cdkConnectedOverlayOpen]="isOpen()"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPositions]="overlayPositions"
+  (backdropClick)="closed.emit()"
+>
+  <div
+    (click)="$event.stopPropagation()"
+    class="w-64 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl overflow-hidden py-1.5 text-slate-700 dark:text-[#b6c2cf] animate-in fade-in zoom-in-95 duration-100 select-none z-50 text-xs"
+  >
+    <!-- Menu Header -->
+    <div
+      class="relative px-3.5 py-2 border-b border-slate-200/80 dark:border-[#38414a] flex items-center justify-between"
+    >
+      <h3 class="text-xs sm:text-[13px] font-semibold text-slate-700 dark:text-[#9fadbc]">
+        Thao tác thẻ
+      </h3>
+      <button
+        type="button"
+        (click)="closed.emit()"
+        class="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 transition cursor-pointer"
+        title="Đóng menu"
+        aria-label="Đóng menu"
+      >
+        <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+      </button>
+    </div>
+
+    <!-- Menu Action Items -->
+    <div class="p-1.5 space-y-0.5">
+      <!-- Mở chi tiết thẻ -->
+      <button
+        type="button"
+        (click)="onOpenDetail()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon
+          fontIcon="open_in_new"
+          class="icon-xxs text-slate-400 shrink-0"
+        ></mat-icon>
+        <span class="translate-y-px">Mở chi tiết thẻ</span>
+      </button>
+
+      <!-- Chỉnh sửa tiêu đề -->
+      <button
+        type="button"
+        (click)="onEditTitle()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon fontIcon="edit" class="icon-xxs text-slate-400 shrink-0"></mat-icon>
+        <span class="translate-y-px">Chỉnh sửa tiêu đề</span>
+      </button>
+
+      <!-- Thay đổi ảnh bìa -->
+      <button
+        type="button"
+        (click)="onChangeCover()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon fontIcon="image" class="icon-xxs text-slate-400 shrink-0"></mat-icon>
+        <span class="translate-y-px">Thay đổi ảnh bìa</span>
+      </button>
+
+      <!-- Thay đổi thành viên -->
+      <button
+        type="button"
+        (click)="onChangeMembers()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon
+          fontIcon="person_outline"
+          class="icon-xxs text-slate-400 shrink-0"
+        ></mat-icon>
+        <span class="translate-y-px">Thay đổi thành viên</span>
+      </button>
+
+      <!-- Thay đổi ngày hết hạn -->
+      <button
+        type="button"
+        (click)="onChangeDueDate()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon fontIcon="schedule" class="icon-xxs text-slate-400 shrink-0"></mat-icon>
+        <span class="translate-y-px">Thay đổi ngày hết hạn</span>
+      </button>
+
+      <!-- Di chuyển thẻ -->
+      <button
+        type="button"
+        (click)="onMoveCard()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon
+          fontIcon="arrow_forward"
+          class="icon-xxs text-slate-400 shrink-0"
+        ></mat-icon>
+        <span class="translate-y-px">Di chuyển thẻ</span>
+      </button>
+
+      <!-- Sao chép thẻ -->
+      <button
+        type="button"
+        (click)="onCopyCard()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center gap-2 cursor-pointer"
+      >
+        <mat-icon
+          fontIcon="content_copy"
+          class="icon-xxs text-slate-400 shrink-0"
+        ></mat-icon>
+        <span class="translate-y-px">Sao chép thẻ</span>
+      </button>
+
+      <div class="my-1 border-t border-slate-200/80 dark:border-[#38414a]"></div>
+
+      <!-- Xoá thẻ này -->
+      <button
+        type="button"
+        (click)="onDeleteCard()"
+        class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition flex items-center gap-2 cursor-pointer group"
+      >
+        <mat-icon
+          fontIcon="delete_outline"
+          class="icon-xxs text-red-500 shrink-0"
+        ></mat-icon>
+        <span class="translate-y-px">Xoá thẻ này</span>
+      </button>
+    </div>
+  </div>
+</ng-template>
