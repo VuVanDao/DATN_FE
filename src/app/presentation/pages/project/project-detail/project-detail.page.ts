@@ -14,14 +14,16 @@ import {
   Board,
   Project,
   ProjectMember,
-  ProjectRole,
 } from '../../../../domain/models/project.model';
 import { toProjectView } from '../../../view-models/project.view-model';
 import { AddProjectMemberModalComponent } from './components/add-project-member-modal/add-project-member-modal.component';
+import { ChangeProjectMemberModalComponent } from './components/change-project-member-modal/change-project-member-modal.component';
 import { CreateBoardModalComponent } from './components/create-board-modal/create-board-modal.component';
 import { ProjectBoardsComponent } from './components/project-boards/project-boards.component';
+import { ProjectHeroHeaderComponent } from './components/project-hero-header/project-hero-header.component';
 import { ProjectMembersComponent } from './components/project-members/project-members.component';
 import { ProjectSettingsModalComponent } from './components/project-settings-modal/project-settings-modal.component';
+import { RemoveProjectMemberModalComponent } from './components/remove-project-member-modal/remove-project-member-modal.component';
 
 @Component({
   selector: 'app-project-detail-page',
@@ -31,11 +33,14 @@ import { ProjectSettingsModalComponent } from './components/project-settings-mod
     FormsModule,
     MatIconModule,
     RouterModule,
+    ProjectHeroHeaderComponent,
     ProjectSettingsModalComponent,
     AddProjectMemberModalComponent,
     CreateBoardModalComponent,
     ProjectBoardsComponent,
     ProjectMembersComponent,
+    ChangeProjectMemberModalComponent,
+    RemoveProjectMemberModalComponent,
   ],
   templateUrl: './project-detail.page.html',
 })
@@ -115,20 +120,7 @@ export class ProjectDetailPage implements OnInit {
 
   // Đổi vai trò & chức danh thành viên
   readonly memberToChangeRole = signal<ProjectMember | null>(null); // Thành viên đang được chọn để thiết lập
-  readonly selectedNewRoleId = signal<string | null>(null); // Vai trò mới được chọn
-  readonly selectedJobTitle = signal<string>(''); // Chức danh mới (Job Title)
   readonly changeRoleError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận
-  readonly selectedRole = computed<ProjectRole | undefined>(() => {
-    const roleId = this.selectedNewRoleId();
-    return this.projectStore.roles().find((r) => r.id === roleId);
-  });
-  readonly isChangeRoleDirty = computed<boolean>(() => {
-    const member = this.memberToChangeRole();
-    if (!member) return false;
-    const roleChanged = !!this.selectedNewRoleId() && this.selectedNewRoleId() !== member.roleId;
-    const titleChanged = this.selectedJobTitle().trim() !== (member.jobTitle ?? '').trim();
-    return roleChanged || titleChanged;
-  });
 
   ngOnInit(): void {
     this.layoutService.setSidebar('main');
@@ -304,8 +296,6 @@ export class ProjectDetailPage implements OnInit {
     this.projectStore.loadRoles();
     this.changeRoleError.set(null);
     this.memberToChangeRole.set(member);
-    this.selectedNewRoleId.set(member.roleId);
-    this.selectedJobTitle.set(member.jobTitle ?? '');
   }
 
   closeChangeRoleModal(force = false): void {
@@ -315,16 +305,14 @@ export class ProjectDetailPage implements OnInit {
     )
       return;
     this.memberToChangeRole.set(null);
-    this.selectedNewRoleId.set(null);
-    this.selectedJobTitle.set('');
     this.changeRoleError.set(null);
   }
 
-  confirmChangeRole(): void {
+  confirmChangeRole(payload: { newRoleId: string | null; jobTitle: string }): void {
     const member = this.memberToChangeRole();
     const project = this.project();
-    const newRoleId = this.selectedNewRoleId();
-    const jobTitle = this.selectedJobTitle().trim();
+    const newRoleId = payload.newRoleId;
+    const jobTitle = payload.jobTitle.trim();
     if (
       !member ||
       !project ||
