@@ -11,17 +11,6 @@ import { MyBoardItem } from '../../../domain/models/project.model';
 import { Workspace } from '../../../domain/models/workspace.model';
 import { toWorkspaceView, WorkspaceView } from '../../view-models/workspace.view-model';
 
-const BOARD_GRADIENTS = [
-  'from-indigo-600 to-blue-700',
-  'from-emerald-600 to-teal-700',
-  'from-blue-600 to-cyan-700',
-  'from-purple-600 to-violet-800',
-  'from-amber-600 to-orange-700',
-  'from-rose-600 to-pink-700',
-  'from-teal-600 to-emerald-700',
-  'from-sky-600 to-indigo-700',
-];
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -65,16 +54,6 @@ export class HomePage implements OnInit {
   onSelectWorkspace(ws: Workspace): void {
     this.workspaceStore.selectWorkspace(ws.id);
     void this.router.navigate(['/workspaces', ws.slug]);
-  }
-
-  getBoardGradient(id: string): string {
-    let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-      hash = (hash << 5) - hash + id.charCodeAt(i);
-      hash |= 0;
-    }
-    const index = Math.abs(hash) % BOARD_GRADIENTS.length;
-    return BOARD_GRADIENTS[index];
   }
 
   formatRelativeTime(dateStr: string): string {
