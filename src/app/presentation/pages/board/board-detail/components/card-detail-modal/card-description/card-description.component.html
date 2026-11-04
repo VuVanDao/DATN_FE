@@ -1,0 +1,63 @@
+<div class="space-y-2 pt-1">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2 text-slate-800 dark:text-[#9fadbc]">
+      <mat-icon fontIcon="notes" class="text-sm! w-4! h-4! text-slate-400"></mat-icon>
+      <h3 class="text-xs sm:text-[13px] font-semibold">Mô tả</h3>
+    </div>
+    @if (description() && !isEditing()) {
+      <button
+        type="button"
+        (click)="startEditing()"
+        class="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#282e33] hover:bg-slate-200 dark:hover:bg-[#333c43] text-slate-700 dark:text-[#b6c2cf] text-xs font-medium cursor-pointer transition"
+      >
+        Chỉnh sửa
+      </button>
+    }
+  </div>
+
+  @if (isEditing()) {
+    <div class="space-y-2">
+      <textarea
+        #descriptionInput
+        [ngModel]="currentText()"
+        (ngModelChange)="currentText.set($event)"
+        placeholder="Thêm mô tả chi tiết hơn cho công việc này..."
+        rows="4"
+        class="w-full bg-white dark:bg-[#22272b] border border-slate-300 dark:border-[#38414a] focus:border-indigo-500 rounded-lg p-3 text-xs text-slate-900 dark:text-white outline-hidden resize-none transition leading-relaxed"
+      ></textarea>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="save()"
+          class="px-3.5 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer shadow-xs transition"
+        >
+          Lưu
+        </button>
+        <button
+          type="button"
+          (click)="cancelEditing()"
+          class="px-3 py-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#282e33] text-xs cursor-pointer transition"
+        >
+          Huỷ
+        </button>
+      </div>
+    </div>
+  } @else {
+    @if (description()) {
+      <div
+        (click)="startEditing()"
+        class="p-2.5 rounded-lg text-xs text-slate-800 dark:text-[#b6c2cf] leading-relaxed whitespace-pre-wrap cursor-pointer hover:bg-slate-50 dark:hover:bg-[#22272b]/50 transition"
+        title="Nhấn để chỉnh sửa mô tả"
+      >
+        {{ description() }}
+      </div>
+    } @else {
+      <div
+        (click)="startEditing()"
+        class="min-h-[72px] p-3.5 rounded-xl bg-slate-50 dark:bg-[#22272b] hover:bg-slate-100 dark:hover:bg-[#282e33] border border-transparent hover:border-slate-300 dark:hover:border-[#38414a] text-xs text-slate-400 dark:text-[#8c9bab] cursor-pointer transition"
+      >
+        Thêm mô tả chi tiết hơn cho công việc này...
+      </div>
+    }
+  }
+</div>

@@ -13,7 +13,6 @@
     </div>
   }
 
-  <!-- Card Body: Chỉ hiển thị tiêu đề và nút thao tác 3 chấm (đã loại bỏ toàn bộ badge) -->
   <div class="px-3 py-2 flex flex-col justify-center">
     <!-- Inline Title Editor vs Normal Title + 3-dots Menu Button -->
     @if (isEditingTitle()) {
@@ -55,7 +54,6 @@
           {{ card().title }}
         </p>
 
-        <!-- 3-Dots / Edit Action Button (Như dấu 3 chấm của cột) -->
         <button
           #cardMenuTrigger="cdkOverlayOrigin"
           cdkOverlayOrigin

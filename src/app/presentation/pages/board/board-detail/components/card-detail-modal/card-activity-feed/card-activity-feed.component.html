@@ -1,0 +1,123 @@
+<div class="space-y-4">
+  <!-- Comments Header -->
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2 text-slate-800 dark:text-[#9fadbc]">
+      <mat-icon
+        fontIcon="chat_bubble_outline"
+        class="text-sm! w-4! h-4! text-slate-400"
+      ></mat-icon>
+      <h3 class="text-xs sm:text-[13px] font-semibold">Bình luận & Hoạt động</h3>
+    </div>
+    <button
+      type="button"
+      (click)="toggleShowDetails()"
+      class="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#282e33] hover:bg-slate-200 dark:hover:bg-[#333c43] text-slate-700 dark:text-[#b6c2cf] text-xs font-medium cursor-pointer transition"
+    >
+      {{ showDetails() ? 'Ẩn chi tiết' : 'Hiện chi tiết' }}
+    </button>
+  </div>
+
+  <!-- Write a comment input box -->
+  <div class="flex items-start gap-2.5">
+    <!-- Current User Avatar -->
+    <div
+      class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs overflow-hidden mt-0.5"
+    >
+      @if (currentUserAvatar()) {
+        <img [src]="currentUserAvatar()!" [alt]="currentUserName()" class="w-full h-full object-cover" />
+      } @else {
+        {{ currentUserName().charAt(0).toUpperCase() }}
+      }
+    </div>
+
+    <!-- Input area -->
+    <div class="flex-1 min-w-0">
+      @if (isWritingComment()) {
+        <div class="space-y-2">
+          <textarea
+            #commentInput
+            [ngModel]="newCommentText()"
+            (ngModelChange)="newCommentText.set($event)"
+            (keydown.control.enter)="saveComment()"
+            (keydown.meta.enter)="saveComment()"
+            placeholder="Viết bình luận... (Ctrl+Enter để gửi)"
+            rows="3"
+            class="w-full bg-white dark:bg-[#22272b] border border-slate-300 dark:border-[#38414a] focus:border-indigo-500 rounded-xl p-3 text-xs text-slate-900 dark:text-white outline-hidden resize-none transition leading-relaxed shadow-2xs"
+          ></textarea>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              (click)="saveComment()"
+              [disabled]="!newCommentText().trim()"
+              class="px-3.5 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold cursor-pointer shadow-xs transition"
+            >
+              Lưu
+            </button>
+            <button
+              type="button"
+              (click)="cancelComment()"
+              class="px-3 py-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#282e33] text-xs cursor-pointer transition"
+            >
+              Huỷ
+            </button>
+          </div>
+        </div>
+      } @else {
+        <!-- Clickable Placeholder Box -->
+        <div
+          (click)="startWritingComment()"
+          class="w-full bg-slate-50 dark:bg-[#22272b] hover:bg-slate-100 dark:hover:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl px-3.5 py-2.5 text-xs text-slate-400 dark:text-[#8c9bab] cursor-text transition shadow-2xs"
+        >
+          Viết bình luận...
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Activity & Comments Stream -->
+  @if (showDetails()) {
+    <div class="space-y-3 pt-1">
+      @for (item of activities(); track item.id) {
+        <div class="flex items-start gap-2.5 text-xs">
+          <!-- User Avatar -->
+          <div
+            class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs overflow-hidden"
+          >
+            @if (item.authorAvatarUrl) {
+              <img
+                [src]="item.authorAvatarUrl"
+                [alt]="item.authorName"
+                (error)="item.authorAvatarUrl = null"
+                class="w-full h-full object-cover"
+              />
+            } @else {
+              {{ item.authorName.charAt(0).toUpperCase() }}
+            }
+          </div>
+
+          <!-- Details -->
+          <div class="flex-1 min-w-0">
+            <p class="leading-snug">
+              <span class="font-semibold text-slate-900 dark:text-white">{{
+                item.authorName
+              }}</span>
+              <span class="text-slate-600 dark:text-[#9fadbc]"> {{ item.actionText }}</span>
+            </p>
+            <p class="text-[11px] text-slate-400 dark:text-[#8c9bab] mt-0.5">
+              {{ item.createdAt }}
+            </p>
+
+            <!-- Comment message box (if this activity is a comment) -->
+            @if (item.isComment && item.commentContent) {
+              <div
+                class="mt-1.5 p-2.5 rounded-xl bg-slate-50 dark:bg-[#22272b] border border-slate-200 dark:border-[#38414a] text-xs text-slate-800 dark:text-[#b6c2cf] leading-relaxed shadow-2xs whitespace-pre-wrap break-words"
+              >
+                {{ item.commentContent }}
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
