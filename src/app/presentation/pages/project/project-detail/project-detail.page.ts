@@ -98,6 +98,7 @@ export class ProjectDetailPage implements OnInit {
     () =>
       this.projectStore.isRemovingMember() ||
       this.projectStore.isUpdatingMemberRole() ||
+      this.projectStore.isUpdatingMemberJobTitle() ||
       this.projectStore.isAddingMember() ||
       this.projectStore.isDeleting(),
   );
@@ -112,13 +113,21 @@ export class ProjectDetailPage implements OnInit {
   readonly memberToRemove = signal<ProjectMember | null>(null); // Thành viên đang được chọn để xóa
   readonly memberRemovalError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận
 
-  // Đổi vai trò thành viên
-  readonly memberToChangeRole = signal<ProjectMember | null>(null); // Thành viên đang được chọn để đổi vai trò
+  // Đổi vai trò & chức danh thành viên
+  readonly memberToChangeRole = signal<ProjectMember | null>(null); // Thành viên đang được chọn để thiết lập
   readonly selectedNewRoleId = signal<string | null>(null); // Vai trò mới được chọn
-  readonly changeRoleError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận đổi vai trò
+  readonly selectedJobTitle = signal<string>(''); // Chức danh mới (Job Title)
+  readonly changeRoleError = signal<string | null>(null); // Lỗi hiển thị trong hộp xác nhận
   readonly selectedRole = computed<ProjectRole | undefined>(() => {
     const roleId = this.selectedNewRoleId();
     return this.projectStore.roles().find((r) => r.id === roleId);
+  });
+  readonly isChangeRoleDirty = computed<boolean>(() => {
+    const member = this.memberToChangeRole();
+    if (!member) return false;
+    const roleChanged = !!this.selectedNewRoleId() && this.selectedNewRoleId() !== member.roleId;
+    const titleChanged = this.selectedJobTitle().trim() !== (member.jobTitle ?? '').trim();
+    return roleChanged || titleChanged;
   });
 
   ngOnInit(): void {
@@ -286,21 +295,28 @@ export class ProjectDetailPage implements OnInit {
   }
 
   openChangeRoleModal(member: ProjectMember): void {
-    if (!this.canChangeRole(member) || this.projectStore.isUpdatingMemberRole()) return;
+    if (
+      !this.canChangeRole(member) ||
+      this.projectStore.isUpdatingMemberRole() ||
+      this.projectStore.isUpdatingMemberJobTitle()
+    )
+      return;
     this.projectStore.loadRoles();
     this.changeRoleError.set(null);
     this.memberToChangeRole.set(member);
-    // Mặc định chọn vai trò đối ứng nếu đã có roles
-    const oppositeRole =
-      this.projectStore.roles().find((r) => r.name !== member.roleName) ??
-      this.projectStore.roles().find((r) => r.id !== member.roleId);
-    this.selectedNewRoleId.set(oppositeRole?.id ?? null);
+    this.selectedNewRoleId.set(member.roleId);
+    this.selectedJobTitle.set(member.jobTitle ?? '');
   }
 
   closeChangeRoleModal(force = false): void {
-    if (!force && this.projectStore.isUpdatingMemberRole()) return;
+    if (
+      !force &&
+      (this.projectStore.isUpdatingMemberRole() || this.projectStore.isUpdatingMemberJobTitle())
+    )
+      return;
     this.memberToChangeRole.set(null);
     this.selectedNewRoleId.set(null);
+    this.selectedJobTitle.set('');
     this.changeRoleError.set(null);
   }
 
@@ -308,19 +324,60 @@ export class ProjectDetailPage implements OnInit {
     const member = this.memberToChangeRole();
     const project = this.project();
     const newRoleId = this.selectedNewRoleId();
-    if (!member || !project || !newRoleId || this.projectStore.isUpdatingMemberRole()) return;
+    const jobTitle = this.selectedJobTitle().trim();
+    if (
+      !member ||
+      !project ||
+      this.projectStore.isUpdatingMemberRole() ||
+      this.projectStore.isUpdatingMemberJobTitle()
+    )
+      return;
+
+    const roleChanged = !!newRoleId && newRoleId !== member.roleId;
+    const titleChanged = jobTitle !== (member.jobTitle ?? '').trim();
+
+    if (!roleChanged && !titleChanged) return;
     this.changeRoleError.set(null);
-    this.projectStore.updateMemberRole(
-      project.id,
-      member.userId,
-      { newRoleId },
-      () => {
-        this.closeChangeRoleModal(true);
-      },
-      (message) => {
-        this.changeRoleError.set(message);
-      },
-    );
+
+    if (roleChanged && titleChanged) {
+      this.projectStore.updateMemberRole(
+        project.id,
+        member.userId,
+        { newRoleId: newRoleId! },
+        () => {
+          this.projectStore.updateMemberJobTitle(
+            project.id,
+            member.userId,
+            { jobTitle: jobTitle || null },
+            () => this.closeChangeRoleModal(true),
+            (err) => this.changeRoleError.set(err),
+          );
+        },
+        (message) => this.changeRoleError.set(message),
+      );
+      return;
+    }
+
+    if (roleChanged) {
+      this.projectStore.updateMemberRole(
+        project.id,
+        member.userId,
+        { newRoleId: newRoleId! },
+        () => this.closeChangeRoleModal(true),
+        (message) => this.changeRoleError.set(message),
+      );
+      return;
+    }
+
+    if (titleChanged) {
+      this.projectStore.updateMemberJobTitle(
+        project.id,
+        member.userId,
+        { jobTitle: jobTitle || null },
+        () => this.closeChangeRoleModal(true),
+        (message) => this.changeRoleError.set(message),
+      );
+    }
   }
 
   goBack(): void {

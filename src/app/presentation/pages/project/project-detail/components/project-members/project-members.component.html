@@ -127,14 +127,25 @@
 
           <!-- Text details -->
           <div class="min-w-0 flex-1">
-            <!-- Line 1: Username & (Bạn) tag -->
-            <div class="flex items-center gap-1.5 min-w-0">
+            <!-- Line 1: Username & (Bạn) tag & JobTitle -->
+            <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
               <span
                 class="text-xs font-semibold text-slate-900 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-white transition truncate block"
                 [title]="member.username"
               >
                 {{ member.username }}
               </span>
+              @if (isSelf(member)) {
+                <span class="text-[10px] text-slate-400 font-normal">(Bạn)</span>
+              }
+              @if (member.jobTitle) {
+                <span
+                  class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 truncate max-w-[130px]"
+                  [title]="member.jobTitle"
+                >
+                  {{ member.jobTitle }}
+                </span>
+              }
             </div>
 
             <!-- Line 2: Role Tag & Email -->
@@ -170,11 +181,11 @@
               type="button"
               (click)="changeRole.emit(member)"
               [disabled]="isBusy()"
-              title="Đổi vai trò thành viên"
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 active:bg-amber-100 dark:active:bg-amber-500/20 border border-transparent hover:border-amber-200 dark:hover:border-amber-500/20 transition cursor-pointer disabled:opacity-50"
+              title="Thiết lập vai trò & chức danh thành viên"
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 active:bg-indigo-100 dark:active:bg-indigo-500/20 border border-transparent hover:border-indigo-200 dark:hover:border-indigo-500/20 transition cursor-pointer disabled:opacity-50"
             >
-              <mat-icon fontIcon="swap_horiz" class="text-sm! w-auto! h-auto!"></mat-icon>
-              <span class="text-[11px]">Đổi vai trò</span>
+              <mat-icon fontIcon="tune" class="text-sm! w-auto! h-auto!"></mat-icon>
+              <span class="text-[11px]">Vai trò</span>
             </button>
           }
           @if (canRemove(member)) {

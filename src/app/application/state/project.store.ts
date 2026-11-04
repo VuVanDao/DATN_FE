@@ -8,6 +8,7 @@ import {
   ProjectMember,
   ProjectRole,
   UpdateProjectMemberRoleRequest,
+  UpdateProjectMemberJobTitleRequest,
   UpdateProjectRequest,
 } from '../../domain/models/project.model';
 import { AddProjectMembersUseCase } from '../project/add-project-members.use-case';
@@ -20,6 +21,7 @@ import { GetProjectRolesUseCase } from '../project/get-project-roles.use-case';
 import { RemoveProjectMemberUseCase } from '../project/remove-project-member.use-case';
 import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
 import { UpdateProjectMemberRoleUseCase } from '../project/update-project-member-role.use-case';
+import { UpdateProjectMemberJobTitleUseCase } from '../project/update-project-member-job-title.use-case';
 import { UpdateProjectUseCase } from '../project/update-project.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { BoardStore } from './board.store';
@@ -37,6 +39,7 @@ export class ProjectStore {
   private readonly deleteProjectUseCase = inject(DeleteProjectUseCase);
   private readonly removeProjectMemberUseCase = inject(RemoveProjectMemberUseCase);
   private readonly updateProjectMemberRoleUseCase = inject(UpdateProjectMemberRoleUseCase);
+  private readonly updateProjectMemberJobTitleUseCase = inject(UpdateProjectMemberJobTitleUseCase);
   private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
   private readonly boardStore = inject(BoardStore);
 
@@ -57,6 +60,7 @@ export class ProjectStore {
   private readonly addingMemberSignal = signal<boolean>(false);
   private readonly removingMemberSignal = signal(false); // trạng thái đang xóa thành viên dự án
   private readonly updatingMemberRoleSignal = signal(false); // trạng thái đang cập nhật vai trò thành viên
+  private readonly updatingMemberJobTitleSignal = signal(false); // trạng thái đang cập nhật chức danh thành viên
   private readonly creatingBoardSignal = signal<boolean>(false);
   private readonly loadingRolesSignal = signal(false);
   private readonly rolesErrorSignal = signal<string | null>(null);
@@ -74,6 +78,7 @@ export class ProjectStore {
   readonly isAddingMember = this.addingMemberSignal.asReadonly();
   readonly isRemovingMember = this.removingMemberSignal.asReadonly();
   readonly isUpdatingMemberRole = this.updatingMemberRoleSignal.asReadonly();
+  readonly isUpdatingMemberJobTitle = this.updatingMemberJobTitleSignal.asReadonly();
   readonly isCreatingBoard = this.creatingBoardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
   readonly isLoadingRoles = this.loadingRolesSignal.asReadonly();
@@ -377,6 +382,44 @@ export class ProjectStore {
         this.loadMembers(projectId);
         this.notifications.success(
           `Đã cập nhật vai trò của ${updated.username} thành ${updated.roleName === 'ProjectLeader' ? 'Trưởng dự án' : 'Thành viên'}`,
+        );
+        onSuccess?.(updated);
+      },
+    });
+  }
+
+  /**
+   * Cập nhật chức danh chuyên môn (JobTitle) của thành viên trong dự án.
+   */
+  updateMemberJobTitle(
+    projectId: string,
+    userId: string,
+    request: UpdateProjectMemberJobTitleRequest,
+    onSuccess?: (updated: ProjectMember) => void,
+    onError?: (message: string) => void,
+  ): void {
+    if (
+      this.updatingMemberJobTitleSignal() ||
+      this.updatingMemberRoleSignal() ||
+      this.removingMemberSignal() ||
+      this.addingMemberSignal() ||
+      this.deletingSignal()
+    )
+      return;
+    this.requests.run({
+      loading: this.updatingMemberJobTitleSignal,
+      request$: this.updateProjectMemberJobTitleUseCase.execute(projectId, userId, request),
+      cancel$: this.cancel$,
+      fallbackErrorMessage: 'Cập nhật chức danh thành viên thất bại. Vui lòng thử lại.',
+      onError,
+      onSuccess: (updated) => {
+        this.membersSignal.update((list) =>
+          list.map((m) =>
+            m.userId === updated.userId ? { ...m, jobTitle: updated.jobTitle } : m,
+          ),
+        );
+        this.notifications.success(
+          `Đã cập nhật chức danh của ${updated.username}${updated.jobTitle ? ' thành ' + updated.jobTitle : ''}`,
         );
         onSuccess?.(updated);
       },

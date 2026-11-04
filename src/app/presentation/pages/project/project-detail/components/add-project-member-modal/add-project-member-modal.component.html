@@ -28,7 +28,7 @@
               Thêm thành viên vào dự án
             </h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Chọn thành viên và gán vai trò riêng cho từng người trước khi thêm vào dự án.
+              Chọn các thành viên trong workspace để thêm vào dự án. Vị trí & chức danh có thể thiết lập sau trong cài đặt.
             </p>
           </div>
         </div>
@@ -129,7 +129,7 @@
             }
           </div>
 
-          <!-- Section 2: Thành viên đã chọn (per-member role) -->
+          <!-- Section 2: Thành viên đã chọn -->
           <div class="mt-4">
             <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
               Thành viên đã chọn ({{ selectedMembers().length }})
@@ -150,6 +150,23 @@
               >
                 @for (member of selectedMembers(); track member.userId) {
                   <div class="flex items-center gap-3 px-3.5 py-2.5">
+                    <!-- Avatar / Initials -->
+                    <div class="shrink-0">
+                      @if (member.avatarUrl) {
+                        <img
+                          [src]="member.avatarUrl"
+                          [alt]="member.username"
+                          class="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                        />
+                      } @else {
+                        <div
+                          class="w-7 h-7 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[11px] font-bold text-white shadow-xs"
+                        >
+                          {{ member.username.charAt(0).toUpperCase() }}
+                        </div>
+                      }
+                    </div>
+
                     <!-- Thông tin thành viên -->
                     <div class="min-w-0 flex-1">
                       <span class="block text-sm text-slate-900 dark:text-white truncate">
@@ -160,27 +177,12 @@
                       </span>
                     </div>
 
-                    <!-- Dropdown chọn vai trò -->
-                    <select
-                      [ngModel]="member.roleId"
-                      (ngModelChange)="updateRole(member.userId, $event)"
-                      [disabled]="projectStore.isAddingMember()"
-                      class="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition shrink-0 max-w-[170px]"
+                    <!-- Badge mặc định -->
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 shrink-0"
                     >
-                      @for (role of projectStore.roles(); track role.id) {
-                        <option
-                          [value]="role.id"
-                          [disabled]="
-                            role.name === 'ProjectLeader' &&
-                            hasLeaderAssigned() &&
-                            leaderAssignedUserId() !== member.userId
-                          "
-                          class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                        >
-                          {{ role.name }}
-                        </option>
-                      }
-                    </select>
+                      Thành viên
+                    </span>
 
                     <!-- Nút bỏ chọn -->
                     <button
@@ -202,14 +204,6 @@
             }
           </div>
 
-          <!-- Cảnh báo ProjectLeader -->
-          @if (hasLeaderAssigned()) {
-            <p class="text-xs text-amber-700 dark:text-amber-300 mt-3">
-              Chỉ một thành viên được gán ProjectLeader. Thao tác này sẽ chuyển trưởng dự án hiện
-              tại về ProjectMember.
-            </p>
-          }
-
           <!-- Lỗi submit -->
           @if (submitError(); as error) {
             <p role="alert" class="text-sm text-rose-500 dark:text-rose-400 mt-3">{{ error }}</p>
@@ -224,8 +218,7 @@
               class="text-indigo-600 dark:text-indigo-400 text-sm mt-0.5"
             ></mat-icon>
             <span>
-              Thành viên sau khi được thêm sẽ có quyền truy cập vào các bảng và thẻ công việc trong
-              dự án này.
+              Thành viên được thêm vào sẽ có vai trò là Thành viên dự án. Bạn có thể thiết lập Chức danh chuyên môn (Job Title) hoặc phân quyền trong danh sách thành viên.
             </span>
           </div>
 
@@ -246,9 +239,7 @@
               (click)="onSubmit()"
               [disabled]="
                 projectStore.isAddingMember() ||
-                selectedMembers().length === 0 ||
-                projectStore.isLoadingRoles() ||
-                !!projectStore.rolesError()
+                selectedMembers().length === 0
               "
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-indigo-600/20"
             >

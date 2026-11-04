@@ -38,6 +38,7 @@ export interface ProjectMember {
   avatarUrl?: string | null;
   roleId: string;
   roleName: string;
+  jobTitle?: string | null;
   joinedAt: string;
 }
 
@@ -50,6 +51,7 @@ export interface ProjectRole {
 export interface AddProjectMemberEntry {
   userId: string;
   roleId?: string | null;
+  jobTitle?: string | null;
 }
 
 export interface AddProjectMembersRequest {
@@ -58,6 +60,10 @@ export interface AddProjectMembersRequest {
 
 export interface UpdateProjectMemberRoleRequest {
   newRoleId: string;
+}
+
+export interface UpdateProjectMemberJobTitleRequest {
+  jobTitle?: string | null;
 }
 
 export type BoardType = 'Kanban' | 'Scrum';

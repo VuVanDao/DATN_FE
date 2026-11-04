@@ -11,6 +11,7 @@ import {
   ProjectMember,
   ProjectRole,
   UpdateProjectMemberRoleRequest,
+  UpdateProjectMemberJobTitleRequest,
   UpdateProjectRequest,
 } from '../../domain/models/project.model';
 import { ProjectRepository } from '../../domain/repositories/project.repository';
@@ -77,6 +78,19 @@ export class ProjectHttpRepository implements ProjectRepository {
     return this.http
       .put<ApiResponse<ProjectMember>>(
         `${this.projectUrl}/${projectId}/members/${userId}/role`,
+        request,
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  updateProjectMemberJobTitle(
+    projectId: string,
+    userId: string,
+    request: UpdateProjectMemberJobTitleRequest,
+  ): Observable<ProjectMember> {
+    return this.http
+      .put<ApiResponse<ProjectMember>>(
+        `${this.projectUrl}/${projectId}/members/${userId}/job-title`,
         request,
       )
       .pipe(map((res) => res.data));

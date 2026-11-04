@@ -318,10 +318,10 @@
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 dark:text-amber-400"
+                class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400"
               >
                 <mat-icon
-                  fontIcon="published_with_changes"
+                  fontIcon="manage_accounts"
                   class="text-xl! w-auto! h-auto!"
                 ></mat-icon>
               </div>
@@ -330,7 +330,7 @@
                   id="change-project-role-title"
                   class="text-base font-semibold text-slate-900 dark:text-white"
                 >
-                  Chuyển giao vai trò thành viên
+                  Thiết lập thành viên dự án
                 </h2>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Dự án:
@@ -343,7 +343,7 @@
             <button
               type="button"
               (click)="closeChangeRoleModal()"
-              [disabled]="projectStore.isUpdatingMemberRole()"
+              [disabled]="projectStore.isUpdatingMemberRole() || projectStore.isUpdatingMemberJobTitle()"
               class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer disabled:opacity-50"
             >
               <mat-icon fontIcon="close" class="text-lg! w-auto! h-auto!"></mat-icon>
@@ -375,9 +375,9 @@
                 {{ member.email }}
               </div>
             </div>
-            <div class="shrink-0 text-right">
+            <div class="shrink-0 text-right space-y-1">
               <span
-                class="text-[11px] px-2 py-0.5 rounded-md font-medium"
+                class="text-[11px] px-2 py-0.5 rounded-md font-medium block text-center"
                 [class]="
                   member.roleName === 'ProjectLeader'
                     ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20'
@@ -386,15 +386,43 @@
               >
                 {{ member.roleName === 'ProjectLeader' ? 'Leader' : 'Thành viên' }}
               </span>
+              @if (member.jobTitle) {
+                <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium block truncate max-w-[120px]">
+                  {{ member.jobTitle }}
+                </span>
+              }
             </div>
           </div>
 
-          <!-- Role Selection -->
+          <!-- Section: Job Title (Chức danh chuyên môn theo từng lĩnh vực) -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label
+                class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
+              >
+                Vị trí / Chức danh trong dự án (Job Title)
+              </label>
+              <span class="text-[10px] text-slate-400">Không bắt buộc</span>
+            </div>
+            <input
+              type="text"
+              [ngModel]="selectedJobTitle()"
+              (ngModelChange)="selectedJobTitle.set($event)"
+              maxlength="100"
+              placeholder="Ví dụ: Frontend Developer, Content Writer, QA Lead..."
+              class="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+            />
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">
+              Thiết lập vị trí thực tế của thành viên trong nhóm này (phù hợp mọi ngành nghề: IT, Marketing, Xây dựng...).
+            </p>
+          </div>
+
+          <!-- Section: Role Selection (Quyền hạn hệ thống) -->
           <div class="space-y-2">
             <label
               class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider"
             >
-              Chọn vai trò mới
+              Quyền hạn hệ thống (System Role)
             </label>
             <div class="space-y-2">
               @for (role of projectStore.roles(); track role.id) {
@@ -450,7 +478,7 @@
           </div>
 
           <!-- Warning notice when selecting ProjectLeader -->
-          @if (selectedRole()?.name === 'ProjectLeader') {
+          @if (selectedRole()?.name === 'ProjectLeader' && selectedRole()?.id !== member.roleId) {
             <div
               class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-300"
             >
@@ -484,7 +512,7 @@
             <button
               type="button"
               (click)="closeChangeRoleModal()"
-              [disabled]="projectStore.isUpdatingMemberRole()"
+              [disabled]="projectStore.isUpdatingMemberRole() || projectStore.isUpdatingMemberJobTitle()"
               class="rounded-xl px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
             >
               Hủy
@@ -494,19 +522,19 @@
               (click)="confirmChangeRole()"
               [disabled]="
                 projectStore.isUpdatingMemberRole() ||
-                !selectedNewRoleId() ||
-                selectedNewRoleId() === member.roleId
+                projectStore.isUpdatingMemberJobTitle() ||
+                !isChangeRoleDirty()
               "
               class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 active:bg-indigo-700 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
-              @if (projectStore.isUpdatingMemberRole()) {
+              @if (projectStore.isUpdatingMemberRole() || projectStore.isUpdatingMemberJobTitle()) {
                 <div
                   class="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"
                 ></div>
-                <span>Đang xử lý...</span>
+                <span>Đang lưu...</span>
               } @else {
                 <mat-icon fontIcon="check" class="text-sm! w-auto! h-auto!"></mat-icon>
-                <span>Xác nhận chuyển đổi</span>
+                <span>Lưu thay đổi</span>
               }
             </button>
           </div>

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  computed,
   EventEmitter,
   inject,
   Input,
@@ -20,7 +19,6 @@ interface SelectedMember {
   username: string;
   email: string;
   avatarUrl?: string | null;
-  roleId: string; // '' = mặc định (backend gán ProjectMember)
 }
 
 @Component({
@@ -37,21 +35,6 @@ export class AddProjectMemberModalComponent implements OnChanges {
   readonly selectedMembers = signal<SelectedMember[]>([]);
   readonly touched = signal(false);
 
-  /** RoleId mặc định (ProjectMember) */
-  readonly defaultRoleId = computed(() => {
-    return this.projectStore.roles().find((r) => r.name === 'ProjectMember')?.id ?? '';
-  });
-
-  /** userId của member đang được gán ProjectLeader (null nếu chưa có) */
-  readonly leaderAssignedUserId = computed(() => {
-    const leaderRole = this.projectStore.roles().find((r) => r.name === 'ProjectLeader');
-    if (!leaderRole) return null;
-    return this.selectedMembers().find((m) => m.roleId === leaderRole.id)?.userId ?? null;
-  });
-
-  /** Đã có member nào được gán ProjectLeader chưa */
-  readonly hasLeaderAssigned = computed(() => this.leaderAssignedUserId() !== null);
-
   @Input() isOpen = false;
   @Input() projectId = '';
   @Input() workspaceId = '';
@@ -66,7 +49,6 @@ export class AddProjectMemberModalComponent implements OnChanges {
       this.submitError.set(null);
       if (this.isOpen && this.workspaceId && this.projectId) {
         this.loadCandidates();
-        this.projectStore.loadRoles();
       }
     }
   }
@@ -103,7 +85,6 @@ export class AddProjectMemberModalComponent implements OnChanges {
           username: member.username,
           email: member.email,
           avatarUrl: member.avatarUrl,
-          roleId: this.defaultRoleId(),
         },
       ]);
     }
@@ -115,24 +96,8 @@ export class AddProjectMemberModalComponent implements OnChanges {
     this.submitError.set(null);
   }
 
-  updateRole(userId: string, roleId: string): void {
-    this.selectedMembers.update((list) =>
-      list.map((m) => (m.userId === userId ? { ...m, roleId } : m)),
-    );
-    this.submitError.set(null);
-  }
-
-  isLeaderRole(roleId: string): boolean {
-    return this.projectStore.roles().some((r) => r.id === roleId && r.name === 'ProjectLeader');
-  }
-
   onSubmit(): void {
-    if (
-      this.projectStore.isAddingMember() ||
-      this.projectStore.isLoadingRoles() ||
-      this.projectStore.rolesError()
-    )
-      return;
+    if (this.projectStore.isAddingMember()) return;
     this.submitError.set(null);
     this.touched.set(true);
 
@@ -153,24 +118,10 @@ export class AddProjectMemberModalComponent implements OnChanges {
       return;
     }
 
-    // Validate: roleId hợp lệ (nếu có)
-    const roles = this.projectStore.roles();
-    if (selected.some((m) => m.roleId && !roles.some((r) => r.id === m.roleId))) {
-      this.submitError.set('Một hoặc nhiều vai trò không hợp lệ. Vui lòng chọn lại.');
-      return;
-    }
-
-    // Validate: tối đa 1 ProjectLeader
-    const leaderCount = selected.filter((m) => this.isLeaderRole(m.roleId)).length;
-    if (leaderCount > 1) {
-      this.submitError.set('Chỉ được gán vai trò ProjectLeader cho một thành viên.');
-      return;
-    }
-
     this.projectStore.addMembers(
       this.projectId,
       {
-        members: selected.map((m) => ({ userId: m.userId, roleId: m.roleId || null })),
+        members: selected.map((m) => ({ userId: m.userId, roleId: null })),
       },
       () => {
         this.memberAdded.emit();
