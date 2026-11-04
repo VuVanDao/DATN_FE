@@ -9,7 +9,7 @@ import { BoardRepository } from '../../domain/repositories/board.repository';
 export class GetMyBoardsUseCase {
   private readonly boardRepository = inject(BoardRepository);
 
-  execute(): Observable<MyBoards> {
-    return this.boardRepository.getMyBoards();
+  execute(limit?: number): Observable<MyBoards> {
+    return this.boardRepository.getMyBoards(limit);
   }
 }

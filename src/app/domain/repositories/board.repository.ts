@@ -42,5 +42,5 @@ export abstract class BoardRepository {
     boardId: string,
     request: UpdateBoardPreferenceRequest,
   ): Observable<BoardPreference>;
-  abstract getMyBoards(): Observable<MyBoards>;
+  abstract getMyBoards(limit?: number): Observable<MyBoards>;
 }

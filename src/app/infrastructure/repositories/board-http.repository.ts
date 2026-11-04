@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -177,9 +177,13 @@ export class BoardHttpRepository implements BoardRepository {
       .pipe(map((res) => res.data));
   }
 
-  getMyBoards(): Observable<MyBoards> {
+  getMyBoards(limit?: number): Observable<MyBoards> {
+    let params: HttpParams | undefined;
+    if (limit && limit > 0) {
+      params = new HttpParams().set('limit', limit.toString());
+    }
     return this.http
-      .get<ApiResponse<MyBoards>>(`${this.boardUrl}/my-boards`)
+      .get<ApiResponse<MyBoards>>(`${this.boardUrl}/my-boards`, { params })
       .pipe(map((res) => res.data));
   }
 }

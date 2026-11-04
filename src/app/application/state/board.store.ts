@@ -10,7 +10,7 @@ import {
   CreateCardRequest,
   UpdateCardRequest,
 } from '../../domain/models/board-detail.model';
-import { Board, MyBoards, UpdateBoardRequest } from '../../domain/models/project.model';
+import { Board, MyBoardItem, MyBoards, UpdateBoardRequest } from '../../domain/models/project.model';
 import { AddCardCommentUseCase } from '../board/add-card-comment.use-case';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
@@ -687,14 +687,71 @@ export class BoardStore {
     this.boardSignal.update((b) => (b ? { ...b, isPinned } : null));
   }
 
-  loadMyBoards(): void {
+  loadMyBoards(limit?: number): void {
     this.requests.run({
       loading: this.isLoadingMyBoardsSignal,
-      request$: this.getMyBoardsUseCase.execute(),
+      request$: this.getMyBoardsUseCase.execute(limit),
       fallbackErrorMessage: 'Không thể tải danh sách bảng gần đây.',
       toastOnError: false,
       onSuccess: (data) => {
         this.myBoardsSignal.set(data || { recentBoards: [], pinnedBoards: [] });
+      },
+    });
+  }
+
+  toggleBoardPinById(
+    boardId: string,
+    currentPinned: boolean,
+    limit?: number,
+    onSuccess?: (isPinned: boolean) => void,
+    onError?: (previousPinned: boolean) => void,
+  ): void {
+    const nextPinned = !currentPinned;
+
+    // Cập nhật lạc quan (optimistic) trong myBoardsSignal
+    this.myBoardsSignal.update((state) => {
+      const updateList = (list: MyBoardItem[]) =>
+        list.map((b) => (b.boardId === boardId ? { ...b, isPinned: nextPinned } : b));
+
+      const updatedRecent = updateList(state.recentBoards);
+      let updatedPinned: MyBoardItem[];
+
+      if (nextPinned) {
+        const found = state.recentBoards.find((b) => b.boardId === boardId);
+        if (found) {
+          updatedPinned = [
+            { ...found, isPinned: true },
+            ...state.pinnedBoards.filter((b) => b.boardId !== boardId),
+          ];
+        } else {
+          updatedPinned = updateList(state.pinnedBoards);
+        }
+      } else {
+        updatedPinned = state.pinnedBoards.filter((b) => b.boardId !== boardId);
+      }
+
+      return {
+        recentBoards: updatedRecent,
+        pinnedBoards: updatedPinned,
+      };
+    });
+
+    if (this.boardSignal()?.id === boardId) {
+      this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
+    }
+
+    this.updateBoardPreferenceUseCase.execute(boardId, { isPinned: nextPinned }).subscribe({
+      next: (pref) => {
+        this.notifications.success(
+          nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
+        );
+        this.loadMyBoards(limit);
+        onSuccess?.(pref.isPinned);
+      },
+      error: () => {
+        this.notifications.error('Không thể cập nhật tùy chọn ghim bảng.');
+        this.loadMyBoards(limit);
+        onError?.(currentPinned);
       },
     });
   }

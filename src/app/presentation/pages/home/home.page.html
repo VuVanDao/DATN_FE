@@ -1,1 +1,412 @@
-<h1>This is homepage</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+  <!-- 1. Header Chào Mừng -->
+  <div
+    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800"
+  >
+    <div class="space-y-1">
+      <h1
+        class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2"
+      >
+        <span>Xin chào, {{ authStore.currentUser()?.userName || 'bạn' }}!</span>
+        <span class="inline-block animate-wave">👋</span>
+      </h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <a
+        routerLink="/workspaces"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700/70 transition shadow-xs cursor-pointer"
+      >
+        <mat-icon fontIcon="folder" class="text-sm! w-4! h-4!"></mat-icon>
+        <span>Tất cả không gian làm việc</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 2. PHẦN BẢNG ĐÃ GHIM (PINNED BOARDS) -->
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div
+          class="w-8 h-8 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 flex items-center justify-center border border-amber-500/30"
+        >
+          <mat-icon fontIcon="star" class="text-base! w-4! h-4!"></mat-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Bảng đã ghim
+            </h2>
+            <span
+              class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/20"
+            >
+              {{ pinnedBoards().length }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Các bảng dự án quan trọng bạn đã lưu để truy cập ưu tiên
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeletons khi đang tải -->
+    @if (isLoadingBoards()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div
+            class="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 animate-pulse space-y-3"
+          >
+            <div class="h-3 w-1/3 bg-slate-200 dark:bg-slate-800 rounded"></div>
+            <div class="h-5 w-3/4 bg-slate-200 dark:bg-slate-800 rounded"></div>
+            <div class="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 rounded mt-4"></div>
+          </div>
+        }
+      </div>
+    } @else if (pinnedBoards().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (board of pinnedBoards(); track board.boardId) {
+          <div
+            (click)="onBoardClick(board)"
+            class="group relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 hover:border-amber-500/60 dark:hover:border-amber-500/60 rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between shadow-xs hover:shadow-lg dark:hover:shadow-amber-500/5 cursor-pointer overflow-hidden"
+          >
+            <!-- Top Gradient Accent Strip -->
+            <div
+              class="absolute top-0 left-0 right-0 h-1 bg-linear-to-r {{
+                getBoardGradient(board.boardId)
+              }}"
+            ></div>
+
+            <div class="space-y-2.5">
+              <!-- Header thẻ: Breadcrumb Project/Workspace & Nút Pin -->
+              <div class="flex items-start justify-between gap-2 pt-1">
+                <div class="min-w-0 flex-1">
+                  @if (board.workspaceName || board.projectName) {
+                    <span
+                      class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate block"
+                    >
+                      {{ board.workspaceName }}
+                      @if (board.projectName) {
+                        • {{ board.projectName }}
+                      }
+                    </span>
+                  }
+                  <h3
+                    class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-amber-500 transition truncate mt-0.5"
+                    [title]="board.title"
+                  >
+                    {{ board.title }}
+                  </h3>
+                </div>
+
+                <!-- Nút Bỏ Ghim (Luôn nổi bật màu vàng) -->
+                <button
+                  type="button"
+                  (click)="onTogglePin($event, board)"
+                  matTooltip="Bỏ ghim bảng"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-amber-400/20 text-amber-500 dark:text-amber-400 border border-amber-400/40 hover:bg-amber-400/30 transition cursor-pointer shadow-2xs"
+                >
+                  <mat-icon fontIcon="star" class="text-base! w-auto! h-auto!"></mat-icon>
+                </button>
+              </div>
+
+              <!-- Slug & Badge Loại Bảng -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate">
+                  {{ board.boardSlug }}
+                </span>
+                @if (board.type) {
+                  <span
+                    class="text-[10px] px-2 py-0.5 rounded-md font-semibold shrink-0"
+                    [class]="
+                      board.type.toLowerCase().includes('scrum')
+                        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                    "
+                  >
+                    {{ board.type }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Footer: Thời gian xem gần nhất -->
+            <div
+              class="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500"
+            >
+              <span class="flex items-center gap-1.5 truncate">
+                <mat-icon fontIcon="history" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+                <span>{{ formatRelativeTime(board.lastViewedAt) }}</span>
+              </span>
+              <mat-icon
+                fontIcon="arrow_forward"
+                class="text-xs! w-3.5! h-3.5! opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all text-amber-500"
+              ></mat-icon>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Empty state khi chưa có bảng nào ghim -->
+      <div
+        class="bg-white dark:bg-[#111827]/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center space-y-2"
+      >
+        <mat-icon
+          fontIcon="star_border"
+          class="text-2xl text-slate-400 dark:text-slate-600 mx-auto"
+        ></mat-icon>
+        <p class="text-xs font-medium text-slate-600 dark:text-slate-300">
+          Chưa có bảng nào được ghim
+        </p>
+        <p class="text-[11px] text-slate-400 dark:text-slate-500 max-w-md mx-auto">
+          Nhấp vào biểu tượng ngôi sao trên bất kỳ bảng nào bạn thường xuyên làm việc để ghim bảng
+          đó tại đây.
+        </p>
+      </div>
+    }
+  </section>
+
+  <!-- 3. PHẦN BẢNG ĐÃ XEM GẦN ĐÂY (RECENTLY VIEWED BOARDS) -->
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div
+          class="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 flex items-center justify-center border border-blue-500/30"
+        >
+          <mat-icon fontIcon="schedule" class="text-base! w-4! h-4!"></mat-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Đã xem gần đây
+            </h2>
+            <span
+              class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/20"
+            >
+              {{ recentBoards().length }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Các bảng bạn đã truy cập và tương tác trong các phiên làm việc gần nhất
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeletons khi đang tải -->
+    @if (isLoadingBoards()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div
+            class="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 animate-pulse space-y-3"
+          >
+            <div class="h-3 w-1/3 bg-slate-200 dark:bg-slate-800 rounded"></div>
+            <div class="h-5 w-3/4 bg-slate-200 dark:bg-slate-800 rounded"></div>
+            <div class="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 rounded mt-4"></div>
+          </div>
+        }
+      </div>
+    } @else if (recentBoards().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (board of recentBoards(); track board.boardId) {
+          <div
+            (click)="onBoardClick(board)"
+            class="group relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 hover:border-blue-500/60 dark:hover:border-blue-500/60 rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between shadow-xs hover:shadow-lg dark:hover:shadow-blue-500/5 cursor-pointer overflow-hidden"
+          >
+            <!-- Top Gradient Accent Strip -->
+            <div
+              class="absolute top-0 left-0 right-0 h-1 bg-linear-to-r {{
+                getBoardGradient(board.boardId)
+              }}"
+            ></div>
+
+            <div class="space-y-2.5">
+              <!-- Header thẻ: Breadcrumb Project/Workspace & Nút Pin -->
+              <div class="flex items-start justify-between gap-2 pt-1">
+                <div class="min-w-0 flex-1">
+                  @if (board.workspaceName || board.projectName) {
+                    <span
+                      class="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate block"
+                    >
+                      {{ board.workspaceName }}
+                      @if (board.projectName) {
+                        • {{ board.projectName }}
+                      }
+                    </span>
+                  }
+                  <h3
+                    class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-500 transition truncate mt-0.5"
+                    [title]="board.title"
+                  >
+                    {{ board.title }}
+                  </h3>
+                </div>
+
+                <!-- Nút Pin / Star -->
+                <button
+                  type="button"
+                  (click)="onTogglePin($event, board)"
+                  [matTooltip]="board.isPinned ? 'Bỏ ghim bảng' : 'Ghim bảng'"
+                  class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer"
+                  [class]="
+                    board.isPinned
+                      ? 'bg-amber-400/20 text-amber-500 dark:text-amber-400 border border-amber-400/40 hover:bg-amber-400/30 shadow-2xs'
+                      : 'text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:text-slate-500 dark:hover:text-amber-400 dark:hover:bg-slate-800/90 border border-transparent hover:border-slate-200 dark:hover:border-slate-700/60'
+                  "
+                >
+                  <mat-icon
+                    [fontIcon]="board.isPinned ? 'star' : 'star_border'"
+                    class="text-base! w-auto! h-auto!"
+                  ></mat-icon>
+                </button>
+              </div>
+
+              <!-- Slug & Badge Loại Bảng -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate">
+                  {{ board.boardSlug }}
+                </span>
+                @if (board.type) {
+                  <span
+                    class="text-[10px] px-2 py-0.5 rounded-md font-semibold shrink-0"
+                    [class]="
+                      board.type.toLowerCase().includes('scrum')
+                        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                    "
+                  >
+                    {{ board.type }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Footer: Thời gian xem gần nhất -->
+            <div
+              class="mt-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500"
+            >
+              <span class="flex items-center gap-1.5 truncate">
+                <mat-icon fontIcon="schedule" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+                <span>Xem {{ formatRelativeTime(board.lastViewedAt) }}</span>
+              </span>
+              <mat-icon
+                fontIcon="arrow_forward"
+                class="text-xs! w-3.5! h-3.5! opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all text-blue-500"
+              ></mat-icon>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Empty state khi chưa có bảng nào xem gần đây -->
+      <div
+        class="bg-white dark:bg-[#111827]/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center space-y-2"
+      >
+        <mat-icon
+          fontIcon="history"
+          class="text-2xl text-slate-400 dark:text-slate-600 mx-auto"
+        ></mat-icon>
+        <p class="text-xs font-medium text-slate-600 dark:text-slate-300">
+          Chưa có bảng nào được mở gần đây
+        </p>
+        <p class="text-[11px] text-slate-400 dark:text-slate-500 max-w-md mx-auto">
+          Các bảng bạn truy cập sẽ xuất hiện tại đây để tiện tiếp tục công việc. Hãy chọn một không
+          gian làm việc bên dưới để bắt đầu!
+        </p>
+      </div>
+    }
+  </section>
+
+  <!-- 4. KHÔNG GIAN LÀM VIỆC CỦA BẠN (YOUR WORKSPACES) -->
+  <section class="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div
+          class="w-8 h-8 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-500 flex items-center justify-center border border-indigo-500/30"
+        >
+          <mat-icon fontIcon="workspaces" class="text-base! w-4! h-4!"></mat-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Không gian làm việc
+            </h2>
+            <span
+              class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-500/20"
+            >
+              {{ workspaces().length }}
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Tất cả không gian làm việc bạn đang tham gia
+          </p>
+        </div>
+      </div>
+
+      <a
+        routerLink="/workspaces"
+        class="text-xs font-semibold text-blue-500 hover:text-blue-400 flex items-center gap-1 transition"
+      >
+        <span>Xem tất cả</span>
+        <mat-icon fontIcon="chevron_right" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+      </a>
+    </div>
+
+    @if (isLoadingWorkspaces()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (i of [1, 2, 3]; track i) {
+          <div
+            class="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 animate-pulse space-y-3"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-800"></div>
+              <div class="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 rounded"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (workspaces().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (ws of workspaces(); track ws.id) {
+          <div
+            (click)="onSelectWorkspace(ws)"
+            class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 hover:border-indigo-500/60 dark:hover:border-indigo-500/60 rounded-2xl p-4 transition-all duration-200 flex items-center justify-between shadow-xs hover:shadow-md cursor-pointer group"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              @if (ws.logoUrl) {
+                <img
+                  [src]="ws.logoUrl"
+                  [alt]="ws.name"
+                  class="w-10 h-10 rounded-xl object-cover shrink-0 shadow-xs border border-slate-200 dark:border-slate-700/60"
+                />
+              } @else {
+                <div
+                  class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs {{
+                    ws.color
+                  }}"
+                >
+                  {{ ws.initial }}
+                </div>
+              }
+
+              <div class="min-w-0">
+                <h4
+                  class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 transition truncate"
+                >
+                  {{ ws.name }}
+                </h4>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 truncate font-mono">
+                  {{ ws.slug }}
+                </p>
+              </div>
+            </div>
+
+            <mat-icon
+              fontIcon="arrow_forward"
+              class="text-sm! w-4! h-4! text-slate-400 group-hover:text-indigo-500 -translate-x-1 group-hover:translate-x-0 transition-all"
+            ></mat-icon>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

@@ -102,6 +102,9 @@ export interface MyBoardItem {
   title: string;
   boardSlug: string;
   projectId: string;
+  projectName?: string;
+  workspaceName?: string;
+  type?: string;
   isPinned: boolean;
   lastViewedAt: string;
 }
