@@ -4,11 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectMember } from '../../../../../../domain/models/project.model';
 
+type MemberRoleFilter = 'all' | 'ProjectLeader' | 'ProjectMember';
+
 @Component({
   selector: 'app-project-members',
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './project-members.component.html',
+  host: {
+    class: 'block',
+  },
 })
 export class ProjectMembersComponent {
   readonly members = input<ProjectMember[]>([]);
@@ -26,15 +31,40 @@ export class ProjectMembersComponent {
   readonly removeMember = output<ProjectMember>();
 
   readonly memberSearch = signal('');
+  readonly roleFilter = signal<MemberRoleFilter>('all');
 
   readonly filteredMembers = computed(() => {
     const list = this.members();
     const query = this.memberSearch().trim().toLowerCase();
-    if (!query) return list;
-    return list.filter(
-      (m) => m.username.toLowerCase().includes(query) || m.email.toLowerCase().includes(query),
-    );
+    const filter = this.roleFilter();
+
+    return list.filter((m) => {
+      const matchQuery =
+        !query ||
+        m.username.toLowerCase().includes(query) ||
+        m.email.toLowerCase().includes(query) ||
+        (m.jobTitle && m.jobTitle.toLowerCase().includes(query));
+
+      const matchRole =
+        filter === 'all' ||
+        (filter === 'ProjectLeader' && m.roleName === 'ProjectLeader') ||
+        (filter === 'ProjectMember' && m.roleName !== 'ProjectLeader');
+
+      return matchQuery && matchRole;
+    });
   });
+
+  readonly leaderCount = computed(
+    () => this.members().filter((m) => m.roleName === 'ProjectLeader').length,
+  );
+
+  readonly regularMemberCount = computed(
+    () => this.members().filter((m) => m.roleName !== 'ProjectLeader').length,
+  );
+
+  setRoleFilter(filter: MemberRoleFilter): void {
+    this.roleFilter.set(filter);
+  }
 
   isSelf(member: ProjectMember): boolean {
     const userId = this.currentUserId();

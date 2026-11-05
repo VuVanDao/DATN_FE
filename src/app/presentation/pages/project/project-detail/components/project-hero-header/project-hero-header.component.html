@@ -127,7 +127,9 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
   <!-- Card 1: Bảng -->
   <div
-    class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-indigo-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
+    (click)="selectTab.emit('boards')"
+    class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-indigo-500/50 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group cursor-pointer"
+    title="Chuyển đến tab Bảng công việc"
   >
     <div
       class="w-13 h-13 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20 transition"
@@ -151,7 +153,9 @@
 
   <!-- Card 2: Thành viên -->
   <div
-    class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-sky-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
+    (click)="selectTab.emit('members')"
+    class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-sky-500/50 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group cursor-pointer"
+    title="Chuyển đến tab Thành viên dự án"
   >
     <div
       class="w-13 h-13 rounded-xl bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-sky-100 dark:group-hover:bg-sky-500/20 transition"

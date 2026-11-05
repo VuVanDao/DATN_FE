@@ -18,4 +18,5 @@ export class ProjectHeroHeaderComponent {
   readonly back = output<void>();
   readonly addMember = output<void>();
   readonly openSettings = output<void>();
+  readonly selectTab = output<'boards' | 'members'>();
 }

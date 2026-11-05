@@ -111,6 +111,9 @@ export class ProjectDetailPage implements OnInit {
   readonly canRemoveMemberBound = (m: ProjectMember) => this.canRemoveMember(m);
   readonly canChangeRoleBound = (m: ProjectMember) => this.canChangeRole(m);
 
+  // Tab điều hướng chính ('boards' | 'members')
+  readonly activeMainTab = signal<'boards' | 'members'>('boards');
+
   // Modals Visibility
   readonly showSettingsModal = signal(false);
   readonly showAddMemberModal = signal(false);

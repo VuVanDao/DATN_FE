@@ -134,15 +134,15 @@
 
   <!-- Boards Grid -->
   @if (isLoading()) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-      @for (i of [1, 2, 3]; track i) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      @for (i of [1, 2, 3, 4]; track i) {
         <div
-          class="h-26 rounded-xl bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800 animate-pulse"
+          class="h-28 rounded-xl bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-slate-800 animate-pulse"
         ></div>
       }
     </div>
   } @else if (filteredBoards().length > 0) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       @for (board of filteredBoards(); track board.id) {
         <div
           (click)="onBoardClick(board)"
