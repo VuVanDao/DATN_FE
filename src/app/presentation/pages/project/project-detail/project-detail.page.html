@@ -40,6 +40,7 @@
   } @else if (projectView(); as proj) {
     <!-- 1. Top Navigation & Hero Banner with Stats -->
     <app-project-hero-header
+      class="block"
       [project]="proj"
       (back)="goBack()"
       (addMember)="openAddMemberModal()"

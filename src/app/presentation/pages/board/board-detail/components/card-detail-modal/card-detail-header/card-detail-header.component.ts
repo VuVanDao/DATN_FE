@@ -10,6 +10,9 @@ import { CardSummary, ColumnSummary } from '../../../../../../../domain/models/b
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './card-detail-header.component.html',
+  host: {
+    class: 'block',
+  },
 })
 export class CardDetailHeaderComponent {
   private readonly notificationService = inject(NotificationService);

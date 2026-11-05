@@ -8,6 +8,9 @@ import { ProjectView } from '../../../../../view-models/project.view-model';
   standalone: true,
   imports: [CommonModule, MatIconModule],
   templateUrl: './project-hero-header.component.html',
+  host: {
+    class: 'block',
+  },
 })
 export class ProjectHeroHeaderComponent {
   readonly project = input.required<ProjectView>();

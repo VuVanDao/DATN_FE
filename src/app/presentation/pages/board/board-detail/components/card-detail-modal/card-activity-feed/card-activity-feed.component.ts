@@ -9,6 +9,9 @@ import { CardDetailActivity } from '../card-detail.types';
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './card-activity-feed.component.html',
+  host: {
+    class: 'block',
+  },
 })
 export class CardActivityFeedComponent {
   readonly activities = input<CardDetailActivity[]>([]);

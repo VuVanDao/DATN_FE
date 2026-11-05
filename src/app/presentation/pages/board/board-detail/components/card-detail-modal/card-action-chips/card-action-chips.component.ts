@@ -17,6 +17,9 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './card-action-chips.component.html',
+  host: {
+    class: 'block',
+  },
 })
 export class CardActionChipsComponent {
   readonly priority = input<PriorityType>('Low');

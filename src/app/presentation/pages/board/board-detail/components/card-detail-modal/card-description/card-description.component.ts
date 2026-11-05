@@ -8,6 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './card-description.component.html',
+  host: {
+    class: 'block',
+  },
 })
 export class CardDescriptionComponent {
   readonly description = input<string | null>('');
