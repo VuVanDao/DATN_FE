@@ -10,7 +10,15 @@ import {
   CreateCardRequest,
   UpdateCardRequest,
 } from '../../domain/models/board-detail.model';
-import { Board, MyBoardItem, MyBoards, UpdateBoardRequest } from '../../domain/models/project.model';
+import { ColumnsReorderedMessage } from '../../domain/models/board-realtime.model';
+import {
+  Board,
+  MyBoardItem,
+  MyBoards,
+  UpdateBoardRequest,
+} from '../../domain/models/project.model';
+import { BoardRealtimeService } from '../../infrastructure/realtime/board-realtime.service';
+import { SessionService } from '../auth/session.service';
 import { AddCardCommentUseCase } from '../board/add-card-comment.use-case';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
@@ -51,6 +59,8 @@ export class BoardStore {
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
+  private readonly boardRealtimeService = inject(BoardRealtimeService);
+  private readonly sessionService = inject(SessionService);
 
   private readonly cancel$ = new Subject<void>();
 
@@ -82,6 +92,10 @@ export class BoardStore {
   readonly myBoards = this.myBoardsSignal.asReadonly();
   readonly isLoadingMyBoards = this.isLoadingMyBoardsSignal.asReadonly();
 
+  constructor() {
+    this.setupRealtimeListeners();
+  }
+
   loadBoard(slug: string, projectId: string, onSuccess?: (board: BoardDetail) => void): void {
     this.cancel$.next();
     this.errorSignal.set(null);
@@ -95,6 +109,7 @@ export class BoardStore {
       onSuccess: (board) => {
         this.boardSignal.set(board);
         this.columnsSignal.set(board.columns || []);
+        this.boardRealtimeService?.joinBoard(board.id);
         onSuccess?.(board);
       },
       onError: (err) => {
@@ -586,11 +601,7 @@ export class BoardStore {
     });
   }
 
-  moveCardToColumn(
-    cardId: string,
-    targetColumnId: string,
-    onSuccess?: () => void,
-  ): void {
+  moveCardToColumn(cardId: string, targetColumnId: string, onSuccess?: () => void): void {
     const cols = this.columnsSignal();
     const sourceCol = cols.find((col) => col.cards.some((c) => c.id === cardId));
     const targetCol = cols.find((col) => col.id === targetColumnId);
@@ -741,9 +752,93 @@ export class BoardStore {
   }
 
   clear(): void {
+    const current = this.boardSignal();
+    if (current) {
+      this.boardRealtimeService?.leaveBoard(current.id);
+    }
     this.cancel$.next();
     this.boardSignal.set(null);
     this.columnsSignal.set([]);
     this.errorSignal.set(null);
+  }
+
+  private setupRealtimeListeners(): void {
+    this.boardRealtimeService?.columnsReordered$?.subscribe({
+      next: (message) => this.handleRemoteColumnsReordered(message),
+    });
+
+    this.boardRealtimeService?.reconnected$?.subscribe({
+      next: () => {
+        const currentBoard = this.boardSignal();
+        if (currentBoard) {
+          this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+        }
+      },
+    });
+
+    this.sessionService?.ended$?.subscribe({
+      next: () => {
+        this.boardRealtimeService?.stopConnection();
+      },
+    });
+  }
+
+  private handleRemoteColumnsReordered(message: ColumnsReorderedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    // Echo suppression: bỏ qua sự kiện nếu do chính user hiện tại thao tác (đã được cập nhật optimistic)
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    const currentCols = this.columnsSignal();
+    if (!currentCols || currentCols.length === 0) {
+      return;
+    }
+
+    const colMap = new Map<string, ColumnSummary>();
+    for (const col of currentCols) {
+      colMap.set(col.id.toLowerCase(), col);
+    }
+
+    const reordered: ColumnSummary[] = [];
+    for (let i = 0; i < message.orderedColumnIds.length; i++) {
+      const colId = message.orderedColumnIds[i].toLowerCase();
+      const col = colMap.get(colId);
+      if (col) {
+        reordered.push({ ...col, position: i });
+        colMap.delete(colId);
+      }
+    }
+
+    // Giữ lại các cột nếu lỡ không có trong orderedColumnIds để tránh mất mát dữ liệu
+    for (const remainingCol of colMap.values()) {
+      reordered.push(remainingCol);
+    }
+
+    this.columnsSignal.set(reordered);
+    this.boardSignal.update((b) => (b ? { ...b, columns: reordered } : null));
+
+    this.notifications.warning('Thứ tự các danh sách vừa được cập nhật bởi thành viên khác.');
+  }
+
+  private silentReloadBoard(slug: string, projectId: string): void {
+    this.getBoardDetailUseCase.execute(slug, projectId).subscribe({
+      next: (board) => {
+        this.boardSignal.set(board);
+        this.columnsSignal.set(board.columns || []);
+      },
+      error: (err) => {
+        console.warn('[BoardStore] Silent reload board failed', err);
+      },
+    });
   }
 }
