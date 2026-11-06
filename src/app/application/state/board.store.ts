@@ -10,7 +10,10 @@ import {
   CreateCardRequest,
   UpdateCardRequest,
 } from '../../domain/models/board-detail.model';
-import { ColumnsReorderedMessage } from '../../domain/models/board-realtime.model';
+import {
+  CardMovedMessage,
+  ColumnsReorderedMessage,
+} from '../../domain/models/board-realtime.model';
 import {
   Board,
   MyBoardItem,
@@ -767,6 +770,10 @@ export class BoardStore {
       next: (message) => this.handleRemoteColumnsReordered(message),
     });
 
+    this.boardRealtimeService?.cardMoved$?.subscribe({
+      next: (message) => this.handleRemoteCardMoved(message),
+    });
+
     this.boardRealtimeService?.reconnected$?.subscribe({
       next: () => {
         const currentBoard = this.boardSignal();
@@ -828,6 +835,104 @@ export class BoardStore {
     this.boardSignal.update((b) => (b ? { ...b, columns: reordered } : null));
 
     this.notifications.warning('Thứ tự các danh sách vừa được cập nhật bởi thành viên khác.');
+  }
+
+  private handleRemoteCardMoved(message: CardMovedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    // Echo suppression: bỏ qua sự kiện nếu do chính user hiện tại thao tác (đã được cập nhật optimistic)
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    const currentCols = this.columnsSignal();
+    if (!currentCols || currentCols.length === 0) {
+      return;
+    }
+
+    // Tìm thẻ trên toàn bộ các cột hiện tại
+    let existingCard: CardSummary | null = null;
+    let foundSourceColId: string | null = null;
+
+    for (const col of currentCols) {
+      const found = col.cards.find((c) => c.id.toLowerCase() === message.cardId.toLowerCase());
+      if (found) {
+        existingCard = found;
+        foundSourceColId = col.id;
+        break;
+      }
+    }
+
+    // Nếu thẻ không có trong state hiện tại (có thể mới tạo bởi người khác hoặc mất đồng bộ), tự động reload dữ liệu
+    if (!existingCard) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+      return;
+    }
+
+    const sourceColId = foundSourceColId ?? message.sourceColumnId;
+    const targetColId = message.targetColumnId;
+
+    this.columnsSignal.update((cols) => {
+      const nextCols = cols.map((col) => ({
+        ...col,
+        cards: [...col.cards],
+      }));
+
+      const sourceCol = nextCols.find((c) => c.id.toLowerCase() === sourceColId.toLowerCase());
+      const targetCol = nextCols.find((c) => c.id.toLowerCase() === targetColId.toLowerCase());
+
+      if (!sourceCol || !targetCol) {
+        return cols;
+      }
+
+      const fromIndex = sourceCol.cards.findIndex(
+        (c) => c.id.toLowerCase() === message.cardId.toLowerCase(),
+      );
+      if (fromIndex === -1) {
+        return cols;
+      }
+      // splice trả vè danh sách các phần tử bị cắt, nên dùng destructuring để lấy phần tử đầu tiên
+      const [movedCard] = sourceCol.cards.splice(fromIndex, 1);
+      const updatedMovedCard: CardSummary = {
+        ...movedCard,
+        columnId: targetCol.id,
+      };
+
+      const clampedIndex = Math.max(0, Math.min(message.newPosition, targetCol.cards.length));
+      targetCol.cards.splice(clampedIndex, 0, updatedMovedCard);
+
+      // Cập nhật lại chỉ số position cho các thẻ ở cả 2 cột
+      sourceCol.cards.forEach((c, idx) => {
+        c.position = idx;
+      });
+      targetCol.cards.forEach((c, idx) => {
+        c.position = idx;
+      });
+
+      return nextCols;
+    });
+
+    // Đồng bộ lại boardSignal
+    this.boardSignal.update((b) => (b ? { ...b, columns: this.columnsSignal() } : null));
+
+    // Nếu modal chi tiết thẻ đang mở thẻ này, cập nhật lại columnId cho modal
+    this.cardDetailSignal.update((detail) =>
+      detail && detail.id.toLowerCase() === message.cardId.toLowerCase()
+        ? { ...detail, columnId: targetColId }
+        : detail,
+    );
+
+    this.notifications.warning(
+      `Thẻ "${existingCard.title}" vừa được di chuyển bởi thành viên khác.`,
+    );
   }
 
   private silentReloadBoard(slug: string, projectId: string): void {
