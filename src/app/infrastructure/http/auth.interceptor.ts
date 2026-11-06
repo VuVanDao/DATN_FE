@@ -6,18 +6,18 @@ import { environment } from '../../../environments/environment';
 import { SessionRefreshService } from '../../application/auth/session-refresh.service';
 import { SessionService } from '../../application/auth/session.service';
 import { NotificationService } from '../../application/shared/notification.service';
-import { TokenService } from '../storage/token.service';
+import { AuthStorageService } from '../storage/auth-storage.service';
 
 export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   // Credentials and access tokens belong only to our API.
   if (req.url !== environment.apiUrl && !req.url.startsWith(environment.apiUrl + '/'))
     return next(req);
-  const tokens = inject(TokenService);
+  const storage = inject(AuthStorageService);
   const session = inject(SessionService);
   const refresh = inject(SessionRefreshService);
   const router = inject(Router);
   const notifications = inject(NotificationService);
-  const token = tokens.getAccessToken();
+  const token = storage.getAccessToken();
   const authReq = req.clone({
     withCredentials: true,
     setHeaders: token ? { Authorization: 'Bearer ' + token } : {},
@@ -34,7 +34,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status !== 401 || isPublicAuth) return throwError(() => error);
-      const currentToken = tokens.getAccessToken();
+      const currentToken = storage.getAccessToken();
       // A late 401 may belong to the token already replaced by another request.
       if (currentToken && currentToken !== token) {
         return next(authReq.clone({ setHeaders: { Authorization: 'Bearer ' + currentToken } }));

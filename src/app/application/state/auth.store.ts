@@ -11,7 +11,7 @@ import {
 } from '../../domain/models/auth.model';
 import { User } from '../../domain/models/user.model';
 import { UserRepository } from '../../domain/repositories/user.repository';
-import { TokenService } from '../../infrastructure/storage/token.service';
+import { AuthStorageService } from '../../infrastructure/storage/auth-storage.service';
 import { ForgotPasswordUseCase } from '../auth/forgot-password.use-case';
 import { LoginUseCase } from '../auth/login.use-case';
 import { LogoutUseCase } from '../auth/logout.use-case';
@@ -31,7 +31,7 @@ export class AuthStore {
   private readonly resetUseCase = inject(ResetPasswordUseCase);
   private readonly session = inject(SessionService);
   private readonly refresh = inject(SessionRefreshService);
-  private readonly tokens = inject(TokenService);
+  private readonly storage = inject(AuthStorageService);
   private readonly users = inject(UserRepository);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
@@ -55,7 +55,7 @@ export class AuthStore {
 
   async initSession(): Promise<void> {
     if (!isPlatformBrowser(this.platformId)) return;
-    if (this.tokens.hasToken() && this.currentUser()) {
+    if (this.storage.hasToken() && this.currentUser()) {
       this.users
         .getCurrentUser()
         .pipe(takeUntil(this.session.ended$))
