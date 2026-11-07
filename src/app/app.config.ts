@@ -20,6 +20,7 @@ import { SprintRepository } from './domain/repositories/sprint.repository';
 import { UserRepository } from './domain/repositories/user.repository';
 import { WorkspaceRepository } from './domain/repositories/workspace.repository';
 import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
+import { ResourceNotFoundInterceptor } from './infrastructure/http/resource-not-found.interceptor';
 import { MockAiAssistantService } from './infrastructure/mocks/mock-ai-assistant.service';
 import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
 import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repository';
@@ -38,7 +39,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideClientHydration(),
-    provideHttpClient(withFetch(), withInterceptors([AuthInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([AuthInterceptor, ResourceNotFoundInterceptor])),
     provideAppInitializer(() => {
       const authStore = inject(AuthStore);
       return authStore.initSession();

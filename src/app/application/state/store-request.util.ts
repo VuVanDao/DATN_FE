@@ -26,8 +26,13 @@ export class StoreRequestRunner {
     return request$
       .pipe(
         catchError((error: unknown) => {
+          const isHandled = !!(error as Record<string, unknown>)?.[
+            '_handledNotFound'
+          ];
           const message = extractApiErrorMessage(error, config.fallbackErrorMessage); // trích xuất thông điệp lỗi dễ đọc từ đối tượng lỗi server trả về.
-          if (config.toastOnError !== false) this.notifications.error(message);
+          if (!isHandled && config.toastOnError !== false) {
+            this.notifications.error(message);
+          }
           if (config.onError) {
             config.onError(message); // Nếu nơi gọi có truyền vào hàm xử lý lỗi riêng thì chạy hàm đó.
           }

@@ -176,4 +176,8 @@ export class WorkspaceDetailPage implements OnInit {
     if (removedId.toLowerCase() === this.authStore.currentUser()?.id.toLowerCase())
       this.router.navigate(['/workspaces']);
   }
+
+  goBack(): void {
+    void this.router.navigate(['/workspaces']);
+  }
 }

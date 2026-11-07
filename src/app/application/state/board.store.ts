@@ -486,6 +486,29 @@ export class BoardStore {
     this.isLoadingCardDetailSignal.set(false);
   }
 
+  removeCardLocally(cardId: string): void {
+    this.columnsSignal.update((cols) =>
+      cols.map((col) => ({
+        ...col,
+        cards: (col.cards || []).filter((card) => card.id !== cardId),
+      })),
+    );
+    this.boardSignal.update((b) =>
+      b
+        ? {
+            ...b,
+            columns: (b.columns || []).map((col) => ({
+              ...col,
+              cards: (col.cards || []).filter((card) => card.id !== cardId),
+            })),
+          }
+        : null,
+    );
+    if (this.cardDetailSignal()?.id === cardId) {
+      this.clearCardDetail();
+    }
+  }
+
   updateCard(
     cardId: string,
     updates: Partial<UpdateCardRequest> & {

@@ -92,6 +92,10 @@ export class WorkspaceStore {
     this._list.selectWorkspace(id);
   }
 
+  removeWorkspaceLocally(id: string): void {
+    this._list.removeWorkspaceLocally(id);
+  }
+
   /**
    * Xoá workspace và dọn luôn chi tiết đang mở nếu trùng id.
    * Đây là luồng cắt ngang 2 slice nên đặt ở facade thay vì trong slice danh sách
