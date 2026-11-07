@@ -1,3 +1,5 @@
+import { SprintSummary } from './sprint.model';
+
 export interface CardSummary {
   id: string;
   title: string;
@@ -55,6 +57,7 @@ export interface BoardDetail {
   projectKey?: string | null;
   workspaceId?: string | null;
   isPinned: boolean;
+  activeSprint?: SprintSummary | null;
   columns: ColumnSummary[];
 }
 

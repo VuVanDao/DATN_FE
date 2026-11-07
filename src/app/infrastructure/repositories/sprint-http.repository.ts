@@ -1,0 +1,75 @@
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { map, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { CardSummary } from '../../domain/models/board-detail.model';
+import {
+  CompleteSprintRequest,
+  CreateSprintRequest,
+  MoveCardToSprintRequest,
+  ProjectBacklog,
+  SprintSummary,
+  StartSprintRequest,
+  UpdateSprintRequest,
+} from '../../domain/models/sprint.model';
+import { SprintRepository } from '../../domain/repositories/sprint.repository';
+import { ApiResponse } from '../dtos/api-response.dto';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SprintHttpRepository implements SprintRepository {
+  private readonly http = inject(HttpClient);
+  private readonly sprintUrl = `${environment.apiUrl}/sprint`;
+
+  createSprint(request: CreateSprintRequest): Observable<SprintSummary> {
+    return this.http
+      .post<ApiResponse<SprintSummary>>(this.sprintUrl, request)
+      .pipe(map((res) => res.data));
+  }
+
+  updateSprint(sprintId: string, request: UpdateSprintRequest): Observable<SprintSummary> {
+    return this.http
+      .put<ApiResponse<SprintSummary>>(`${this.sprintUrl}/${sprintId}`, request)
+      .pipe(map((res) => res.data));
+  }
+
+  deleteSprint(sprintId: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.sprintUrl}/${sprintId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  startSprint(sprintId: string, request: StartSprintRequest): Observable<SprintSummary> {
+    return this.http
+      .post<ApiResponse<SprintSummary>>(`${this.sprintUrl}/${sprintId}/start`, request)
+      .pipe(map((res) => res.data));
+  }
+
+  completeSprint(
+    sprintId: string,
+    request: CompleteSprintRequest,
+  ): Observable<SprintSummary> {
+    return this.http
+      .post<ApiResponse<SprintSummary>>(`${this.sprintUrl}/${sprintId}/complete`, request)
+      .pipe(map((res) => res.data));
+  }
+
+  moveCardToSprint(request: MoveCardToSprintRequest): Observable<CardSummary> {
+    return this.http
+      .post<ApiResponse<CardSummary>>(`${this.sprintUrl}/move-card`, request)
+      .pipe(map((res) => res.data));
+  }
+
+  getProjectSprints(projectId: string): Observable<SprintSummary[]> {
+    return this.http
+      .get<ApiResponse<SprintSummary[]>>(`${this.sprintUrl}/project/${projectId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  getProjectBacklog(projectId: string): Observable<ProjectBacklog> {
+    return this.http
+      .get<ApiResponse<ProjectBacklog>>(`${this.sprintUrl}/project/${projectId}/backlog`)
+      .pipe(map((res) => res.data));
+  }
+}
