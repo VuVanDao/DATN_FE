@@ -385,6 +385,10 @@ export class ProjectDetailPage implements OnInit {
     void this.router.navigate(['/workspaces']);
   }
 
+  goToHome(): void {
+    void this.router.navigate(['/home-page']);
+  }
+
   onBoardClick(board: Board): void {
     void this.router.navigate(['/boards', board.slug], {
       queryParams: { projectId: board.projectId },

@@ -35,6 +35,30 @@
 
       <!-- Body -->
       <div class="p-5 space-y-3 max-h-[60vh] overflow-y-auto">
+        <!-- Thông báo lỗi khi thực hiện thao tác thất bại -->
+        @if (submitError()) {
+          <div
+            class="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/90 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 text-xs space-y-2"
+          >
+            <div class="flex items-start gap-2">
+              <mat-icon fontIcon="error_outline" class="icon-sm text-rose-500 shrink-0 mt-0.5"></mat-icon>
+              <div class="flex-1 font-medium leading-relaxed">{{ submitError() }}</div>
+            </div>
+            @if (isNotFoundError()) {
+              <div class="pt-1 flex items-center justify-end">
+                <button
+                  type="button"
+                  (click)="goToHome()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold transition cursor-pointer text-xs shadow-xs"
+                >
+                  <mat-icon fontIcon="home" class="icon-xs"></mat-icon>
+                  <span>Quay về trang chủ</span>
+                </button>
+              </div>
+            }
+          </div>
+        }
+
         <!-- Hiển thị kết quả sau khi gửi API -->
         @if (addResult()) {
           <div class="space-y-2">

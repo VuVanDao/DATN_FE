@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   EventEmitter,
   inject,
   Input,
@@ -11,6 +12,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
 import { AddWorkspaceMembersResult } from '../../../../../../domain/models/workspace.model';
 
@@ -27,6 +29,7 @@ interface MemberRow {
 })
 export class InviteMembersModalComponent implements OnChanges {
   readonly workspaceStore = inject(WorkspaceStore);
+  private readonly router = inject(Router);
   @Input() isOpen = false;
   @Input() workspaceId = '';
   @Output() closed = new EventEmitter<void>();
@@ -36,6 +39,18 @@ export class InviteMembersModalComponent implements OnChanges {
   readonly rows = signal<MemberRow[]>([{ email: '' }]);
   // Kết quả sau khi gửi API
   readonly addResult = signal<AddWorkspaceMembersResult | null>(null);
+  // Thông báo lỗi nếu gửi thất bại
+  readonly submitError = signal<string | null>(null);
+
+  readonly isNotFoundError = computed(() => {
+    const err = (this.submitError() || '').toLowerCase();
+    return (
+      err.includes('không tồn tại') ||
+      err.includes('not found') ||
+      err.includes('không tìm thấy') ||
+      err.includes('workspace')
+    );
+  });
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true || changes['workspaceId']) {
@@ -62,9 +77,15 @@ export class InviteMembersModalComponent implements OnChanges {
     this.closed.emit();
   }
 
+  goToHome(): void {
+    this.close();
+    void this.router.navigate(['/home-page']);
+  }
+
   private resetState(): void {
     this.rows.set([{ email: '' }]);
     this.addResult.set(null);
+    this.submitError.set(null);
   }
 
   private validateRows(): boolean {
@@ -98,14 +119,23 @@ export class InviteMembersModalComponent implements OnChanges {
     const members = this.rows().map((row) => ({
       email: row.email.trim(),
     }));
-    this.workspaceStore.addMembers(workspaceId, { members }, (result) => {
-      if (!this.isOpen || this.workspaceId !== workspaceId) return;
-      this.addResult.set(result);
-      this.membersAdded.emit(result);
-      // Đóng ngay sau khi thành công để không giữ timer của lần mở trước.
-      if (result.totalFailed === 0) {
-        this.close();
-      }
-    });
+    this.submitError.set(null);
+    this.workspaceStore.addMembers(
+      workspaceId,
+      { members },
+      (result) => {
+        if (!this.isOpen || this.workspaceId !== workspaceId) return;
+        this.addResult.set(result);
+        this.membersAdded.emit(result);
+        // Đóng ngay sau khi thành công để không giữ timer của lần mở trước.
+        if (result.totalFailed === 0) {
+          this.close();
+        }
+      },
+      (errorMsg) => {
+        if (!this.isOpen || this.workspaceId !== workspaceId) return;
+        this.submitError.set(errorMsg);
+      },
+    );
   }
 }

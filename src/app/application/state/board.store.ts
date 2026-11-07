@@ -509,6 +509,18 @@ export class BoardStore {
     }
   }
 
+  removeColumnLocally(columnId: string): void {
+    this.columnsSignal.update((cols) => cols.filter((col) => col.id !== columnId));
+    this.boardSignal.update((b) =>
+      b
+        ? {
+            ...b,
+            columns: (b.columns || []).filter((col) => col.id !== columnId),
+          }
+        : null,
+    );
+  }
+
   updateCard(
     cardId: string,
     updates: Partial<UpdateCardRequest> & {

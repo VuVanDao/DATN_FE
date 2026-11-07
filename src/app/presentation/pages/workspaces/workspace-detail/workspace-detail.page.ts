@@ -177,7 +177,11 @@ export class WorkspaceDetailPage implements OnInit {
       this.router.navigate(['/workspaces']);
   }
 
-  goBack(): void {
+  goToHome(): void {
+    void this.router.navigate(['/home-page']);
+  }
+
+  goToWorkspaces(): void {
     void this.router.navigate(['/workspaces']);
   }
 }

@@ -533,4 +533,8 @@ export class BoardDetailPage implements OnInit {
       void this.router.navigate(['/workspaces']);
     }
   }
+
+  goToHome(): void {
+    void this.router.navigate(['/home-page']);
+  }
 }

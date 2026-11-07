@@ -31,23 +31,33 @@
             class="text-rose-500 dark:text-rose-400 text-3xl! w-8! h-8! mb-2"
           ></mat-icon>
           <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">
-            Không thể tải bảng
+            Không tìm thấy bảng công việc
           </h3>
           <p class="text-xs text-slate-600 dark:text-slate-300 mb-4">{{ error() }}</p>
-          <div class="flex items-center justify-center gap-2">
+          <div class="flex flex-wrap items-center justify-center gap-2">
             <button
               type="button"
-              (click)="onRetry()"
-              class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition"
+              (click)="goToHome()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition"
             >
-              Thử lại
+              <mat-icon fontIcon="home" class="icon-xs"></mat-icon>
+              <span>Quay về trang chủ</span>
             </button>
             <button
               type="button"
               (click)="onLeaveBoard()"
-              class="px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition"
             >
-              Quay lại Dự án
+              <mat-icon fontIcon="arrow_back" class="icon-xs"></mat-icon>
+              <span>Quay lại Dự án</span>
+            </button>
+            <button
+              type="button"
+              (click)="onRetry()"
+              class="inline-flex items-center gap-1 px-2.5 py-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-medium cursor-pointer transition"
+            >
+              <mat-icon fontIcon="refresh" class="icon-xs"></mat-icon>
+              <span>Thử lại</span>
             </button>
           </div>
         </div>
