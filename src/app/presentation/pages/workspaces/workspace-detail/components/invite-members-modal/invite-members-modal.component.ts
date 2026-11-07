@@ -12,15 +12,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { WorkspaceStore } from '../../../../../../application/state/workspace.store';
-import {
-  AddWorkspaceMembersResult,
-  WorkspaceRole,
-} from '../../../../../../domain/models/workspace.model';
+import { AddWorkspaceMembersResult } from '../../../../../../domain/models/workspace.model';
+
 interface MemberRow {
   email: string;
-  roleId: string | null;
   error?: string | null;
 }
+
 @Component({
   selector: 'app-invite-members-modal',
   standalone: true,
@@ -34,40 +32,41 @@ export class InviteMembersModalComponent implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() membersAdded = new EventEmitter<AddWorkspaceMembersResult>();
 
-  // Danh sách rows nhập email + role
-  readonly rows = signal<MemberRow[]>([{ email: '', roleId: null }]);
+  // Danh sách rows nhập email
+  readonly rows = signal<MemberRow[]>([{ email: '' }]);
   // Kết quả sau khi gửi API
   readonly addResult = signal<AddWorkspaceMembersResult | null>(null);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true || changes['workspaceId']) {
-      this.workspaceStore.loadWorkspaceRoles();
       this.resetState();
     }
   }
-  get roles(): WorkspaceRole[] {
-    return this.workspaceStore.workspaceRoles();
-  }
+
   // add member to form to add
   addRow(): void {
     if (this.rows().length >= 10) return;
     this.rows.update((rows) => {
-      return [...rows, { email: '', roleId: null }];
+      return [...rows, { email: '' }];
     });
   }
+
   // remove member to form to add
   removeRow(index: number): void {
     if (this.rows().length <= 1) return;
     this.rows.update((rows) => rows.filter((row, i) => i !== index));
   }
+
   close(): void {
     this.resetState();
     this.closed.emit();
   }
+
   private resetState(): void {
-    this.rows.set([{ email: '', roleId: null }]);
+    this.rows.set([{ email: '' }]);
     this.addResult.set(null);
   }
+
   private validateRows(): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     let valid = true;
@@ -92,14 +91,14 @@ export class InviteMembersModalComponent implements OnChanges {
     this.rows.set(validated);
     return valid;
   }
+
   submit(): void {
     if (!this.isOpen || this.workspaceStore.isAddingMembers() || !this.validateRows()) return;
     const workspaceId = this.workspaceId;
     const members = this.rows().map((row) => ({
       email: row.email.trim(),
-      roleId: row.roleId || null,
     }));
-    this.workspaceStore.addMembers(workspaceId, { members: members }, (result) => {
+    this.workspaceStore.addMembers(workspaceId, { members }, (result) => {
       if (!this.isOpen || this.workspaceId !== workspaceId) return;
       this.addResult.set(result);
       this.membersAdded.emit(result);
