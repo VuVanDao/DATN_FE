@@ -106,6 +106,25 @@
         </span>
       </button>
 
+      <!-- Tab: Kế hoạch & Backlog -->
+      <button
+        type="button"
+        (click)="activeMainTab.set('backlog')"
+        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition cursor-pointer -mb-px select-none"
+        [class.border-indigo-600]="activeMainTab() === 'backlog'"
+        [class.text-indigo-600]="activeMainTab() === 'backlog'"
+        [class.dark:text-indigo-400]="activeMainTab() === 'backlog'"
+        [class.dark:border-indigo-400]="activeMainTab() === 'backlog'"
+        [class.border-transparent]="activeMainTab() !== 'backlog'"
+        [class.text-slate-500]="activeMainTab() !== 'backlog'"
+        [class.dark:text-slate-400]="activeMainTab() !== 'backlog'"
+        [class.hover:text-slate-900]="activeMainTab() !== 'backlog'"
+        [class.dark:hover:text-white]="activeMainTab() !== 'backlog'"
+      >
+        <mat-icon fontIcon="format_list_bulleted" class="text-base! w-auto! h-auto!"></mat-icon>
+        <span>Kế hoạch & Backlog</span>
+      </button>
+
       <!-- Tab: Thành viên dự án -->
       <button
         type="button"
@@ -150,6 +169,14 @@
       (createBoard)="openCreateBoardModal()"
       (boardClick)="onBoardClick($event)"
       (togglePin)="onTogglePin($event)"
+    />
+
+    <!-- PANEL 2: KẾ HOẠCH & BACKLOG (API 1: GET /api/sprint/project/{projectId}/backlog) -->
+    <app-project-backlog
+      class="block"
+      [class.hidden]="activeMainTab() !== 'backlog'"
+      [projectId]="proj.id"
+      [canManage]="isCurrentLeader()"
     />
 
     <!-- PANEL 2: DANH SÁCH THÀNH VIÊN -->

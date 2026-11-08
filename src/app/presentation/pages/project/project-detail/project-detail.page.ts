@@ -22,6 +22,7 @@ import { CreateBoardModalComponent } from './components/create-board-modal/creat
 import { ProjectBoardsComponent } from './components/project-boards/project-boards.component';
 import { ProjectHeroHeaderComponent } from './components/project-hero-header/project-hero-header.component';
 import { ProjectMembersComponent } from './components/project-members/project-members.component';
+import { ProjectBacklogComponent } from './components/project-backlog/project-backlog.component';
 import { ProjectSettingsModalComponent } from './components/project-settings-modal/project-settings-modal.component';
 import { RemoveProjectMemberModalComponent } from './components/remove-project-member-modal/remove-project-member-modal.component';
 
@@ -37,6 +38,7 @@ import { RemoveProjectMemberModalComponent } from './components/remove-project-m
     ProjectSettingsModalComponent,
     AddProjectMemberModalComponent,
     CreateBoardModalComponent,
+    ProjectBacklogComponent,
     ProjectBoardsComponent,
     ProjectMembersComponent,
     ChangeProjectMemberModalComponent,
@@ -112,7 +114,7 @@ export class ProjectDetailPage implements OnInit {
   readonly canChangeRoleBound = (m: ProjectMember) => this.canChangeRole(m);
 
   // Tab điều hướng chính ('boards' | 'members')
-  readonly activeMainTab = signal<'boards' | 'members'>('boards');
+  readonly activeMainTab = signal<'boards' | 'backlog' | 'members'>('boards');
 
   // Modals Visibility
   readonly showSettingsModal = signal(false);
