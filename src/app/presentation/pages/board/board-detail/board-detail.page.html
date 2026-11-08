@@ -72,7 +72,7 @@
         [isAddingCard]="boardStore.isAddingCard()"
         [isAddingColumn]="boardStore.isAddingColumn()"
         (retry)="onRetry()"
-        (cardDrop)="onCardDrop($event)"
+        (moveCard)="onMoveCard($event)"
         (columnDrop)="onColumnDrop($event)"
         (openAddCard)="openAddCard($event)"
         (cancelAddCard)="cancelAddCard()"

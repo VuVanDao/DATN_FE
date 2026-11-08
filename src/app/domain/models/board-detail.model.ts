@@ -91,6 +91,14 @@ export interface MoveCardRequest {
   newPosition: number;
 }
 
+export interface MoveCardEvent {
+  cardId: string;
+  sourceColumnId: string;
+  targetColumnId: string;
+  previousIndex: number;
+  currentIndex: number;
+}
+
 export interface UpdateCardRequest {
   title?: string;
   description?: string | null;

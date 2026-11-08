@@ -11,7 +11,7 @@ import { NotificationService } from '../../../../application/shared/notification
 import { BoardStore } from '../../../../application/state/board.store';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
-import { CardSummary, ColumnSummary } from '../../../../domain/models/board-detail.model';
+import { CardSummary, ColumnSummary, MoveCardEvent } from '../../../../domain/models/board-detail.model';
 import { Board, ProjectMember } from '../../../../domain/models/project.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
 import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
@@ -160,24 +160,12 @@ export class BoardDetailPage implements OnInit {
     }
   }
 
-  // Xử lý kéo thả Card giữa các cột hoặc trong cùng cột
-  onCardDrop({
-    event,
-    targetColumn,
-  }: {
-    event: CdkDragDrop<CardSummary[]>;
-    targetColumn: ColumnSummary;
-  }): void {
-    const sourceColumnId = event.previousContainer.id;
-    const targetColumnId = targetColumn.id;
-    const card = event.item.data as CardSummary;
-
-    if (!card) return;
-
+  // Xử lý di chuyển thẻ giữa các cột hoặc thay đổi vị trí trong cùng cột
+  onMoveCard(event: MoveCardEvent): void {
     this.boardStore.moveCard(
-      card.id,
-      sourceColumnId,
-      targetColumnId,
+      event.cardId,
+      event.sourceColumnId,
+      event.targetColumnId,
       event.previousIndex,
       event.currentIndex,
     );

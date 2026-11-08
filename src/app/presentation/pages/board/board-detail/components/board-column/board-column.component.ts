@@ -34,7 +34,7 @@ export class BoardColumnComponent {
   readonly isActiveAddCard = input<boolean>(false);
   readonly isAddingCard = input<boolean>(false);
 
-  readonly cardDrop = output<CdkDragDrop<CardSummary[]>>();
+  readonly cardDropped = output<CdkDragDrop<CardSummary[]>>();
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
   readonly confirmAddCard = output<{
@@ -156,7 +156,7 @@ export class BoardColumnComponent {
   }
 
   onCardDropped(event: CdkDragDrop<CardSummary[]>): void {
-    this.cardDrop.emit(event);
+    this.cardDropped.emit(event);
   }
 
   toggleMenu(): void {

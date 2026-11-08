@@ -51,7 +51,7 @@
           [connectedDropLists]="connectedColumnIds()"
           [isActiveAddCard]="activeAddCardColumnId() === column.id"
           [isAddingCard]="isAddingCard()"
-          (cardDrop)="onColumnCardDrop($event, column)"
+          (cardDropped)="onColumnCardDropped($event, column)"
           (openAddCard)="openAddCard.emit($event)"
           (cancelAddCard)="cancelAddCard.emit()"
           (confirmAddCard)="confirmAddCard.emit($event)"

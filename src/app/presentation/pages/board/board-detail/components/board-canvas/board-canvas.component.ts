@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { CardSummary, ColumnSummary } from '../../../../../../domain/models/board-detail.model';
+import { CardSummary, ColumnSummary, MoveCardEvent } from '../../../../../../domain/models/board-detail.model';
 import { BoardColumnComponent } from '../board-column/board-column.component';
 
 @Component({
@@ -28,7 +28,7 @@ export class BoardCanvasComponent {
   readonly isAddingColumn = input<boolean>(false);
 
   readonly retry = output<void>();
-  readonly cardDrop = output<{ event: CdkDragDrop<CardSummary[]>; targetColumn: ColumnSummary }>();
+  readonly moveCard = output<MoveCardEvent>();
   readonly columnDrop = output<CdkDragDrop<ColumnSummary[]>>();
   readonly openAddCard = output<string>();
   readonly cancelAddCard = output<void>();
@@ -73,8 +73,17 @@ export class BoardCanvasComponent {
     });
   }
 
-  onColumnCardDrop(event: CdkDragDrop<CardSummary[]>, targetColumn: ColumnSummary): void {
-    this.cardDrop.emit({ event, targetColumn });
+  onColumnCardDropped(event: CdkDragDrop<CardSummary[]>, targetColumn: ColumnSummary): void {
+    const card = event.item.data as CardSummary;
+    if (!card) return;
+
+    this.moveCard.emit({
+      cardId: card.id,
+      sourceColumnId: event.previousContainer.id,
+      targetColumnId: targetColumn.id,
+      previousIndex: event.previousIndex,
+      currentIndex: event.currentIndex,
+    });
   }
 
   onColumnDrop(event: CdkDragDrop<ColumnSummary[]>): void {
