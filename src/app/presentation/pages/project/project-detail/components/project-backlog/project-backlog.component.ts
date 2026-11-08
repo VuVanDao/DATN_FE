@@ -1,3 +1,12 @@
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragPlaceholder,
+  CdkDropList,
+  CdkDropListGroup,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import {
   Component,
@@ -26,6 +35,10 @@ import { EditSprintModalComponent } from '../edit-sprint-modal/edit-sprint-modal
   imports: [
     CommonModule,
     MatIconModule,
+    CdkDropListGroup,
+    CdkDropList,
+    CdkDrag,
+    CdkDragPlaceholder,
     CreateSprintModalComponent,
     EditSprintModalComponent,
     DeleteSprintModalComponent,
@@ -115,6 +128,27 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   closeDeleteSprintModal(): void {
     this.showDeleteSprintModal.set(false);
     this.selectedSprintForDelete.set(null);
+  }
+
+  onCardDrop(event: CdkDragDrop<CardSummary[]>, targetSprintId: string | null): void {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      return;
+    }
+
+    const card = event.item.data as CardSummary;
+    if (!card) return;
+
+    // Optimistically update the UI arrays
+    transferArrayItem(
+      event.previousContainer.data,
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex,
+    );
+
+    // Call API 5: POST /api/sprint/move-card
+    this.sprintStore.moveCardToSprint(card.id, targetSprintId, this.projectId);
   }
 
   getPriorityClass(priority: number | string): string {

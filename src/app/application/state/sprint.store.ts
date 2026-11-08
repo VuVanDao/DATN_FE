@@ -8,6 +8,7 @@ import {
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
 import { DeleteSprintUseCase } from '../sprint/delete-sprint.use-case';
 import { GetProjectBacklogUseCase } from '../sprint/get-project-backlog.use-case';
+import { MoveCardToSprintUseCase } from '../sprint/move-card-to-sprint.use-case';
 import { UpdateSprintUseCase } from '../sprint/update-sprint.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
@@ -18,6 +19,7 @@ export class SprintStore {
   private readonly createSprintUseCase = inject(CreateSprintUseCase);
   private readonly updateSprintUseCase = inject(UpdateSprintUseCase);
   private readonly deleteSprintUseCase = inject(DeleteSprintUseCase);
+  private readonly moveCardToSprintUseCase = inject(MoveCardToSprintUseCase);
   private readonly notifications = inject(NotificationService);
   private readonly requests = inject(StoreRequestRunner);
 
@@ -27,6 +29,7 @@ export class SprintStore {
   private readonly creatingSprintSignal = signal<boolean>(false);
   private readonly updatingSprintSignal = signal<boolean>(false);
   private readonly deletingSprintSignal = signal<boolean>(false);
+  private readonly movingCardSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
 
   readonly backlog = this.backlogSignal.asReadonly();
@@ -34,6 +37,7 @@ export class SprintStore {
   readonly isCreatingSprint = this.creatingSprintSignal.asReadonly();
   readonly isUpdatingSprint = this.updatingSprintSignal.asReadonly();
   readonly isDeletingSprint = this.deletingSprintSignal.asReadonly();
+  readonly isMovingCard = this.movingCardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
   loadBacklog(projectId: string): void {
@@ -100,6 +104,32 @@ export class SprintStore {
         if (onSuccess) {
           onSuccess();
         }
+      },
+    });
+  }
+
+  moveCardToSprint(
+    cardId: string,
+    sprintId: string | null,
+    projectId: string,
+    onSuccess?: () => void,
+  ): void {
+    this.movingCardSignal.set(true);
+    this.moveCardToSprintUseCase.execute({ cardId, sprintId }).subscribe({
+      next: () => {
+        this.movingCardSignal.set(false);
+        const targetName = sprintId ? 'Sprint' : 'Backlog';
+        this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
+        this.loadBacklog(projectId);
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+      error: (err) => {
+        this.movingCardSignal.set(false);
+        const msg = err?.error?.message || err?.message || 'Không thể chuyển thẻ vào Sprint.';
+        this.notifications.error(msg);
+        this.loadBacklog(projectId);
       },
     });
   }
