@@ -99,7 +99,7 @@
             }
           </div>
 
-          <div class="flex items-center gap-4 text-xs">
+          <div class="flex items-center gap-3 text-xs">
             <div class="text-slate-500 dark:text-slate-400">
               <span class="font-medium text-slate-700 dark:text-slate-300">
                 {{ formatDate(active.startDate) }} – {{ formatDate(active.endDate) }}
@@ -111,6 +111,44 @@
               <mat-icon fontIcon="bolt" class="text-sm! w-4! h-4!"></mat-icon>
               <span>{{ active.completedStoryPoints }}/{{ active.totalStoryPoints }} pts</span>
             </div>
+
+            <!-- 3-Dots Action Menu -->
+            @if (canManage) {
+              <div class="relative">
+                <button
+                  type="button"
+                  (click)="toggleSprintDropdown(active.id, $event)"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+                  title="Tùy chọn Sprint"
+                >
+                  <mat-icon fontIcon="more_horiz" class="text-base!"></mat-icon>
+                </button>
+
+                @if (activeDropdownSprintId() === active.id) {
+                  <div
+                    class="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-100"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <button
+                      type="button"
+                      (click)="openEditSprintModal(active, $event)"
+                      class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    >
+                      <mat-icon fontIcon="edit" class="text-xs! w-3.5! h-3.5! text-slate-400"></mat-icon>
+                      <span>Sửa Sprint</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="openDeleteSprintModal(active, $event)"
+                      class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
+                    >
+                      <mat-icon fontIcon="delete" class="text-xs! w-3.5! h-3.5! text-rose-500"></mat-icon>
+                      <span>Xóa Sprint</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
 
@@ -185,6 +223,44 @@
             <span class="text-slate-500 dark:text-slate-400">
               {{ sprint.totalCards }} việc • {{ sprint.totalStoryPoints }} pts
             </span>
+
+            <!-- 3-Dots Action Menu -->
+            @if (canManage) {
+              <div class="relative">
+                <button
+                  type="button"
+                  (click)="toggleSprintDropdown(sprint.id, $event)"
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+                  title="Tùy chọn Sprint"
+                >
+                  <mat-icon fontIcon="more_horiz" class="text-base!"></mat-icon>
+                </button>
+
+                @if (activeDropdownSprintId() === sprint.id) {
+                  <div
+                    class="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-100"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <button
+                      type="button"
+                      (click)="openEditSprintModal(sprint, $event)"
+                      class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    >
+                      <mat-icon fontIcon="edit" class="text-xs! w-3.5! h-3.5! text-slate-400"></mat-icon>
+                      <span>Sửa Sprint</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="openDeleteSprintModal(sprint, $event)"
+                      class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
+                    >
+                      <mat-icon fontIcon="delete" class="text-xs! w-3.5! h-3.5! text-rose-500"></mat-icon>
+                      <span>Xóa Sprint</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
 
@@ -309,5 +385,23 @@
     [suggestedSprintNumber]="suggestedSprintNumber()"
     (closed)="closeCreateSprintModal()"
     (sprintCreated)="refreshBacklog()"
+  />
+
+  <!-- Modal Chỉnh sửa Sprint (API 3: PUT /api/sprint/{id}) -->
+  <app-edit-sprint-modal
+    [isOpen]="showEditSprintModal()"
+    [projectId]="projectId"
+    [sprint]="selectedSprintForEdit()"
+    (closed)="closeEditSprintModal()"
+    (sprintUpdated)="refreshBacklog()"
+  />
+
+  <!-- Modal Xóa Sprint (API 4: DELETE /api/sprint/{id}) -->
+  <app-delete-sprint-modal
+    [isOpen]="showDeleteSprintModal()"
+    [projectId]="projectId"
+    [sprint]="selectedSprintForDelete()"
+    (closed)="closeDeleteSprintModal()"
+    (sprintDeleted)="refreshBacklog()"
   />
 </div>

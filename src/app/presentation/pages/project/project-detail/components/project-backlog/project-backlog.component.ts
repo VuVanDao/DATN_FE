@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   EventEmitter,
+  HostListener,
   inject,
   Input,
   OnChanges,
@@ -14,12 +15,21 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { SprintStore } from '../../../../../../application/state/sprint.store';
 import { CardSummary } from '../../../../../../domain/models/board-detail.model';
+import { SprintSummary } from '../../../../../../domain/models/sprint.model';
 import { CreateSprintModalComponent } from '../create-sprint-modal/create-sprint-modal.component';
+import { DeleteSprintModalComponent } from '../delete-sprint-modal/delete-sprint-modal.component';
+import { EditSprintModalComponent } from '../edit-sprint-modal/edit-sprint-modal.component';
 
 @Component({
   selector: 'app-project-backlog',
   standalone: true,
-  imports: [CommonModule, MatIconModule, CreateSprintModalComponent],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    CreateSprintModalComponent,
+    EditSprintModalComponent,
+    DeleteSprintModalComponent,
+  ],
   templateUrl: './project-backlog.component.html',
 })
 export class ProjectBacklogComponent implements OnInit, OnChanges {
@@ -31,12 +41,26 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   @Output() cardClick = new EventEmitter<CardSummary>();
 
   readonly showCreateSprintModal = signal<boolean>(false);
+  readonly showEditSprintModal = signal<boolean>(false);
+  readonly showDeleteSprintModal = signal<boolean>(false);
+
+  readonly selectedSprintForEdit = signal<SprintSummary | null>(null);
+  readonly selectedSprintForDelete = signal<SprintSummary | null>(null);
+
+  readonly activeDropdownSprintId = signal<string | null>(null);
 
   readonly suggestedSprintNumber = computed(() => {
     const backlog = this.sprintStore.backlog();
     if (!backlog) return 1;
     return (backlog.futureSprints?.length || 0) + (backlog.activeSprint ? 2 : 1);
   });
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.activeDropdownSprintId()) {
+      this.activeDropdownSprintId.set(null);
+    }
+  }
 
   ngOnInit(): void {
     if (this.projectId) {
@@ -62,6 +86,35 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
 
   closeCreateSprintModal(): void {
     this.showCreateSprintModal.set(false);
+  }
+
+  toggleSprintDropdown(sprintId: string, event: Event): void {
+    event.stopPropagation();
+    this.activeDropdownSprintId.update((curr) => (curr === sprintId ? null : sprintId));
+  }
+
+  openEditSprintModal(sprint: SprintSummary, event?: Event): void {
+    event?.stopPropagation();
+    this.selectedSprintForEdit.set(sprint);
+    this.showEditSprintModal.set(true);
+    this.activeDropdownSprintId.set(null);
+  }
+
+  closeEditSprintModal(): void {
+    this.showEditSprintModal.set(false);
+    this.selectedSprintForEdit.set(null);
+  }
+
+  openDeleteSprintModal(sprint: SprintSummary, event?: Event): void {
+    event?.stopPropagation();
+    this.selectedSprintForDelete.set(sprint);
+    this.showDeleteSprintModal.set(true);
+    this.activeDropdownSprintId.set(null);
+  }
+
+  closeDeleteSprintModal(): void {
+    this.showDeleteSprintModal.set(false);
+    this.selectedSprintForDelete.set(null);
   }
 
   getPriorityClass(priority: number | string): string {
