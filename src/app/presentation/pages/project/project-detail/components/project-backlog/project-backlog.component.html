@@ -1,25 +1,19 @@
 <div class="space-y-6">
   <!-- 1. Header Toolbar -->
-  <div
-    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs"
-  >
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs">
     <div class="flex items-center gap-3">
-      <div
-        class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0"
-      >
+      <div class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
         <mat-icon fontIcon="format_list_bulleted" class="text-xl"></mat-icon>
       </div>
       <div>
         <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <span>Kế hoạch & Backlog</span>
-          <span
-            class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60"
-          >
+          <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
             Scrum / Agile
           </span>
         </h3>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Kéo thả các công việc giữa Backlog và các Sprint để lập kế hoạch phát triển.
+          Kéo thả thẻ hoặc bấm nút "Chuyển nhanh" trên từng thẻ để phân bổ công việc vào Sprint.
         </p>
       </div>
     </div>
@@ -63,12 +57,8 @@
     </div>
   } @else if (sprintStore.error(); as err) {
     <!-- 3. Error State -->
-    <div
-      class="p-6 text-center bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-2xl space-y-3"
-    >
-      <div
-        class="w-12 h-12 mx-auto rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center"
-      >
+    <div class="p-6 text-center bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-2xl space-y-3">
+      <div class="w-12 h-12 mx-auto rounded-xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
         <mat-icon fontIcon="error_outline" class="text-2xl"></mat-icon>
       </div>
       <div>
@@ -86,341 +76,54 @@
     </div>
   } @else if (sprintStore.backlog(); as backlog) {
     <!-- 4. Drag & Drop List Group -->
-    <div cdkDropListGroup class="space-y-6">
+    <div cdkDropListGroup class="flex flex-col gap-6">
+
       <!-- BLOCK 1: ACTIVE SPRINT -->
       @if (backlog.activeSprint; as active) {
-        <div
-          class="bg-white dark:bg-slate-900 border-2 border-emerald-500/40 dark:border-emerald-500/30 rounded-2xl overflow-hidden shadow-xs"
-        >
-          <!-- Active Sprint Header -->
-          <div
-            class="p-4 sm:p-5 bg-emerald-50/40 dark:bg-emerald-950/20 border-b border-emerald-500/20 flex flex-col md:flex-row md:items-center justify-between gap-3"
-          >
-            <div class="space-y-1">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span
-                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-xs"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                  <span>Đang chạy (Active)</span>
-                </span>
-                <h4 class="text-base font-bold text-slate-900 dark:text-white">
-                  {{ active.name }}
-                </h4>
-              </div>
-              @if (active.goal) {
-                <p class="text-xs text-slate-600 dark:text-slate-400 italic">
-                  Mục tiêu: {{ active.goal }}
-                </p>
-              }
-            </div>
-
-            <div class="flex items-center gap-3 text-xs">
-              <div class="text-slate-500 dark:text-slate-400">
-                <span class="font-medium text-slate-700 dark:text-slate-300">
-                  {{ formatDate(active.startDate) }} – {{ formatDate(active.endDate) }}
-                </span>
-              </div>
-
-              <!-- Story Points Pill -->
-              <div
-                class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
-              >
-                <mat-icon fontIcon="bolt" class="text-sm! w-4! h-4!"></mat-icon>
-                <span>{{ active.completedStoryPoints }}/{{ active.totalStoryPoints }} pts</span>
-              </div>
-
-              <!-- 3-Dots Action Menu -->
-              @if (canManage) {
-                <div class="relative">
-                  <button
-                    type="button"
-                    (click)="toggleSprintDropdown(active.id, $event)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
-                    title="Tùy chọn Sprint"
-                  >
-                    <mat-icon fontIcon="more_horiz" class="text-base!"></mat-icon>
-                  </button>
-
-                  @if (activeDropdownSprintId() === active.id) {
-                    <div
-                      class="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-100"
-                      (click)="$event.stopPropagation()"
-                    >
-                      <button
-                        type="button"
-                        (click)="openEditSprintModal(active, $event)"
-                        class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                      >
-                        <mat-icon
-                          fontIcon="edit"
-                          class="text-xs! w-3.5! h-3.5! text-slate-400"
-                        ></mat-icon>
-                        <span>Sửa Sprint</span>
-                      </button>
-                      <button
-                        type="button"
-                        (click)="openDeleteSprintModal(active, $event)"
-                        class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
-                      >
-                        <mat-icon
-                          fontIcon="delete"
-                          class="text-xs! w-3.5! h-3.5! text-rose-500"
-                        ></mat-icon>
-                        <span>Xóa Sprint</span>
-                      </button>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Active Sprint Drop List -->
-          <div
-            cdkDropList
-            [id]="active.id"
-            [cdkDropListData]="active.cards || []"
-            (cdkDropListDropped)="onCardDrop($event, active.id)"
-            class="p-4 space-y-2 min-h-20"
-          >
-            @if (active.cards && active.cards.length > 0) {
-              @for (card of active.cards; track card.id) {
-                <div
-                  cdkDrag
-                  [cdkDragData]="card"
-                  [cdkDragDisabled]="!canManage"
-                  (click)="cardClick.emit(card)"
-                  class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/50 hover:bg-slate-100/80 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 transition cursor-grab active:cursor-grabbing group shadow-2xs select-none"
-                >
-                  <!-- Drag placeholder -->
-                  <div
-                    *cdkDragPlaceholder
-                    class="h-12 rounded-xl border-2 border-dashed border-emerald-400 dark:border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20"
-                  ></div>
-
-                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                    <mat-icon
-                      [fontIcon]="getTypeIcon(card.type)"
-                      [title]="getTypeLabel(card.type)"
-                      class="text-base! w-auto! h-auto! shrink-0"
-                      [ngClass]="getTypeColorClass(card.type)"
-                    ></mat-icon>
-                    <span
-                      class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
-                    >
-                      {{ card.title }}
-                    </span>
-                  </div>
-
-                  <div class="flex items-center gap-2 shrink-0">
-                    @if (card.storyPoints !== null && card.storyPoints !== undefined) {
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                      >
-                        {{ card.storyPoints }} pts
-                      </span>
-                    }
-                    <span
-                      class="px-2 py-0.5 rounded-md text-[10px] font-semibold border"
-                      [ngClass]="getPriorityClass(card.priority)"
-                    >
-                      {{ card.priority }}
-                    </span>
-                    @if (card.assigneeName) {
-                      <span class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
-                        {{ card.assigneeName }}
-                      </span>
-                    }
-                  </div>
-                </div>
-              }
-            } @else {
-              <div
-                class="text-center py-6 text-xs text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl"
-              >
-                Chưa có công việc nào trong Sprint này. Kéo thả thẻ từ Backlog vào đây để lên kế
-                hoạch.
-              </div>
-            }
-          </div>
-        </div>
+        <app-sprint-item
+          class="block"
+          [sprint]="active"
+          [availableSprints]="availableSprints()"
+          [canManage]="canManage"
+          (cardClick)="cardClick.emit($event)"
+          (cardDrop)="onCardDrop($event.event, $event.targetSprintId)"
+          (quickMove)="onQuickMove($event)"
+          (editSprint)="openEditSprintModal($event)"
+          (deleteSprint)="openDeleteSprintModal($event)"
+        />
       }
 
       <!-- BLOCK 2: FUTURE SPRINTS -->
       @for (sprint of backlog.futureSprints; track sprint.id) {
-        <div
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs"
-        >
-          <!-- Sprint Header -->
-          <div
-            class="p-4 sm:p-5 bg-slate-50/60 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3"
-          >
-            <div class="space-y-1">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                >
-                  Kế hoạch
-                </span>
-                <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                  {{ sprint.name }}
-                </h4>
-              </div>
-              @if (sprint.goal) {
-                <p class="text-xs text-slate-500 dark:text-slate-400">
-                  Mục tiêu: {{ sprint.goal }}
-                </p>
-              }
-            </div>
-
-            <div class="flex items-center gap-3 text-xs">
-              <span class="text-slate-500 dark:text-slate-400">
-                {{ sprint.totalCards }} việc • {{ sprint.totalStoryPoints }} pts
-              </span>
-
-              <!-- 3-Dots Action Menu -->
-              @if (canManage) {
-                <div class="relative">
-                  <button
-                    type="button"
-                    (click)="toggleSprintDropdown(sprint.id, $event)"
-                    class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
-                    title="Tùy chọn Sprint"
-                  >
-                    <mat-icon fontIcon="more_horiz" class="text-base!"></mat-icon>
-                  </button>
-
-                  @if (activeDropdownSprintId() === sprint.id) {
-                    <div
-                      class="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-100"
-                      (click)="$event.stopPropagation()"
-                    >
-                      <button
-                        type="button"
-                        (click)="openEditSprintModal(sprint, $event)"
-                        class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                      >
-                        <mat-icon
-                          fontIcon="edit"
-                          class="text-xs! w-3.5! h-3.5! text-slate-400"
-                        ></mat-icon>
-                        <span>Sửa Sprint</span>
-                      </button>
-                      <button
-                        type="button"
-                        (click)="openDeleteSprintModal(sprint, $event)"
-                        class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
-                      >
-                        <mat-icon
-                          fontIcon="delete"
-                          class="text-xs! w-3.5! h-3.5! text-rose-500"
-                        ></mat-icon>
-                        <span>Xóa Sprint</span>
-                      </button>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Future Sprint Drop List -->
-          <div
-            cdkDropList
-            [id]="sprint.id"
-            [cdkDropListData]="sprint.cards || []"
-            (cdkDropListDropped)="onCardDrop($event, sprint.id)"
-            class="p-4 space-y-2 min-h-20"
-          >
-            @if (sprint.cards && sprint.cards.length > 0) {
-              @for (card of sprint.cards; track card.id) {
-                <div
-                  cdkDrag
-                  [cdkDragData]="card"
-                  [cdkDragDisabled]="!canManage"
-                  (click)="cardClick.emit(card)"
-                  class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100/70 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/50 transition cursor-grab active:cursor-grabbing group shadow-2xs select-none"
-                >
-                  <!-- Drag placeholder -->
-                  <div
-                    *cdkDragPlaceholder
-                    class="h-12 rounded-xl border-2 border-dashed border-indigo-400 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20"
-                  ></div>
-
-                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                    <mat-icon
-                      [fontIcon]="getTypeIcon(card.type)"
-                      [title]="getTypeLabel(card.type)"
-                      class="text-base! w-auto! h-auto! shrink-0"
-                      [ngClass]="getTypeColorClass(card.type)"
-                    ></mat-icon>
-                    <span
-                      class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
-                    >
-                      {{ card.title }}
-                    </span>
-                  </div>
-
-                  <div class="flex items-center gap-2 shrink-0">
-                    @if (card.storyPoints !== null && card.storyPoints !== undefined) {
-                      <span
-                        class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                      >
-                        {{ card.storyPoints }} pts
-                      </span>
-                    }
-                    <span
-                      class="px-2 py-0.5 rounded-md text-[10px] font-semibold border"
-                      [ngClass]="getPriorityClass(card.priority)"
-                    >
-                      {{ card.priority }}
-                    </span>
-                    @if (card.assigneeName) {
-                      <span class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
-                        {{ card.assigneeName }}
-                      </span>
-                    }
-                  </div>
-                </div>
-              }
-            } @else {
-              <div
-                class="text-center py-6 text-xs text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl"
-              >
-                Chưa có công việc nào trong Sprint này. Kéo thả thẻ từ Backlog vào đây để lên kế
-                hoạch.
-              </div>
-            }
-          </div>
-        </div>
+        <app-sprint-item
+          class="block"
+          [sprint]="sprint"
+          [availableSprints]="availableSprints()"
+          [canManage]="canManage"
+          (cardClick)="cardClick.emit($event)"
+          (cardDrop)="onCardDrop($event.event, $event.targetSprintId)"
+          (quickMove)="onQuickMove($event)"
+          (editSprint)="openEditSprintModal($event)"
+          (deleteSprint)="openDeleteSprintModal($event)"
+        />
       }
 
       <!-- BLOCK 3: PRODUCT BACKLOG -->
-      <div
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs"
-      >
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
         <!-- Backlog Header -->
-        <div
-          class="p-4 sm:p-5 bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3"
-        >
+        <div class="p-4 sm:p-5 bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
             <mat-icon fontIcon="inbox" class="text-slate-500 dark:text-slate-400"></mat-icon>
             <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
               Product Backlog
             </h4>
-            <span
-              class="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300"
-            >
+            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300">
               {{ backlog.backlogTotalCards }} việc
             </span>
           </div>
 
           <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            Tổng điểm:
-            <span class="text-indigo-600 dark:text-indigo-400 font-bold"
-              >{{ backlog.backlogTotalStoryPoints }} pts</span
-            >
+            Tổng điểm: <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ backlog.backlogTotalStoryPoints }} pts</span>
           </div>
         </div>
 
@@ -430,69 +133,25 @@
           id="backlog"
           [cdkDropListData]="backlog.backlogCards || []"
           (cdkDropListDropped)="onCardDrop($event, null)"
-          class="p-4 space-y-2 min-h-24"
+          class="p-4 flex flex-col gap-2.5 min-h-24"
         >
           @if (backlog.backlogCards && backlog.backlogCards.length > 0) {
             @for (card of backlog.backlogCards; track card.id) {
-              <div
-                cdkDrag
-                [cdkDragData]="card"
-                [cdkDragDisabled]="!canManage"
-                (click)="cardClick.emit(card)"
-                class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100/70 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/50 transition cursor-grab active:cursor-grabbing group shadow-2xs select-none"
-              >
-                <!-- Drag placeholder -->
-                <div
-                  *cdkDragPlaceholder
-                  class="h-12 rounded-xl border-2 border-dashed border-indigo-400 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20"
-                ></div>
-
-                <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                  <mat-icon
-                    [fontIcon]="getTypeIcon(card.type)"
-                    [title]="getTypeLabel(card.type)"
-                    class="text-base! w-auto! h-auto! shrink-0"
-                    [ngClass]="getTypeColorClass(card.type)"
-                  ></mat-icon>
-                  <span
-                    class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
-                  >
-                    {{ card.title }}
-                  </span>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                  @if (card.storyPoints !== null && card.storyPoints !== undefined) {
-                    <span
-                      class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                    >
-                      {{ card.storyPoints }} pts
-                    </span>
-                  }
-                  <span
-                    class="px-2 py-0.5 rounded-md text-[10px] font-semibold border"
-                    [ngClass]="getPriorityClass(card.priority)"
-                  >
-                    {{ card.priority }}
-                  </span>
-                  @if (card.assigneeName) {
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
-                      {{ card.assigneeName }}
-                    </span>
-                  }
-                </div>
-              </div>
+              <app-backlog-card-item
+                class="block"
+                [card]="card"
+                [currentSprintId]="null"
+                [availableSprints]="availableSprints()"
+                [canManage]="canManage"
+                (cardClick)="cardClick.emit($event)"
+                (quickMove)="onQuickMove($event)"
+              />
             }
           } @else {
-            <div
-              class="text-center py-8 space-y-2 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl"
-            >
-              <mat-icon
-                fontIcon="inventory_2"
-                class="text-3xl text-slate-300 dark:text-slate-600"
-              ></mat-icon>
+            <div class="text-center py-8 space-y-2 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+              <mat-icon fontIcon="inventory_2" class="text-3xl text-slate-300 dark:text-slate-600"></mat-icon>
               <p class="text-xs text-slate-400 dark:text-slate-500">
-                Kho Backlog đang trống. Kéo thả các thẻ vào đây để đưa về kho tồn đọng.
+                Kho Backlog đang trống. Kéo thả hoặc dùng menu Chuyển nhanh để đưa công việc về kho tồn đọng.
               </p>
             </div>
           }
