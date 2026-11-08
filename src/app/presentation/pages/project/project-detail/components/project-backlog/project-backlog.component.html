@@ -38,7 +38,7 @@
       @if (canManage) {
         <button
           type="button"
-          (click)="createSprintClick.emit()"
+          (click)="openCreateSprintModal()"
           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 shadow-sm shadow-indigo-600/30 transition cursor-pointer"
         >
           <mat-icon fontIcon="add" class="text-sm! w-4! h-4!"></mat-icon>
@@ -301,4 +301,13 @@
       </div>
     </div>
   }
+
+  <!-- Modal Tạo Sprint mới (API 2: POST /api/sprint) -->
+  <app-create-sprint-modal
+    [isOpen]="showCreateSprintModal()"
+    [projectId]="projectId"
+    [suggestedSprintNumber]="suggestedSprintNumber()"
+    (closed)="closeCreateSprintModal()"
+    (sprintCreated)="refreshBacklog()"
+  />
 </div>

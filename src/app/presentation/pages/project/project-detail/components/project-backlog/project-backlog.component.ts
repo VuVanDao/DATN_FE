@@ -1,22 +1,25 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   EventEmitter,
   inject,
   Input,
   OnChanges,
   OnInit,
   Output,
+  signal,
   SimpleChanges,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { SprintStore } from '../../../../../../application/state/sprint.store';
 import { CardSummary } from '../../../../../../domain/models/board-detail.model';
+import { CreateSprintModalComponent } from '../create-sprint-modal/create-sprint-modal.component';
 
 @Component({
   selector: 'app-project-backlog',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, CreateSprintModalComponent],
   templateUrl: './project-backlog.component.html',
 })
 export class ProjectBacklogComponent implements OnInit, OnChanges {
@@ -25,8 +28,15 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   @Input({ required: true }) projectId = '';
   @Input() canManage = false;
 
-  @Output() createSprintClick = new EventEmitter<void>();
   @Output() cardClick = new EventEmitter<CardSummary>();
+
+  readonly showCreateSprintModal = signal<boolean>(false);
+
+  readonly suggestedSprintNumber = computed(() => {
+    const backlog = this.sprintStore.backlog();
+    if (!backlog) return 1;
+    return (backlog.futureSprints?.length || 0) + (backlog.activeSprint ? 2 : 1);
+  });
 
   ngOnInit(): void {
     if (this.projectId) {
@@ -44,6 +54,14 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
     if (this.projectId) {
       this.sprintStore.loadBacklog(this.projectId);
     }
+  }
+
+  openCreateSprintModal(): void {
+    this.showCreateSprintModal.set(true);
+  }
+
+  closeCreateSprintModal(): void {
+    this.showCreateSprintModal.set(false);
   }
 
   getPriorityClass(priority: number | string): string {
@@ -71,7 +89,7 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
         return 'pest_control';
       case 'feature':
       case 'features':
-
+      case 'story':
       case '2':
         return 'bookmark';
       case 'epic':
@@ -90,6 +108,7 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
         return 'text-rose-500 dark:text-rose-400';
       case 'feature':
       case 'features':
+      case 'story':
       case '2':
         return 'text-emerald-500 dark:text-emerald-400';
       case 'epic':
