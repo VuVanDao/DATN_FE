@@ -27,9 +27,9 @@
         <button
           type="button"
           (click)="close()"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          class="w-8 h-8 rounded-xl inline-flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
         >
-          <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
+          <mat-icon fontIcon="close" class="icon-xs"></mat-icon>
         </button>
       </div>
 
@@ -40,7 +40,7 @@
         </p>
 
         <div class="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 flex items-start gap-2.5">
-          <mat-icon fontIcon="info" class="text-amber-600 dark:text-amber-400 text-sm! w-4! h-4! shrink-0 mt-0.5"></mat-icon>
+          <mat-icon fontIcon="info" class="text-amber-600 dark:text-amber-400 icon-xs shrink-0 mt-0.5"></mat-icon>
           <p class="text-xs text-amber-800 dark:text-amber-300/90 leading-relaxed">
             @if (sprint.totalCards > 0) {
               Tất cả <strong>{{ sprint.totalCards }} công việc</strong> trong Sprint này sẽ <strong>không bị mất</strong> mà được tự động hoàn trả an toàn về kho <strong>Product Backlog</strong>.
@@ -64,14 +64,14 @@
           type="button"
           (click)="onConfirm()"
           [disabled]="sprintStore.isDeletingSprint()"
-          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 active:bg-rose-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-rose-600/20"
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 active:bg-rose-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-rose-600/20"
         >
           @if (sprintStore.isDeletingSprint()) {
             <div class="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-            <span>Đang xóa...</span>
+            <span class="leading-none">Đang xóa...</span>
           } @else {
-            <mat-icon fontIcon="delete" class="text-sm! w-4! h-4!"></mat-icon>
-            <span>Xác nhận xóa</span>
+            <mat-icon fontIcon="delete" class="icon-xs"></mat-icon>
+            <span class="leading-none">Xác nhận xóa</span>
           }
         </button>
       </div>

@@ -16,47 +16,45 @@
     }"
   >
     <!-- Left: Collapse toggle + Name + Goal -->
-    <div class="flex items-start gap-2.5 min-w-0 flex-1">
-      <button
-        type="button"
-        (click)="toggleCollapse()"
-        class="mt-0.5 p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition cursor-pointer shrink-0"
-        [title]="isCollapsed() ? 'Mở rộng Sprint' : 'Thu gọn Sprint'"
-      >
-        <mat-icon
-          [fontIcon]="isCollapsed() ? 'chevron_right' : 'expand_more'"
-          class="text-lg! w-5! h-5!"
-        ></mat-icon>
-      </button>
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          (click)="toggleCollapse()"
+          class="w-6 h-6 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition cursor-pointer shrink-0"
+          [title]="isCollapsed() ? 'Mở rộng Sprint' : 'Thu gọn Sprint'"
+        >
+          <mat-icon
+            [fontIcon]="isCollapsed() ? 'chevron_right' : 'expand_more'"
+            class="icon-sm"
+          ></mat-icon>
+        </button>
 
-      <div class="space-y-1 min-w-0">
-        <div class="flex items-center gap-2.5 flex-wrap">
-          @if (isActive()) {
-            <span
-              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-xs"
-            >
-              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-              <span>Đang chạy (Active)</span>
-            </span>
-          } @else {
-            <span
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-            >
-              Kế hoạch
-            </span>
-          }
-
-          <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
-            {{ sprint.name }}
-          </h4>
-        </div>
-
-        @if (sprint.goal) {
-          <p class="text-xs text-slate-500 dark:text-slate-400 italic truncate">
-            Mục tiêu: {{ sprint.goal }}
-          </p>
+        @if (isActive()) {
+          <span
+            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-xs"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+            <span class="leading-none">Đang chạy (Active)</span>
+          </span>
+        } @else {
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+          >
+            <span class="leading-none">Kế hoạch</span>
+          </span>
         }
+
+        <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+          {{ sprint.name }}
+        </h4>
       </div>
+
+      @if (sprint.goal) {
+        <p class="text-xs text-slate-500 dark:text-slate-400 italic truncate pl-8 mt-1">
+          Mục tiêu: {{ sprint.goal }}
+        </p>
+      }
     </div>
 
     <!-- Right: Dates / Points / Actions -->
@@ -73,10 +71,10 @@
 
         <!-- Story points pill -->
         <div
-          class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
+          class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
         >
-          <mat-icon fontIcon="bolt" class="text-sm! w-4! h-4!"></mat-icon>
-          <span>{{ sprint.completedStoryPoints }}/{{ sprint.totalStoryPoints }} pts</span>
+          <mat-icon fontIcon="bolt" class="icon-xs text-emerald-600 dark:text-emerald-400"></mat-icon>
+          <span class="leading-none">{{ sprint.completedStoryPoints }}/{{ sprint.totalStoryPoints }} pts</span>
         </div>
 
         <!-- Nút Hoàn thành Sprint -->
@@ -84,15 +82,15 @@
           <button
             type="button"
             (click)="onCompleteSprint($event)"
-            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/60 hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 transition cursor-pointer"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/60 hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 transition cursor-pointer"
           >
-            <mat-icon fontIcon="check_circle" class="text-sm! w-4! h-4!"></mat-icon>
-            <span>Hoàn thành Sprint</span>
+            <mat-icon fontIcon="check_circle" class="icon-xs"></mat-icon>
+            <span class="leading-none">Hoàn thành Sprint</span>
           </button>
         }
       } @else {
         <!-- Future Sprint Stats -->
-        <span class="text-slate-500 dark:text-slate-400">
+        <span class="text-slate-500 dark:text-slate-400 font-medium">
           {{ sprint.totalCards }} việc • {{ sprint.totalStoryPoints }} pts
         </span>
 
@@ -101,10 +99,10 @@
           <button
             type="button"
             (click)="onStartSprint($event)"
-            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition cursor-pointer"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition cursor-pointer"
           >
-            <mat-icon fontIcon="play_arrow" class="text-sm! w-4! h-4!"></mat-icon>
-            <span>Bắt đầu Sprint</span>
+            <mat-icon fontIcon="play_arrow" class="icon-xs"></mat-icon>
+            <span class="leading-none">Bắt đầu Sprint</span>
           </button>
         }
       }
@@ -115,10 +113,10 @@
           <button
             type="button"
             (click)="toggleActionsMenu($event)"
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+            class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
             title="Tùy chọn Sprint"
           >
-            <mat-icon fontIcon="more_horiz" class="text-base!"></mat-icon>
+            <mat-icon fontIcon="more_horiz" class="icon-sm"></mat-icon>
           </button>
 
           @if (showActionsMenu()) {
@@ -131,16 +129,16 @@
                 (click)="openEdit($event)"
                 class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
-                <mat-icon fontIcon="edit" class="text-xs! w-3.5! h-3.5! text-slate-400"></mat-icon>
-                <span>Sửa Sprint</span>
+                <mat-icon fontIcon="edit" class="icon-xs text-slate-400"></mat-icon>
+                <span class="leading-none">Sửa Sprint</span>
               </button>
               <button
                 type="button"
                 (click)="openDelete($event)"
                 class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
               >
-                <mat-icon fontIcon="delete" class="text-xs! w-3.5! h-3.5! text-rose-500"></mat-icon>
-                <span>Xóa Sprint</span>
+                <mat-icon fontIcon="delete" class="icon-xs text-rose-500"></mat-icon>
+                <span class="leading-none">Xóa Sprint</span>
               </button>
             </div>
           }

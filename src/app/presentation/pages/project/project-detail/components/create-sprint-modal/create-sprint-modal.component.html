@@ -29,9 +29,9 @@
         <button
           type="button"
           (click)="close()"
-          class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          class="w-8 h-8 rounded-xl inline-flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
         >
-          <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
+          <mat-icon fontIcon="close" class="icon-xs"></mat-icon>
         </button>
       </div>
 
@@ -133,16 +133,16 @@
           <button
             type="submit"
             [disabled]="sprintStore.isCreatingSprint() || form.invalid"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-indigo-600/20"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-indigo-600/20"
           >
             @if (sprintStore.isCreatingSprint()) {
               <div
                 class="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"
               ></div>
-              <span>Đang tạo...</span>
+              <span class="leading-none">Đang tạo...</span>
             } @else {
-              <mat-icon fontIcon="add" class="text-sm! w-4! h-4!"></mat-icon>
-              <span>Tạo Sprint</span>
+              <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
+              <span class="leading-none">Tạo Sprint</span>
             }
           </button>
         </div>
