@@ -3,12 +3,14 @@ import { Subject } from 'rxjs';
 import {
   CreateSprintRequest,
   ProjectBacklog,
+  StartSprintRequest,
   UpdateSprintRequest,
 } from '../../domain/models/sprint.model';
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
 import { DeleteSprintUseCase } from '../sprint/delete-sprint.use-case';
 import { GetProjectBacklogUseCase } from '../sprint/get-project-backlog.use-case';
 import { MoveCardToSprintUseCase } from '../sprint/move-card-to-sprint.use-case';
+import { StartSprintUseCase } from '../sprint/start-sprint.use-case';
 import { UpdateSprintUseCase } from '../sprint/update-sprint.use-case';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
@@ -20,6 +22,7 @@ export class SprintStore {
   private readonly updateSprintUseCase = inject(UpdateSprintUseCase);
   private readonly deleteSprintUseCase = inject(DeleteSprintUseCase);
   private readonly moveCardToSprintUseCase = inject(MoveCardToSprintUseCase);
+  private readonly startSprintUseCase = inject(StartSprintUseCase);
   private readonly notifications = inject(NotificationService);
   private readonly requests = inject(StoreRequestRunner);
 
@@ -29,6 +32,7 @@ export class SprintStore {
   private readonly creatingSprintSignal = signal<boolean>(false);
   private readonly updatingSprintSignal = signal<boolean>(false);
   private readonly deletingSprintSignal = signal<boolean>(false);
+  private readonly startingSprintSignal = signal<boolean>(false);
   private readonly movingCardSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
 
@@ -37,6 +41,7 @@ export class SprintStore {
   readonly isCreatingSprint = this.creatingSprintSignal.asReadonly();
   readonly isUpdatingSprint = this.updatingSprintSignal.asReadonly();
   readonly isDeletingSprint = this.deletingSprintSignal.asReadonly();
+  readonly isStartingSprint = this.startingSprintSignal.asReadonly();
   readonly isMovingCard = this.movingCardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
@@ -100,6 +105,26 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể xóa Sprint.',
       onSuccess: () => {
         this.notifications.success('Đã xóa Sprint thành công. Các công việc đã chuyển về Backlog.');
+        this.loadBacklog(projectId);
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+    });
+  }
+
+  startSprint(
+    sprintId: string,
+    projectId: string,
+    request: StartSprintRequest,
+    onSuccess?: () => void,
+  ): void {
+    this.requests.run({
+      loading: this.startingSprintSignal,
+      request$: this.startSprintUseCase.execute(sprintId, request),
+      fallbackErrorMessage: 'Không thể bắt đầu Sprint.',
+      onSuccess: (started) => {
+        this.notifications.success(`Đã bắt đầu "${started.name}" thành công!`);
         this.loadBacklog(projectId);
         if (onSuccess) {
           onSuccess();

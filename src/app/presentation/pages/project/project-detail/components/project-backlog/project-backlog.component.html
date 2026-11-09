@@ -91,6 +91,7 @@
           (quickMove)="onQuickMove($event)"
           (editSprint)="openEditSprintModal($event)"
           (deleteSprint)="openDeleteSprintModal($event)"
+          (startSprint)="openStartSprintModal($event)"
         />
       }
 
@@ -107,6 +108,7 @@
           (quickMove)="onQuickMove($event)"
           (editSprint)="openEditSprintModal($event)"
           (deleteSprint)="openDeleteSprintModal($event)"
+          (startSprint)="openStartSprintModal($event)"
         />
       }
 
@@ -187,5 +189,15 @@
     [sprint]="selectedSprintForDelete()"
     (closed)="closeDeleteSprintModal()"
     (sprintDeleted)="refreshBacklog()"
+  />
+
+  <!-- Modal Bắt đầu Sprint (API 6: POST /api/sprint/{id}/start) -->
+  <app-start-sprint-modal
+    [isOpen]="showStartSprintModal()"
+    [projectId]="projectId"
+    [sprint]="selectedSprintForStart()"
+    [hasActiveSprint]="hasActiveSprint()"
+    (closed)="closeStartSprintModal()"
+    (sprintStarted)="refreshBacklog()"
   />
 </div>

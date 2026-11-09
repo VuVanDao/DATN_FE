@@ -25,6 +25,7 @@ import { SprintSummary } from '../../../../../../domain/models/sprint.model';
 import { CreateSprintModalComponent } from '../create-sprint-modal/create-sprint-modal.component';
 import { DeleteSprintModalComponent } from '../delete-sprint-modal/delete-sprint-modal.component';
 import { EditSprintModalComponent } from '../edit-sprint-modal/edit-sprint-modal.component';
+import { StartSprintModalComponent } from '../start-sprint-modal/start-sprint-modal.component';
 import { BacklogCardItemComponent } from './components/backlog-card-item/backlog-card-item.component';
 import { SprintItemComponent } from './components/sprint-item/sprint-item.component';
 
@@ -41,6 +42,7 @@ import { SprintItemComponent } from './components/sprint-item/sprint-item.compon
     CreateSprintModalComponent,
     EditSprintModalComponent,
     DeleteSprintModalComponent,
+    StartSprintModalComponent,
   ],
   templateUrl: './project-backlog.component.html',
 })
@@ -56,14 +58,20 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly showCreateSprintModal = signal<boolean>(false);
   readonly showEditSprintModal = signal<boolean>(false);
   readonly showDeleteSprintModal = signal<boolean>(false);
+  readonly showStartSprintModal = signal<boolean>(false);
 
   readonly selectedSprintForEdit = signal<SprintSummary | null>(null);
   readonly selectedSprintForDelete = signal<SprintSummary | null>(null);
+  readonly selectedSprintForStart = signal<SprintSummary | null>(null);
 
   readonly suggestedSprintNumber = computed(() => {
     const backlog = this.sprintStore.backlog();
     if (!backlog) return 1;
     return (backlog.futureSprints?.length || 0) + (backlog.activeSprint ? 2 : 1);
+  });
+
+  readonly hasActiveSprint = computed(() => {
+    return !!this.sprintStore.backlog()?.activeSprint;
   });
 
   readonly availableSprints = computed(() => {
@@ -125,6 +133,16 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   closeDeleteSprintModal(): void {
     this.showDeleteSprintModal.set(false);
     this.selectedSprintForDelete.set(null);
+  }
+
+  openStartSprintModal(sprint: SprintSummary): void {
+    this.selectedSprintForStart.set(sprint);
+    this.showStartSprintModal.set(true);
+  }
+
+  closeStartSprintModal(): void {
+    this.showStartSprintModal.set(false);
+    this.selectedSprintForStart.set(null);
   }
 
   onCardDrop(event: CdkDragDrop<CardSummary[]>, targetSprintId: string | null): void {
