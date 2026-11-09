@@ -245,14 +245,22 @@ export class SprintStore {
     cardId: string,
     sprintId: string | null,
     projectId: string,
+    options?: { isSourceActive?: boolean; isTargetActive?: boolean },
     onSuccess?: () => void,
   ): void {
     this.movingCardSignal.set(true);
     this.moveCardToSprintUseCase.execute({ cardId, sprintId }).subscribe({
       next: () => {
         this.movingCardSignal.set(false);
-        const targetName = sprintId ? 'Sprint' : 'Backlog';
-        this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
+        if (options?.isTargetActive) {
+          this.notifications.warning('Đã thêm thẻ vào Sprint đang chạy (Thay đổi phạm vi Sprint).');
+        } else if (options?.isSourceActive) {
+          const targetName = sprintId ? 'Sprint khác' : 'Backlog';
+          this.notifications.info(`Đã rút thẻ từ Sprint đang chạy về ${targetName} (Thay đổi phạm vi Sprint).`);
+        } else {
+          const targetName = sprintId ? 'Sprint' : 'Backlog';
+          this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
+        }
         this.loadBacklog(projectId);
         if (onSuccess) {
           onSuccess();

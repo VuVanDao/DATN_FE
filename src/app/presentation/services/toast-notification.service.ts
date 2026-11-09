@@ -13,4 +13,7 @@ export class ToastNotificationService extends NotificationService {
   warning(message: string): void {
     toast.warning(message);
   }
+  info(message: string): void {
+    toast.info(message);
+  }
 }
