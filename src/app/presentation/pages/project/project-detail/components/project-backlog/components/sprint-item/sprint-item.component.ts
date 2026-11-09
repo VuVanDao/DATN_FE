@@ -26,7 +26,8 @@ import { BacklogCardItemComponent } from '../backlog-card-item/backlog-card-item
 export class SprintItemComponent {
   @Input({ required: true }) sprint!: SprintSummary;
   @Input() availableSprints: { id: string; name: string }[] = [];
-  @Input() canManage = false;
+  @Input() canManageSprint = false;
+  @Input() canMoveCard = false;
 
   @Output() cardClick = new EventEmitter<CardSummary>();
   @Output() cardDrop = new EventEmitter<{ event: CdkDragDrop<CardSummary[]>; targetSprintId: string }>();

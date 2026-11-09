@@ -176,7 +176,8 @@
       class="block"
       [class.hidden]="activeMainTab() !== 'backlog'"
       [projectId]="proj.id"
-      [canManage]="isCurrentLeader()"
+      [canManageSprint]="canManageRoles()"
+      [canMoveCard]="isCurrentMember()"
     />
 
     <!-- PANEL 2: DANH SÁCH THÀNH VIÊN -->

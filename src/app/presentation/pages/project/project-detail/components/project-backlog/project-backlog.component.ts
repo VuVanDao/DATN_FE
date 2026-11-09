@@ -48,7 +48,8 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly sprintStore = inject(SprintStore);
 
   @Input({ required: true }) projectId = '';
-  @Input() canManage = false;
+  @Input() canManageSprint = false;
+  @Input() canMoveCard = false;
 
   @Output() cardClick = new EventEmitter<CardSummary>();
 

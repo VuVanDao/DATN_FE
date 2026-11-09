@@ -97,6 +97,16 @@ export class ProjectDetailPage implements OnInit {
   });
 
   // User has authority to change member roles (WorkspaceOwner or ProjectLeader)
+  readonly isCurrentMember = computed(() => {
+    const currentUserId = this.session.currentUser()?.id;
+    if (!currentUserId) return false;
+    const inMemberList = this.members().some(
+      (m) => m.userId.toLowerCase() === currentUserId.toLowerCase(),
+    );
+    const isProjectMemberFlag = this.project()?.isMember === true;
+    return inMemberList || isProjectMemberFlag || this.isCurrentLeader() || this.isWorkspaceOwner();
+  });
+
   readonly canManageRoles = computed(() => {
     return this.isWorkspaceOwner() || this.isCurrentLeader();
   });

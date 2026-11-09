@@ -35,7 +35,7 @@
         <span>Làm mới</span>
       </button>
 
-      @if (canManage) {
+      @if (canManageSprint) {
         <button
           type="button"
           (click)="openCreateSprintModal()"
@@ -84,7 +84,8 @@
           class="block"
           [sprint]="active"
           [availableSprints]="availableSprints()"
-          [canManage]="canManage"
+          [canManageSprint]="canManageSprint"
+          [canMoveCard]="canMoveCard"
           (cardClick)="cardClick.emit($event)"
           (cardDrop)="onCardDrop($event.event, $event.targetSprintId)"
           (quickMove)="onQuickMove($event)"
@@ -99,7 +100,8 @@
           class="block"
           [sprint]="sprint"
           [availableSprints]="availableSprints()"
-          [canManage]="canManage"
+          [canManageSprint]="canManageSprint"
+          [canMoveCard]="canMoveCard"
           (cardClick)="cardClick.emit($event)"
           (cardDrop)="onCardDrop($event.event, $event.targetSprintId)"
           (quickMove)="onQuickMove($event)"
@@ -142,7 +144,7 @@
                 [card]="card"
                 [currentSprintId]="null"
                 [availableSprints]="availableSprints()"
-                [canManage]="canManage"
+                [canMoveCard]="canMoveCard"
                 (cardClick)="cardClick.emit($event)"
                 (quickMove)="onQuickMove($event)"
               />

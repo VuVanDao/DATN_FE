@@ -24,7 +24,7 @@ export class BacklogCardItemComponent {
   @Input({ required: true }) card!: CardSummary;
   @Input() currentSprintId: string | null = null;
   @Input() availableSprints: { id: string; name: string }[] = [];
-  @Input() canManage = false;
+  @Input() canMoveCard = false;
 
   @Output() cardClick = new EventEmitter<CardSummary>();
   @Output() quickMove = new EventEmitter<{ cardId: string; targetSprintId: string | null }>();
