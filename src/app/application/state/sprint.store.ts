@@ -1,11 +1,13 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import {
+  CompleteSprintRequest,
   CreateSprintRequest,
   ProjectBacklog,
   StartSprintRequest,
   UpdateSprintRequest,
 } from '../../domain/models/sprint.model';
+import { CompleteSprintUseCase } from '../sprint/complete-sprint.use-case';
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
 import { DeleteSprintUseCase } from '../sprint/delete-sprint.use-case';
 import { GetProjectBacklogUseCase } from '../sprint/get-project-backlog.use-case';
@@ -23,6 +25,7 @@ export class SprintStore {
   private readonly deleteSprintUseCase = inject(DeleteSprintUseCase);
   private readonly moveCardToSprintUseCase = inject(MoveCardToSprintUseCase);
   private readonly startSprintUseCase = inject(StartSprintUseCase);
+  private readonly completeSprintUseCase = inject(CompleteSprintUseCase);
   private readonly notifications = inject(NotificationService);
   private readonly requests = inject(StoreRequestRunner);
 
@@ -33,6 +36,7 @@ export class SprintStore {
   private readonly updatingSprintSignal = signal<boolean>(false);
   private readonly deletingSprintSignal = signal<boolean>(false);
   private readonly startingSprintSignal = signal<boolean>(false);
+  private readonly completingSprintSignal = signal<boolean>(false);
   private readonly movingCardSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
 
@@ -42,6 +46,7 @@ export class SprintStore {
   readonly isUpdatingSprint = this.updatingSprintSignal.asReadonly();
   readonly isDeletingSprint = this.deletingSprintSignal.asReadonly();
   readonly isStartingSprint = this.startingSprintSignal.asReadonly();
+  readonly isCompletingSprint = this.completingSprintSignal.asReadonly();
   readonly isMovingCard = this.movingCardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
@@ -125,6 +130,26 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể bắt đầu Sprint.',
       onSuccess: (started) => {
         this.notifications.success(`Đã bắt đầu "${started.name}" thành công!`);
+        this.loadBacklog(projectId);
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+    });
+  }
+
+  completeSprint(
+    sprintId: string,
+    projectId: string,
+    request: CompleteSprintRequest,
+    onSuccess?: () => void,
+  ): void {
+    this.requests.run({
+      loading: this.completingSprintSignal,
+      request$: this.completeSprintUseCase.execute(sprintId, request),
+      fallbackErrorMessage: 'Không thể hoàn thành Sprint.',
+      onSuccess: (completed) => {
+        this.notifications.success(`Đã hoàn thành Sprint "${completed.name}"!`);
         this.loadBacklog(projectId);
         if (onSuccess) {
           onSuccess();

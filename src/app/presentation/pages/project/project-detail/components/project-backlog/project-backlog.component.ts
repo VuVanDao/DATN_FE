@@ -26,6 +26,7 @@ import { CreateSprintModalComponent } from '../create-sprint-modal/create-sprint
 import { DeleteSprintModalComponent } from '../delete-sprint-modal/delete-sprint-modal.component';
 import { EditSprintModalComponent } from '../edit-sprint-modal/edit-sprint-modal.component';
 import { StartSprintModalComponent } from '../start-sprint-modal/start-sprint-modal.component';
+import { CompleteSprintModalComponent } from '../complete-sprint-modal/complete-sprint-modal.component';
 import { BacklogCardItemComponent } from './components/backlog-card-item/backlog-card-item.component';
 import { SprintItemComponent } from './components/sprint-item/sprint-item.component';
 
@@ -43,6 +44,7 @@ import { SprintItemComponent } from './components/sprint-item/sprint-item.compon
     EditSprintModalComponent,
     DeleteSprintModalComponent,
     StartSprintModalComponent,
+    CompleteSprintModalComponent,
   ],
   templateUrl: './project-backlog.component.html',
 })
@@ -59,10 +61,12 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly showEditSprintModal = signal<boolean>(false);
   readonly showDeleteSprintModal = signal<boolean>(false);
   readonly showStartSprintModal = signal<boolean>(false);
+  readonly showCompleteSprintModal = signal<boolean>(false);
 
   readonly selectedSprintForEdit = signal<SprintSummary | null>(null);
   readonly selectedSprintForDelete = signal<SprintSummary | null>(null);
   readonly selectedSprintForStart = signal<SprintSummary | null>(null);
+  readonly selectedSprintForComplete = signal<SprintSummary | null>(null);
 
   readonly suggestedSprintNumber = computed(() => {
     const backlog = this.sprintStore.backlog();
@@ -72,6 +76,12 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
 
   readonly hasActiveSprint = computed(() => {
     return !!this.sprintStore.backlog()?.activeSprint;
+  });
+
+  readonly futureSprintsList = computed(() => {
+    const backlog = this.sprintStore.backlog();
+    if (!backlog || !backlog.futureSprints) return [];
+    return backlog.futureSprints.map((s) => ({ id: s.id, name: s.name }));
   });
 
   readonly availableSprints = computed(() => {
@@ -143,6 +153,16 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   closeStartSprintModal(): void {
     this.showStartSprintModal.set(false);
     this.selectedSprintForStart.set(null);
+  }
+
+  openCompleteSprintModal(sprint: SprintSummary): void {
+    this.selectedSprintForComplete.set(sprint);
+    this.showCompleteSprintModal.set(true);
+  }
+
+  closeCompleteSprintModal(): void {
+    this.showCompleteSprintModal.set(false);
+    this.selectedSprintForComplete.set(null);
   }
 
   onCardDrop(event: CdkDragDrop<CardSummary[]>, targetSprintId: string | null): void {

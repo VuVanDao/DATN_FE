@@ -92,6 +92,7 @@
           (editSprint)="openEditSprintModal($event)"
           (deleteSprint)="openDeleteSprintModal($event)"
           (startSprint)="openStartSprintModal($event)"
+          (completeSprint)="openCompleteSprintModal($event)"
         />
       }
 
@@ -199,5 +200,15 @@
     [hasActiveSprint]="hasActiveSprint()"
     (closed)="closeStartSprintModal()"
     (sprintStarted)="refreshBacklog()"
+  />
+
+  <!-- Modal Hoàn thành Sprint (API 7: POST /api/sprint/{id}/complete) -->
+  <app-complete-sprint-modal
+    [isOpen]="showCompleteSprintModal()"
+    [projectId]="projectId"
+    [sprint]="selectedSprintForComplete()"
+    [futureSprints]="futureSprintsList()"
+    (closed)="closeCompleteSprintModal()"
+    (sprintCompleted)="refreshBacklog()"
   />
 </div>
