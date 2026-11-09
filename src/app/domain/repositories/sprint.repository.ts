@@ -20,6 +20,7 @@ export abstract class SprintRepository {
     request: CompleteSprintRequest,
   ): Observable<SprintSummary>;
   abstract moveCardToSprint(request: MoveCardToSprintRequest): Observable<CardSummary>;
-  abstract getProjectSprints(projectId: string): Observable<SprintSummary[]>;
+  abstract getProjectSprints(projectId: string, includeClosed?: boolean): Observable<SprintSummary[]>;
+  abstract getProjectBacklogCards(projectId: string): Observable<CardSummary[]>;
   abstract getProjectBacklog(projectId: string): Observable<ProjectBacklog>;
 }

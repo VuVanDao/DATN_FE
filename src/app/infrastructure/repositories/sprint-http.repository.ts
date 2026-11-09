@@ -61,9 +61,17 @@ export class SprintHttpRepository implements SprintRepository {
       .pipe(map((res) => res.data));
   }
 
-  getProjectSprints(projectId: string): Observable<SprintSummary[]> {
+  getProjectSprints(projectId: string, includeClosed = false): Observable<SprintSummary[]> {
     return this.http
-      .get<ApiResponse<SprintSummary[]>>(`${this.sprintUrl}/project/${projectId}`)
+      .get<ApiResponse<SprintSummary[]>>(
+        `${this.sprintUrl}/project/${projectId}?includeClosed=${includeClosed}`,
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  getProjectBacklogCards(projectId: string): Observable<CardSummary[]> {
+    return this.http
+      .get<ApiResponse<CardSummary[]>>(`${environment.apiUrl}/cards/project/${projectId}/backlog`)
       .pipe(map((res) => res.data));
   }
 

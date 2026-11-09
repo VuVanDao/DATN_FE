@@ -1,16 +1,19 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { Subject } from 'rxjs';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { forkJoin, Subject } from 'rxjs';
+import { CardSummary } from '../../domain/models/board-detail.model';
 import {
   CompleteSprintRequest,
   CreateSprintRequest,
   ProjectBacklog,
+  SprintSummary,
   StartSprintRequest,
   UpdateSprintRequest,
 } from '../../domain/models/sprint.model';
 import { CompleteSprintUseCase } from '../sprint/complete-sprint.use-case';
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
 import { DeleteSprintUseCase } from '../sprint/delete-sprint.use-case';
-import { GetProjectBacklogUseCase } from '../sprint/get-project-backlog.use-case';
+import { GetProjectBacklogCardsUseCase } from '../sprint/get-project-backlog-cards.use-case';
+import { GetProjectSprintsUseCase } from '../sprint/get-project-sprints.use-case';
 import { MoveCardToSprintUseCase } from '../sprint/move-card-to-sprint.use-case';
 import { StartSprintUseCase } from '../sprint/start-sprint.use-case';
 import { UpdateSprintUseCase } from '../sprint/update-sprint.use-case';
@@ -19,7 +22,8 @@ import { StoreRequestRunner } from './store-request.util';
 
 @Injectable({ providedIn: 'root' })
 export class SprintStore {
-  private readonly getProjectBacklogUseCase = inject(GetProjectBacklogUseCase);
+  private readonly getProjectSprintsUseCase = inject(GetProjectSprintsUseCase);
+  private readonly getProjectBacklogCardsUseCase = inject(GetProjectBacklogCardsUseCase);
   private readonly createSprintUseCase = inject(CreateSprintUseCase);
   private readonly updateSprintUseCase = inject(UpdateSprintUseCase);
   private readonly deleteSprintUseCase = inject(DeleteSprintUseCase);
@@ -30,8 +34,14 @@ export class SprintStore {
   private readonly requests = inject(StoreRequestRunner);
 
   private readonly cancel$ = new Subject<void>();
-  private readonly backlogSignal = signal<ProjectBacklog | null>(null);
+  private readonly currentProjectIdSignal = signal<string>('');
+  private readonly sprintsSignal = signal<SprintSummary[]>([]);
+  private readonly backlogCardsSignal = signal<CardSummary[]>([]);
+
   private readonly loadingBacklogSignal = signal<boolean>(false);
+  private readonly loadingSprintsSignal = signal<boolean>(false);
+  private readonly loadingBacklogCardsSignal = signal<boolean>(false);
+
   private readonly creatingSprintSignal = signal<boolean>(false);
   private readonly updatingSprintSignal = signal<boolean>(false);
   private readonly deletingSprintSignal = signal<boolean>(false);
@@ -40,8 +50,48 @@ export class SprintStore {
   private readonly movingCardSignal = signal<boolean>(false);
   private readonly errorSignal = signal<string | null>(null);
 
-  readonly backlog = this.backlogSignal.asReadonly();
-  readonly isLoadingBacklog = this.loadingBacklogSignal.asReadonly();
+  // Expose independent Sprint & Backlog collections
+  readonly sprints = this.sprintsSignal.asReadonly();
+  readonly backlogCards = this.backlogCardsSignal.asReadonly();
+
+  readonly activeSprint = computed<SprintSummary | null>(() => {
+    return this.sprints().find((s) => s.status === 'Active' || String(s.status) === '1') || null;
+  });
+
+  readonly futureSprints = computed<SprintSummary[]>(() => {
+    return this.sprints().filter((s) => s.status === 'Future' || String(s.status) === '0');
+  });
+
+  // Backward-compatible unified Backlog object for existing components
+  readonly backlog = computed<ProjectBacklog | null>(() => {
+    const projectId = this.currentProjectIdSignal();
+    const sprints = this.sprintsSignal();
+    const cards = this.backlogCardsSignal();
+
+    if (!projectId && sprints.length === 0 && cards.length === 0) {
+      return null;
+    }
+
+    return {
+      projectId,
+      activeSprint: this.activeSprint(),
+      futureSprints: this.futureSprints(),
+      backlogCards: cards,
+      backlogTotalCards: cards.length,
+      backlogTotalStoryPoints: cards.reduce((acc, c) => acc + (c.storyPoints || 0), 0),
+    };
+  });
+
+  readonly isLoadingBacklog = computed(
+    () =>
+      this.loadingBacklogSignal() ||
+      this.loadingSprintsSignal() ||
+      this.loadingBacklogCardsSignal(),
+  );
+
+  readonly isLoadingSprints = this.loadingSprintsSignal.asReadonly();
+  readonly isLoadingBacklogCards = this.loadingBacklogCardsSignal.asReadonly();
+
   readonly isCreatingSprint = this.creatingSprintSignal.asReadonly();
   readonly isUpdatingSprint = this.updatingSprintSignal.asReadonly();
   readonly isDeletingSprint = this.deletingSprintSignal.asReadonly();
@@ -51,19 +101,50 @@ export class SprintStore {
   readonly error = this.errorSignal.asReadonly();
 
   loadBacklog(projectId: string): void {
+    this.currentProjectIdSignal.set(projectId);
     this.cancel$.next();
     this.errorSignal.set(null);
 
     this.requests.run({
       loading: this.loadingBacklogSignal,
-      request$: this.getProjectBacklogUseCase.execute(projectId),
+      request$: forkJoin({
+        sprints: this.getProjectSprintsUseCase.execute(projectId),
+        cards: this.getProjectBacklogCardsUseCase.execute(projectId),
+      }),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải dữ liệu Backlog của dự án.',
-      onSuccess: (data) => {
-        this.backlogSignal.set(data);
+      onSuccess: ({ sprints, cards }) => {
+        this.sprintsSignal.set(sprints);
+        this.backlogCardsSignal.set(cards);
       },
       onError: (err) => {
         this.errorSignal.set(err);
+      },
+    });
+  }
+
+  loadSprints(projectId: string, onSuccess?: () => void): void {
+    this.currentProjectIdSignal.set(projectId);
+    this.requests.run({
+      loading: this.loadingSprintsSignal,
+      request$: this.getProjectSprintsUseCase.execute(projectId),
+      fallbackErrorMessage: 'Không thể tải danh sách Sprint.',
+      onSuccess: (sprints) => {
+        this.sprintsSignal.set(sprints);
+        if (onSuccess) onSuccess();
+      },
+    });
+  }
+
+  loadBacklogCards(projectId: string, onSuccess?: () => void): void {
+    this.currentProjectIdSignal.set(projectId);
+    this.requests.run({
+      loading: this.loadingBacklogCardsSignal,
+      request$: this.getProjectBacklogCardsUseCase.execute(projectId),
+      fallbackErrorMessage: 'Không thể tải danh sách thẻ Backlog.',
+      onSuccess: (cards) => {
+        this.backlogCardsSignal.set(cards);
+        if (onSuccess) onSuccess();
       },
     });
   }
@@ -75,7 +156,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể tạo mới Sprint.',
       onSuccess: (newSprint) => {
         this.notifications.success(`Đã tạo thành công "${newSprint.name}"`);
-        this.loadBacklog(request.projectId);
+        this.loadSprints(request.projectId);
         if (onSuccess) {
           onSuccess();
         }
@@ -95,7 +176,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể cập nhật Sprint.',
       onSuccess: (updated) => {
         this.notifications.success(`Đã cập nhật Sprint "${updated.name}"`);
-        this.loadBacklog(projectId);
+        this.loadSprints(projectId);
         if (onSuccess) {
           onSuccess();
         }
@@ -110,6 +191,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể xóa Sprint.',
       onSuccess: () => {
         this.notifications.success('Đã xóa Sprint thành công. Các công việc đã chuyển về Backlog.');
+        // Thẻ của Sprint xóa được chuyển về Backlog nên cần reload cả 2
         this.loadBacklog(projectId);
         if (onSuccess) {
           onSuccess();
@@ -130,7 +212,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể bắt đầu Sprint.',
       onSuccess: (started) => {
         this.notifications.success(`Đã bắt đầu "${started.name}" thành công!`);
-        this.loadBacklog(projectId);
+        this.loadSprints(projectId);
         if (onSuccess) {
           onSuccess();
         }
@@ -150,6 +232,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể hoàn thành Sprint.',
       onSuccess: (completed) => {
         this.notifications.success(`Đã hoàn thành Sprint "${completed.name}"!`);
+        // Hoàn thành Sprint có thể chuyển thẻ dở dang về Backlog/Sprint khác nên reload cả 2
         this.loadBacklog(projectId);
         if (onSuccess) {
           onSuccess();
@@ -186,7 +269,8 @@ export class SprintStore {
 
   clearBacklog(): void {
     this.cancel$.next();
-    this.backlogSignal.set(null);
+    this.sprintsSignal.set([]);
+    this.backlogCardsSignal.set([]);
     this.errorSignal.set(null);
   }
 }
