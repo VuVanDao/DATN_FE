@@ -18,6 +18,99 @@
     (openMenu)="openBoardMenu()"
   />
 
+  <!-- 1.5 Active Sprint Banner (Scrum Board Context) -->
+  @if (isScrumBoard() && activeSprint(); as sprint) {
+    <section
+      aria-label="Active Sprint Context"
+      class="px-4 py-2 bg-linear-to-r from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/40 dark:via-emerald-950/20 dark:to-transparent border-b border-emerald-500/20 dark:border-emerald-500/30 shrink-0 select-none transition-colors"
+    >
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <!-- Left: Status pill + Sprint Name + Dates / Countdown + Goal -->
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap min-w-0">
+          <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-xs"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+            <span class="leading-none">Sprint đang chạy</span>
+          </span>
+
+          <h2 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+            {{ sprint.name }}
+          </h2>
+
+          @if (sprint.startDate && sprint.endDate) {
+            <span
+              class="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium"
+            >
+              <span>{{ formatDate(sprint.startDate) }} – {{ formatDate(sprint.endDate) }}</span>
+              @if (calculateRemainingDays(sprint.endDate); as remaining) {
+                <span
+                  class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60"
+                >
+                  {{ remaining }}
+                </span>
+              }
+            </span>
+          }
+
+          @if (sprint.goal) {
+            <span
+              class="hidden lg:inline text-xs text-slate-500 dark:text-slate-400 italic truncate max-w-xs"
+              [title]="sprint.goal"
+            >
+              • {{ sprint.goal }}
+            </span>
+          }
+        </div>
+
+        <!-- Right: Story Points + Progress bar + Link to Backlog -->
+        <div class="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
+          <!-- Story Points Pill & Mini Progress Bar -->
+          <div class="flex items-center gap-2">
+            <div
+              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
+            >
+              <mat-icon
+                fontIcon="bolt"
+                class="icon-xs text-emerald-600 dark:text-emerald-400"
+              ></mat-icon>
+              <span class="leading-none">
+                {{ sprint.completedStoryPoints || 0 }}/{{ sprint.totalStoryPoints || 0 }} pts
+              </span>
+            </div>
+
+            <div
+              class="hidden md:flex flex-col gap-0.5 w-24"
+              [title]="'Tiến độ: ' + calculateSprintProgress(sprint) + '%'"
+            >
+              <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                  [style.width.%]="calculateSprintProgress(sprint)"
+                ></div>
+              </div>
+              <span class="text-[10px] text-right font-medium text-slate-400 dark:text-slate-500">
+                {{ calculateSprintProgress(sprint) }}%
+              </span>
+            </div>
+          </div>
+
+          <!-- Go to Backlog Button -->
+          <button
+            type="button"
+            (click)="goToBacklog()"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-2xs hover:shadow-xs transition cursor-pointer"
+            title="Mở trang Kế hoạch & Backlog"
+          >
+            <mat-icon fontIcon="format_list_bulleted" class="icon-xs text-slate-400"></mat-icon>
+            <span class="leading-none">Quản lý Backlog</span>
+            <mat-icon fontIcon="arrow_forward" class="icon-xs text-slate-400"></mat-icon>
+          </button>
+        </div>
+      </div>
+    </section>
+  }
+
   <!-- 2. Main Kanban Board Canvas (Columns & Cards Body) -->
   <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 pb-20 flex items-start gap-3.5 min-h-0">
     @if (error()) {
@@ -58,6 +151,36 @@
             >
               <mat-icon fontIcon="refresh" class="icon-xs"></mat-icon>
               <span>Thử lại</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    } @else if (isScrumBoard() && !activeSprint() && !isLoading()) {
+      <!-- Scrum Board Empty State: Chưa có Sprint nào đang chạy -->
+      <div class="flex-1 w-full h-full self-stretch flex items-center justify-center p-4">
+        <div
+          class="p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl text-center max-w-lg w-full"
+        >
+          <div
+            class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-inner"
+          >
+            <mat-icon fontIcon="rocket_launch" class="text-3xl! w-8! h-8!"></mat-icon>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">
+            Chưa có Sprint nào đang chạy
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+            Bảng Scrum hiển thị tiến độ công việc theo từng vòng lặp (Sprint). Hãy chuyển sang trang
+            Kế hoạch & Backlog để bắt đầu một Sprint mới!
+          </p>
+          <div class="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              (click)="goToBacklog()"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition cursor-pointer"
+            >
+              <mat-icon fontIcon="format_list_bulleted" class="icon-sm"></mat-icon>
+              <span>Đến trang Kế hoạch & Backlog</span>
             </button>
           </div>
         </div>
@@ -110,6 +233,18 @@
       <mat-icon fontIcon="swap_horiz" class="icon-xs shrink-0"></mat-icon>
       <span class="leading-none inline-block">Switch boards</span>
     </button>
+
+    <!-- Item 3: Backlog (For Scrum Board) -->
+    @if (isScrumBoard()) {
+      <button
+        type="button"
+        (click)="goToBacklog()"
+        class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium leading-none text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/80 transition cursor-pointer"
+      >
+        <mat-icon fontIcon="format_list_bulleted" class="icon-xs shrink-0"></mat-icon>
+        <span class="leading-none inline-block">Backlog</span>
+      </button>
+    }
   </div>
 
   <!-- Switch Board Modal -->

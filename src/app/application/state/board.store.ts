@@ -311,6 +311,7 @@ export class BoardStore {
     columnId: string,
     title: string,
     description?: string,
+    sprintId?: string | null,
     onSuccess?: (card: CardSummary) => void,
     onError?: (error: string) => void,
   ): void {
@@ -321,6 +322,7 @@ export class BoardStore {
       columnId,
       title: trimmedTitle,
       description,
+      sprintId: sprintId ?? undefined,
     };
 
     this.requests.run({

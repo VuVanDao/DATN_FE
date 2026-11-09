@@ -13,6 +13,7 @@ import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { CardSummary, ColumnSummary, MoveCardEvent } from '../../../../domain/models/board-detail.model';
 import { Board, ProjectMember } from '../../../../domain/models/project.model';
+import { SprintSummary } from '../../../../domain/models/sprint.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
 import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
 import { BoardDeleteModalComponent } from './components/board-delete-modal/board-delete-modal.component';
@@ -106,6 +107,16 @@ export class BoardDetailPage implements OnInit {
     return this.projectStore.members();
   });
 
+  // Scrum Board & Active Sprint helpers
+  readonly isScrumBoard = computed<boolean>(() => {
+    const b = this.currentBoard();
+    return b?.type === 'Scrum' || String(b?.type) === '1';
+  });
+
+  readonly activeSprint = computed<SprintSummary | null>(() => {
+    return this.currentBoard()?.activeSprint ?? null;
+  });
+
   ngOnInit(): void {
     // Kích hoạt chế độ full bleed & thu gọn sidebar cho giao diện Kanban Board
     this.layoutService.setFullBleed(true);
@@ -195,10 +206,78 @@ export class BoardDetailPage implements OnInit {
     title: string;
     onSuccess?: () => void;
   }): void {
-    this.boardStore.createCard(columnId, title, undefined, () => {
+    const board = this.currentBoard();
+    const isScrum = board?.type === 'Scrum' || String(board?.type) === '1';
+    const sprintId = isScrum ? board?.activeSprint?.id || null : null;
+
+    this.boardStore.createCard(columnId, title, undefined, sprintId, () => {
       onSuccess?.();
       this.cancelAddCard();
     });
+  }
+
+  formatDate(dateStr?: string | null): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date);
+  }
+
+  calculateRemainingDays(endDateStr?: string | null): string | null {
+    if (!endDateStr) return null;
+    const end = new Date(endDateStr);
+    if (isNaN(end.getTime())) return null;
+    const now = new Date();
+    const endMidnight = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffTime = endMidnight.getTime() - nowMidnight.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return `Quá hạn ${Math.abs(diffDays)} ngày`;
+    }
+    if (diffDays === 0) {
+      return 'Hôm nay là hạn chót';
+    }
+    return `Còn ${diffDays} ngày`;
+  }
+
+  calculateSprintProgress(sprint?: SprintSummary | null): number {
+    if (!sprint) return 0;
+    if (sprint.totalStoryPoints && sprint.totalStoryPoints > 0) {
+      return Math.min(
+        100,
+        Math.round(((sprint.completedStoryPoints || 0) / sprint.totalStoryPoints) * 100),
+      );
+    }
+    if (sprint.totalCards && sprint.totalCards > 0) {
+      return Math.round(((sprint.completedCards || 0) / sprint.totalCards) * 100);
+    }
+    return 0;
+  }
+
+  goToBacklog(): void {
+    const board = this.currentBoard();
+    if (!board) {
+      void this.router.navigate(['/workspaces']);
+      return;
+    }
+    const queryParams = { tab: 'backlog', workspaceId: board.workspaceId || undefined };
+    if (board.workspaceId && board.projectKey) {
+      void this.router.navigate(['/workspaces', board.workspaceId, 'projects', board.projectKey], {
+        queryParams,
+      });
+    } else if (board.projectKey) {
+      void this.router.navigate(['/projects', board.projectKey], { queryParams });
+    } else if (board.projectId) {
+      void this.router.navigate(['/projects', board.projectId], { queryParams });
+    } else {
+      void this.router.navigate(['/workspaces']);
+    }
   }
 
   // Add Column handler

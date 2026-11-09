@@ -146,15 +146,21 @@ export class ProjectDetailPage implements OnInit {
         map(([params, query]) => ({
           projectKey: params.get('projectKey')?.trim() || '',
           workspaceId: params.get('workspaceId') || query.get('workspaceId') || '',
+          tab: query.get('tab'),
         })),
         distinctUntilChanged(
           (previous, current) =>
             previous.projectKey === current.projectKey &&
-            previous.workspaceId === current.workspaceId,
+            previous.workspaceId === current.workspaceId &&
+            previous.tab === current.tab,
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(({ projectKey, workspaceId }) => {
+      .subscribe(({ projectKey, workspaceId, tab }) => {
+        if (tab === 'backlog' || tab === 'members' || tab === 'boards') {
+          this.activeMainTab.set(tab);
+        }
+        const projectChanged = projectKey !== this.projectKey || workspaceId !== this.workspaceId;
         this.projectKey = projectKey;
         this.workspaceId = workspaceId;
         this.closeSettingsModal();
@@ -163,7 +169,9 @@ export class ProjectDetailPage implements OnInit {
         this.memberToRemove.set(null);
         this.memberRemovalError.set(null);
         this.closeChangeRoleModal();
-        this.loadProjectDetail();
+        if (projectChanged || !this.project()) {
+          this.loadProjectDetail();
+        }
       });
   }
 

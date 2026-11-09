@@ -84,6 +84,7 @@ export interface CreateCardRequest {
   assigneeId?: string;
   storyPoints?: number;
   dueDate?: string;
+  sprintId?: string | null;
 }
 
 export interface MoveCardRequest {
