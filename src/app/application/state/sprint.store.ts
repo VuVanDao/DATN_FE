@@ -108,16 +108,17 @@ export class SprintStore {
   readonly error = this.errorSignal.asReadonly();
 
   loadBacklog(projectId: string, boardId?: string | null): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
-    this.currentBoardIdSignal.set(boardId || null);
+    this.currentBoardIdSignal.set(targetBoardId);
     this.cancel$.next();
     this.errorSignal.set(null);
 
     this.requests.run({
       loading: this.loadingBacklogSignal,
       request$: forkJoin({
-        sprints: this.getProjectSprintsUseCase.execute(projectId, boardId),
-        cards: this.getProjectBacklogCardsUseCase.execute(projectId, boardId),
+        sprints: this.getProjectSprintsUseCase.execute(projectId, targetBoardId),
+        cards: this.getProjectBacklogCardsUseCase.execute(projectId, targetBoardId),
       }),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải dữ liệu Backlog của dự án.',
@@ -132,11 +133,12 @@ export class SprintStore {
   }
 
   loadSprints(projectId: string, boardId?: string | null, onSuccess?: () => void): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
-    this.currentBoardIdSignal.set(boardId || null);
+    this.currentBoardIdSignal.set(targetBoardId);
     this.requests.run({
       loading: this.loadingSprintsSignal,
-      request$: this.getProjectSprintsUseCase.execute(projectId, boardId),
+      request$: this.getProjectSprintsUseCase.execute(projectId, targetBoardId),
       fallbackErrorMessage: 'Không thể tải danh sách Sprint.',
       onSuccess: (sprints) => {
         this.sprintsSignal.set(sprints);
@@ -146,11 +148,12 @@ export class SprintStore {
   }
 
   loadBacklogCards(projectId: string, boardId?: string | null, onSuccess?: () => void): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
-    this.currentBoardIdSignal.set(boardId || null);
+    this.currentBoardIdSignal.set(targetBoardId);
     this.requests.run({
       loading: this.loadingBacklogCardsSignal,
-      request$: this.getProjectBacklogCardsUseCase.execute(projectId, boardId),
+      request$: this.getProjectBacklogCardsUseCase.execute(projectId, targetBoardId),
       fallbackErrorMessage: 'Không thể tải danh sách thẻ Backlog.',
       onSuccess: (cards) => {
         this.backlogCardsSignal.set(cards);
@@ -166,7 +169,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể tạo mới Sprint.',
       onSuccess: (newSprint) => {
         this.notifications.success(`Đã tạo thành công "${newSprint.name}"`);
-        this.loadBacklog(request.projectId, request.boardId);
+        this.loadBacklog(request.projectId, request.boardId || this.currentBoardIdSignal());
         if (onSuccess) {
           onSuccess();
         }
@@ -178,15 +181,17 @@ export class SprintStore {
     sprintId: string,
     projectId: string,
     request: UpdateSprintRequest,
+    boardId?: string | null,
     onSuccess?: () => void,
   ): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.updatingSprintSignal,
       request$: this.updateSprintUseCase.execute(sprintId, request),
       fallbackErrorMessage: 'Không thể cập nhật Sprint.',
       onSuccess: (updated) => {
         this.notifications.success(`Đã cập nhật Sprint "${updated.name}"`);
-        this.loadSprints(projectId);
+        this.loadBacklog(projectId, targetBoardId);
         if (onSuccess) {
           onSuccess();
         }
@@ -194,15 +199,20 @@ export class SprintStore {
     });
   }
 
-  deleteSprint(sprintId: string, projectId: string, onSuccess?: () => void): void {
+  deleteSprint(
+    sprintId: string,
+    projectId: string,
+    boardId?: string | null,
+    onSuccess?: () => void,
+  ): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.deletingSprintSignal,
       request$: this.deleteSprintUseCase.execute(sprintId),
       fallbackErrorMessage: 'Không thể xóa Sprint.',
       onSuccess: () => {
         this.notifications.success('Đã xóa Sprint thành công. Các công việc đã chuyển về Backlog.');
-        // Thẻ của Sprint xóa được chuyển về Backlog nên cần reload cả 2
-        this.loadBacklog(projectId);
+        this.loadBacklog(projectId, targetBoardId);
         if (onSuccess) {
           onSuccess();
         }
@@ -214,15 +224,17 @@ export class SprintStore {
     sprintId: string,
     projectId: string,
     request: StartSprintRequest,
+    boardId?: string | null,
     onSuccess?: () => void,
   ): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.startingSprintSignal,
       request$: this.startSprintUseCase.execute(sprintId, request),
       fallbackErrorMessage: 'Không thể bắt đầu Sprint.',
       onSuccess: (started) => {
         this.notifications.success(`Đã bắt đầu "${started.name}" thành công!`);
-        this.loadSprints(projectId);
+        this.loadBacklog(projectId, targetBoardId);
         if (onSuccess) {
           onSuccess();
         }
@@ -234,16 +246,17 @@ export class SprintStore {
     sprintId: string,
     projectId: string,
     request: CompleteSprintRequest,
+    boardId?: string | null,
     onSuccess?: () => void,
   ): void {
+    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.completingSprintSignal,
       request$: this.completeSprintUseCase.execute(sprintId, request),
       fallbackErrorMessage: 'Không thể hoàn thành Sprint.',
       onSuccess: (completed) => {
         this.notifications.success(`Đã hoàn thành Sprint "${completed.name}"!`);
-        // Hoàn thành Sprint có thể chuyển thẻ dở dang về Backlog/Sprint khác nên reload cả 2
-        this.loadBacklog(projectId);
+        this.loadBacklog(projectId, targetBoardId);
         if (onSuccess) {
           onSuccess();
         }

@@ -219,7 +219,7 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
 
   refreshBacklog(): void {
     if (this.projectId) {
-      this.sprintStore.loadBacklog(this.projectId, this.selectedBoardId() || null);
+      this.sprintStore.loadBacklog(this.projectId, this.activeBoardId() || null);
     }
   }
 

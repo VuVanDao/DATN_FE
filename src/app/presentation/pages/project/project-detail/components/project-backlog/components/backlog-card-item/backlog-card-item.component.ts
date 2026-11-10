@@ -18,6 +18,8 @@ import { CardSummary } from '../../../../../../../../domain/models/board-detail.
   templateUrl: './backlog-card-item.component.html',
   host: {
     class: 'block',
+    '[class.relative]': 'showQuickMoveMenu()',
+    '[class.z-30]': 'showQuickMoveMenu()',
   },
 })
 export class BacklogCardItemComponent {

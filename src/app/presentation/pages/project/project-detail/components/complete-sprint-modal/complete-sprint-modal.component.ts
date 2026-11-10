@@ -81,6 +81,7 @@ export class CompleteSprintModalComponent implements OnChanges {
       this.sprint.id,
       this.projectId,
       { moveUnfinishedToSprintId },
+      this.sprint.boardId,
       () => {
         this.sprintCompleted.emit();
         this.close();

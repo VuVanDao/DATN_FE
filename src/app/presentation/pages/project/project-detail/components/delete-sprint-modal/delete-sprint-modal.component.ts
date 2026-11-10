@@ -31,7 +31,7 @@ export class DeleteSprintModalComponent {
       return;
     }
 
-    this.sprintStore.deleteSprint(this.sprint.id, this.projectId, () => {
+    this.sprintStore.deleteSprint(this.sprint.id, this.projectId, this.sprint.boardId, () => {
       this.sprintDeleted.emit();
       this.close();
     });

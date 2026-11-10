@@ -103,6 +103,7 @@ export class EditSprintModalComponent implements OnChanges {
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
       },
+      this.sprint.boardId,
       () => {
         this.sprintUpdated.emit();
         this.close();

@@ -41,6 +41,7 @@ export class StartSprintModalComponent {
         startDate: this.sprint.startDate || undefined,
         endDate: this.sprint.endDate || undefined,
       },
+      this.sprint.boardId,
       () => {
         this.sprintStarted.emit();
         this.close();

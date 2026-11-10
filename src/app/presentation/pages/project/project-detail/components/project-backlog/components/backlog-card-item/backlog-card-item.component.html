@@ -7,6 +7,7 @@
   [class.cursor-grab]="canMoveCard"
   [class.active:cursor-grabbing]="canMoveCard"
   [class.cursor-pointer]="!canMoveCard"
+  [class.z-30]="showQuickMoveMenu()"
 >
   <!-- Drag placeholder -->
   <div
@@ -67,7 +68,7 @@
         <!-- Dropdown menu chọn Sprint đích -->
         @if (showQuickMoveMenu()) {
           <div
-            class="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100"
+            class="absolute right-0 top-full mt-1.5 w-56 max-h-64 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100"
             (click)="$event.stopPropagation()"
           >
             <div class="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
