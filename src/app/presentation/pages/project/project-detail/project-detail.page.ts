@@ -125,6 +125,7 @@ export class ProjectDetailPage implements OnInit {
 
   // Tab điều hướng chính ('boards' | 'members')
   readonly activeMainTab = signal<'boards' | 'backlog' | 'members'>('boards');
+  readonly targetBoardId = signal<string>('');
 
   // Modals Visibility
   readonly showSettingsModal = signal(false);
@@ -147,19 +148,22 @@ export class ProjectDetailPage implements OnInit {
           projectKey: params.get('projectKey')?.trim() || '',
           workspaceId: params.get('workspaceId') || query.get('workspaceId') || '',
           tab: query.get('tab'),
+          boardId: query.get('boardId') || '',
         })),
         distinctUntilChanged(
           (previous, current) =>
             previous.projectKey === current.projectKey &&
             previous.workspaceId === current.workspaceId &&
-            previous.tab === current.tab,
+            previous.tab === current.tab &&
+            previous.boardId === current.boardId,
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(({ projectKey, workspaceId, tab }) => {
+      .subscribe(({ projectKey, workspaceId, tab, boardId }) => {
         if (tab === 'backlog' || tab === 'members' || tab === 'boards') {
           this.activeMainTab.set(tab);
         }
+        this.targetBoardId.set(boardId);
         const projectChanged = projectKey !== this.projectKey || workspaceId !== this.workspaceId;
         this.projectKey = projectKey;
         this.workspaceId = workspaceId;

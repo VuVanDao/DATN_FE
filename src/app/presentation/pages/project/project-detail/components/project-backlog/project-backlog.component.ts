@@ -21,7 +21,7 @@ import {
   SimpleChanges,
   untracked,
 } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../../../application/state/project.store';
@@ -60,10 +60,13 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly sprintStore = inject(SprintStore);
   readonly projectStore = inject(ProjectStore);
   private readonly notifications = inject(NotificationService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   @Input({ required: true }) projectId = '';
   @Input() canManageSprint = false;
   @Input() canMoveCard = false;
+  @Input() targetBoardId = '';
 
   @Output() cardClick = new EventEmitter<CardSummary>();
   @Output() createBoard = new EventEmitter<void>();
@@ -90,7 +93,17 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
       if (!pId) return;
 
       const currentSelected = untracked(() => this.selectedBoardId());
+      const desiredId = this.targetBoardId || this.route.snapshot.queryParamMap.get('boardId');
+
       if (boards.length > 0) {
+        if (desiredId && boards.some((b) => b.id === desiredId)) {
+          if (currentSelected !== desiredId) {
+            this.selectedBoardId.set(desiredId);
+            this.sprintStore.loadBacklog(pId, desiredId);
+            return;
+          }
+        }
+
         const stillValid = boards.some((b) => b.id === currentSelected);
         if (!currentSelected || !stillValid) {
           const defaultBoardId = boards[0].id;
@@ -192,11 +205,31 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      const bId = params.get('boardId');
+      if (bId && bId !== this.selectedBoardId()) {
+        const boards = this.scrumBoards();
+        if (boards.some((b) => b.id === bId)) {
+          this.selectedBoardId.set(bId);
+          if (this.projectId) {
+            this.sprintStore.loadBacklog(this.projectId, bId);
+          }
+        }
+      }
+    });
     this.initSelectedBoardAndLoad();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['projectId'] && !changes['projectId'].firstChange && this.projectId) {
+    if (changes['targetBoardId'] && this.targetBoardId) {
+      const boards = this.scrumBoards();
+      if (boards.some((b) => b.id === this.targetBoardId)) {
+        this.selectedBoardId.set(this.targetBoardId);
+        if (this.projectId) {
+          this.sprintStore.loadBacklog(this.projectId, this.targetBoardId);
+        }
+      }
+    } else if (changes['projectId'] && !changes['projectId'].firstChange && this.projectId) {
       this.initSelectedBoardAndLoad();
     }
   }
@@ -204,8 +237,13 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   private initSelectedBoardAndLoad(): void {
     if (!this.projectId) return;
     const boards = this.scrumBoards();
+    const desiredId = this.targetBoardId || this.route.snapshot.queryParamMap.get('boardId');
     let boardId = this.selectedBoardId();
-    if (!boardId && boards.length > 0) {
+
+    if (desiredId && boards.some((b) => b.id === desiredId)) {
+      boardId = desiredId;
+      this.selectedBoardId.set(boardId);
+    } else if (!boardId && boards.length > 0) {
       boardId = boards[0].id;
       this.selectedBoardId.set(boardId);
     }
@@ -215,6 +253,11 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   selectBoard(boardId: string): void {
     this.selectedBoardId.set(boardId);
     this.sprintStore.loadBacklog(this.projectId, boardId);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { boardId },
+      queryParamsHandling: 'merge',
+    });
   }
 
   refreshBacklog(): void {

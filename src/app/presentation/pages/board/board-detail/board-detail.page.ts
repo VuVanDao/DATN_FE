@@ -266,7 +266,11 @@ export class BoardDetailPage implements OnInit {
       void this.router.navigate(['/workspaces']);
       return;
     }
-    const queryParams = { tab: 'backlog', workspaceId: board.workspaceId || undefined };
+    const queryParams = {
+      tab: 'backlog',
+      boardId: board.id,
+      workspaceId: board.workspaceId || undefined,
+    };
     if (board.workspaceId && board.projectKey) {
       void this.router.navigate(['/workspaces', board.workspaceId, 'projects', board.projectKey], {
         queryParams,

@@ -25,9 +25,7 @@
         <mat-icon fontIcon="folder_off" class="text-3xl! w-8! h-8!"></mat-icon>
       </div>
       <div class="space-y-1.5">
-        <h3 class="text-lg font-bold text-slate-900 dark:text-white">
-          Không tìm thấy dự án
-        </h3>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Không tìm thấy dự án</h3>
         <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
           {{ error }}
         </p>
@@ -176,6 +174,7 @@
       class="block"
       [class.hidden]="activeMainTab() !== 'backlog'"
       [projectId]="proj.id"
+      [targetBoardId]="targetBoardId()"
       [canManageSprint]="canManageRoles()"
       [canMoveCard]="isCurrentMember()"
       (createBoard)="openCreateBoardModal()"
