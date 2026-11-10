@@ -1162,8 +1162,11 @@ export class BoardStore {
     }
 
     // Nếu là Scrum board có activeSprint: Thẻ tạo ra chỉ hiển thị trên bảng nếu nó thuộc activeSprint này
-    if (currentBoard.activeSprint && message.card.sprintId) {
-      if (message.card.sprintId.toLowerCase() !== currentBoard.activeSprint.id.toLowerCase()) {
+    if (currentBoard.activeSprint) {
+      if (
+        !message.card.sprintId ||
+        message.card.sprintId.toLowerCase() !== currentBoard.activeSprint.id.toLowerCase()
+      ) {
         return;
       }
     }

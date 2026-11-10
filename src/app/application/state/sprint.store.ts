@@ -393,6 +393,15 @@ export class SprintStore {
       next: (message) => {
         if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
         this.reloadBacklogSilently();
+        const dest = message.card.sprintId ? 'Sprint' : 'Backlog';
+        this.notifications.info(`Công việc "${message.card.title}" vừa được thêm vào ${dest} bởi thành viên khác.`);
+      },
+    });
+
+    this.boardRealtimeService?.cardUpdated$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
       },
     });
 
@@ -400,6 +409,7 @@ export class SprintStore {
       next: (message) => {
         if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
         this.reloadBacklogSilently();
+        this.notifications.warning('Một công việc vừa bị xoá bởi thành viên khác.');
       },
     });
   }
