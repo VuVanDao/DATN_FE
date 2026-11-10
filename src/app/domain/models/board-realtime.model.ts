@@ -1,4 +1,5 @@
 import { CardSummary } from './board-detail.model';
+import { SprintSummary } from './sprint.model';
 
 export interface ColumnsReorderedMessage {
   boardId: string;
@@ -63,6 +64,50 @@ export interface CardDeletedMessage {
   boardId: string;
   cardId: string;
   columnId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface SprintCreatedMessage {
+  boardId: string;
+  sprint: SprintSummary;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface SprintStartedMessage {
+  boardId: string;
+  sprint: SprintSummary;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface SprintUpdatedMessage {
+  boardId: string;
+  sprint: SprintSummary;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface SprintCompletedMessage {
+  boardId: string;
+  sprintId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface SprintDeletedMessage {
+  boardId: string;
+  sprintId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface CardSprintChangedMessage {
+  boardId: string;
+  card: CardSummary;
+  oldSprintId: string | null;
+  newSprintId: string | null;
   changedByUserId: string;
   occurredAt: string;
 }

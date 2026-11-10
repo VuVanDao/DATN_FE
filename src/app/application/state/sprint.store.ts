@@ -10,6 +10,8 @@ import {
   StartSprintRequest,
   UpdateSprintRequest,
 } from '../../domain/models/sprint.model';
+import { BoardRealtimeService } from '../../infrastructure/realtime/board-realtime.service';
+import { SessionService } from '../auth/session.service';
 import { CompleteSprintUseCase } from '../sprint/complete-sprint.use-case';
 import { CreateBacklogCardUseCase } from '../sprint/create-backlog-card.use-case';
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
@@ -35,6 +37,8 @@ export class SprintStore {
   private readonly createBacklogCardUseCase = inject(CreateBacklogCardUseCase);
   private readonly notifications = inject(NotificationService);
   private readonly requests = inject(StoreRequestRunner);
+  private readonly boardRealtimeService = inject(BoardRealtimeService);
+  private readonly sessionService = inject(SessionService);
 
   private readonly cancel$ = new Subject<void>();
   private readonly currentProjectIdSignal = signal<string>('');
@@ -107,12 +111,20 @@ export class SprintStore {
   readonly isMovingCard = this.movingCardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
+  constructor() {
+    this.setupRealtimeListeners();
+  }
+
   loadBacklog(projectId: string, boardId?: string | null): void {
     const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
     this.currentBoardIdSignal.set(targetBoardId);
     this.cancel$.next();
     this.errorSignal.set(null);
+
+    if (targetBoardId) {
+      this.boardRealtimeService?.joinBoard(targetBoardId);
+    }
 
     this.requests.run({
       loading: this.loadingBacklogSignal,
@@ -315,9 +327,109 @@ export class SprintStore {
   }
 
   clearBacklog(): void {
+    const cur = this.currentBoardIdSignal();
+    if (cur) {
+      this.boardRealtimeService?.leaveBoard(cur);
+    }
     this.cancel$.next();
     this.sprintsSignal.set([]);
     this.backlogCardsSignal.set([]);
     this.errorSignal.set(null);
+  }
+
+  private setupRealtimeListeners(): void {
+    this.boardRealtimeService?.sprintCreated$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
+        this.notifications.info(`Sprint "${message.sprint.name}" vừa được tạo bởi thành viên khác.`);
+      },
+    });
+
+    this.boardRealtimeService?.sprintStarted$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
+        this.notifications.info(`Sprint "${message.sprint.name}" vừa được bắt đầu bởi thành viên khác.`);
+      },
+    });
+
+    this.boardRealtimeService?.sprintUpdated$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.sprintsSignal.update((list) =>
+          list.map((s) => (s.id.toLowerCase() === message.sprint.id.toLowerCase() ? { ...s, ...message.sprint } : s)),
+        );
+        this.notifications.info(`Thông tin Sprint "${message.sprint.name}" vừa được cập nhật.`);
+      },
+    });
+
+    this.boardRealtimeService?.sprintCompleted$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
+        this.notifications.info('Sprint vừa được hoàn thành bởi thành viên khác.');
+      },
+    });
+
+    this.boardRealtimeService?.sprintDeleted$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.sprintsSignal.update((list) =>
+          list.filter((s) => s.id.toLowerCase() !== message.sprintId.toLowerCase()),
+        );
+        this.notifications.warning('Một Sprint vừa bị xoá bởi thành viên khác.');
+      },
+    });
+
+    this.boardRealtimeService?.cardSprintChanged$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
+      },
+    });
+
+    this.boardRealtimeService?.cardCreated$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
+      },
+    });
+
+    this.boardRealtimeService?.cardDeleted$?.subscribe({
+      next: (message) => {
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        this.reloadBacklogSilently();
+      },
+    });
+  }
+
+  private matchesCurrentBoard(boardId: string): boolean {
+    const cur = this.currentBoardIdSignal();
+    return !!cur && cur.toLowerCase() === boardId.toLowerCase();
+  }
+
+  private isSelf(userId?: string | null): boolean {
+    const me = this.sessionService?.currentUser?.()?.id;
+    return !!userId && !!me && userId.toLowerCase() === me.toLowerCase();
+  }
+
+  reloadBacklogSilently(): void {
+    const projectId = this.currentProjectIdSignal();
+    const boardId = this.currentBoardIdSignal();
+    if (!projectId) return;
+
+    forkJoin({
+      sprints: this.getProjectSprintsUseCase.execute(projectId, boardId),
+      cards: this.getProjectBacklogCardsUseCase.execute(projectId, boardId),
+    }).subscribe({
+      next: ({ sprints, cards }) => {
+        this.sprintsSignal.set(sprints);
+        this.backlogCardsSignal.set(cards);
+      },
+      error: (err) => {
+        console.warn('[SprintStore] Silent reload backlog failed', err);
+      },
+    });
   }
 }

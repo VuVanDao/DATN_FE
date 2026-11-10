@@ -17,6 +17,12 @@ import {
   CardCreatedMessage,
   CardUpdatedMessage,
   CardDeletedMessage,
+  SprintCreatedMessage,
+  SprintStartedMessage,
+  SprintUpdatedMessage,
+  SprintCompletedMessage,
+  SprintDeletedMessage,
+  CardSprintChangedMessage,
 } from '../../domain/models/board-realtime.model';
 import { AuthStorageService } from '../storage/auth-storage.service';
 
@@ -56,6 +62,24 @@ export class BoardRealtimeService {
 
   private readonly cardDeletedSubject = new Subject<CardDeletedMessage>();
   readonly cardDeleted$ = this.cardDeletedSubject.asObservable();
+
+  private readonly sprintCreatedSubject = new Subject<SprintCreatedMessage>();
+  readonly sprintCreated$ = this.sprintCreatedSubject.asObservable();
+
+  private readonly sprintStartedSubject = new Subject<SprintStartedMessage>();
+  readonly sprintStarted$ = this.sprintStartedSubject.asObservable();
+
+  private readonly sprintUpdatedSubject = new Subject<SprintUpdatedMessage>();
+  readonly sprintUpdated$ = this.sprintUpdatedSubject.asObservable();
+
+  private readonly sprintCompletedSubject = new Subject<SprintCompletedMessage>();
+  readonly sprintCompleted$ = this.sprintCompletedSubject.asObservable();
+
+  private readonly sprintDeletedSubject = new Subject<SprintDeletedMessage>();
+  readonly sprintDeleted$ = this.sprintDeletedSubject.asObservable();
+
+  private readonly cardSprintChangedSubject = new Subject<CardSprintChangedMessage>();
+  readonly cardSprintChanged$ = this.cardSprintChangedSubject.asObservable();
 
   private readonly reconnectedSubject = new Subject<void>();
   readonly reconnected$ = this.reconnectedSubject.asObservable();
@@ -134,6 +158,30 @@ export class BoardRealtimeService {
 
         this.hubConnection.on('CardDeleted', (message: CardDeletedMessage) => {
           this.cardDeletedSubject.next(message);
+        });
+
+        this.hubConnection.on('SprintCreated', (message: SprintCreatedMessage) => {
+          this.sprintCreatedSubject.next(message);
+        });
+
+        this.hubConnection.on('SprintStarted', (message: SprintStartedMessage) => {
+          this.sprintStartedSubject.next(message);
+        });
+
+        this.hubConnection.on('SprintUpdated', (message: SprintUpdatedMessage) => {
+          this.sprintUpdatedSubject.next(message);
+        });
+
+        this.hubConnection.on('SprintCompleted', (message: SprintCompletedMessage) => {
+          this.sprintCompletedSubject.next(message);
+        });
+
+        this.hubConnection.on('SprintDeleted', (message: SprintDeletedMessage) => {
+          this.sprintDeletedSubject.next(message);
+        });
+
+        this.hubConnection.on('CardSprintChanged', (message: CardSprintChangedMessage) => {
+          this.cardSprintChangedSubject.next(message);
         });
 
         this.hubConnection.onreconnecting(() => {

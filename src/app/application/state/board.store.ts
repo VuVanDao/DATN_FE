@@ -19,6 +19,11 @@ import {
   CardCreatedMessage,
   CardUpdatedMessage,
   CardDeletedMessage,
+  SprintStartedMessage,
+  SprintUpdatedMessage,
+  SprintCompletedMessage,
+  SprintDeletedMessage,
+  CardSprintChangedMessage,
 } from '../../domain/models/board-realtime.model';
 import {
   Board,
@@ -975,6 +980,26 @@ export class BoardStore {
       next: (message) => this.handleRemoteCardDeleted(message),
     });
 
+    this.boardRealtimeService?.sprintStarted$?.subscribe({
+      next: (message) => this.handleRemoteSprintStarted(message),
+    });
+
+    this.boardRealtimeService?.sprintUpdated$?.subscribe({
+      next: (message) => this.handleRemoteSprintUpdated(message),
+    });
+
+    this.boardRealtimeService?.sprintCompleted$?.subscribe({
+      next: (message) => this.handleRemoteSprintCompleted(message),
+    });
+
+    this.boardRealtimeService?.sprintDeleted$?.subscribe({
+      next: (message) => this.handleRemoteSprintDeleted(message),
+    });
+
+    this.boardRealtimeService?.cardSprintChanged$?.subscribe({
+      next: (message) => this.handleRemoteCardSprintChanged(message),
+    });
+
     this.boardRealtimeService?.reconnected$?.subscribe({
       next: () => {
         const currentBoard = this.boardSignal();
@@ -1572,6 +1597,173 @@ export class BoardStore {
     this.notifications.warning(
       `Thẻ "${existingCard.title}" vừa được di chuyển bởi thành viên khác.`,
     );
+  }
+
+  private handleRemoteSprintStarted(message: SprintStartedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+    this.notifications.info(`Sprint "${message.sprint.name}" vừa được kích hoạt bởi thành viên khác.`);
+  }
+
+  private handleRemoteSprintUpdated(message: SprintUpdatedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    if (currentBoard.activeSprint?.id.toLowerCase() === message.sprint.id.toLowerCase()) {
+      this.boardSignal.update((b) =>
+        b?.activeSprint?.id.toLowerCase() === message.sprint.id.toLowerCase()
+          ? {
+              ...b,
+              activeSprint: {
+                ...b.activeSprint,
+                name: message.sprint.name,
+                goal: message.sprint.goal,
+                startDate: message.sprint.startDate,
+                endDate: message.sprint.endDate,
+              },
+            }
+          : b,
+      );
+      this.notifications.info(`Thông tin Sprint "${message.sprint.name}" vừa được cập nhật.`);
+    }
+  }
+
+  private handleRemoteSprintCompleted(message: SprintCompletedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+    this.notifications.info('Sprint hiện tại vừa được hoàn thành bởi thành viên khác.');
+  }
+
+  private handleRemoteSprintDeleted(message: SprintDeletedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    if (currentBoard.activeSprint?.id.toLowerCase() === message.sprintId.toLowerCase()) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+      this.notifications.warning('Sprint hiện tại vừa bị xoá bởi thành viên khác.');
+    }
+  }
+
+  private handleRemoteCardSprintChanged(message: CardSprintChangedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    const activeSprintId = currentBoard.activeSprint?.id.toLowerCase();
+    const oldSprintId = message.oldSprintId?.toLowerCase();
+    const newSprintId = message.newSprintId?.toLowerCase();
+
+    // TH1: Thẻ được đưa VÀO activeSprint của board hiện tại
+    if (activeSprintId && newSprintId === activeSprintId && oldSprintId !== activeSprintId) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+      this.notifications.info(`Thẻ "${message.card.title}" vừa được thêm vào Sprint hiện tại.`);
+      return;
+    }
+
+    // TH2: Thẻ bị đưa RA KHỎI activeSprint của board hiện tại
+    if (activeSprintId && oldSprintId === activeSprintId && newSprintId !== activeSprintId) {
+      this.columnsSignal.update((cols) =>
+        cols.map((col) => ({
+          ...col,
+          cards: (col.cards || []).filter((c) => c.id.toLowerCase() !== message.card.id.toLowerCase()),
+        })),
+      );
+
+      const pts = message.card.storyPoints || 0;
+      const isDone = (message.card.progressPercentage || 0) === 100;
+      this.boardSignal.update((b) => {
+        if (!b?.activeSprint) return b;
+        return {
+          ...b,
+          activeSprint: {
+            ...b.activeSprint,
+            totalCards: Math.max(0, (b.activeSprint.totalCards || 0) - 1),
+            completedCards: isDone
+              ? Math.max(0, (b.activeSprint.completedCards || 0) - 1)
+              : b.activeSprint.completedCards,
+            totalStoryPoints: Math.max(0, (b.activeSprint.totalStoryPoints || 0) - pts),
+            completedStoryPoints: isDone
+              ? Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts)
+              : b.activeSprint.completedStoryPoints,
+          },
+          columns: this.columnsSignal(),
+        };
+      });
+
+      if (this.cardDetailSignal()?.id.toLowerCase() === message.card.id.toLowerCase()) {
+        this.cardDetailSignal.update((detail) =>
+          detail ? { ...detail, sprintId: message.newSprintId } : null,
+        );
+      }
+
+      this.notifications.warning(`Thẻ "${message.card.title}" vừa được chuyển ra khỏi Sprint này.`);
+      return;
+    }
+
+    // TH3: Nếu modal chi tiết đang mở xem thẻ này, cập nhật lại sprintId
+    if (this.cardDetailSignal()?.id.toLowerCase() === message.card.id.toLowerCase()) {
+      this.cardDetailSignal.update((detail) =>
+        detail ? { ...detail, sprintId: message.newSprintId } : null,
+      );
+    }
   }
 
   private silentReloadBoard(slug: string, projectId: string): void {
