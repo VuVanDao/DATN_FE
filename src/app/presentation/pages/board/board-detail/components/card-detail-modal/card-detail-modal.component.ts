@@ -84,6 +84,7 @@ export class CardDetailModalComponent implements OnInit {
     assigneeName: string | null;
   }>();
   readonly progressChanged = output<{ cardId: string; progress: number }>();
+  readonly storyPointsChanged = output<{ cardId: string; storyPoints: number | null }>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();
 
   // Element refs
@@ -115,6 +116,7 @@ export class CardDetailModalComponent implements OnInit {
 
   // Progress Percentage State
   readonly currentProgress = signal<number>(0);
+  readonly currentStoryPoints = signal<number | null>(null);
 
   // User
   readonly currentUser = computed(() => this.sessionService.currentUser());
@@ -174,10 +176,11 @@ export class CardDetailModalComponent implements OnInit {
     }
     this.currentReporterName.set(d.reporterName || 'Đạo Vũ Văn');
     
-    // Progress & Completion
+    // Progress & Completion & Points
     const progress = d.progressPercentage || 0;
     this.currentProgress.set(progress);
     this.isCompleted.set(progress === 100);
+    this.currentStoryPoints.set(d.storyPoints ?? null);
 
     // Sync Attachments
     if (d.coverUrl) {
@@ -265,10 +268,11 @@ export class CardDetailModalComponent implements OnInit {
     }
     this.currentReporterName.set(c.reporterName || 'Đạo Vũ Văn');
 
-    // Progress & Completion
+    // Progress & Completion & Points
     const progress = c.progressPercentage || 0;
     this.currentProgress.set(progress);
     this.isCompleted.set(progress === 100);
+    this.currentStoryPoints.set(c.storyPoints ?? null);
 
     // Attachments
     if (c.coverUrl) {
@@ -473,6 +477,20 @@ export class CardDetailModalComponent implements OnInit {
       this.notificationService.success(`Đã phân công cho ${payload.assigneeName}`);
     } else {
       this.notificationService.warning('Đã gỡ phân công');
+    }
+  }
+
+  // Story Points Handler
+  onStoryPointsChanged(pts: number | null): void {
+    this.currentStoryPoints.set(pts);
+    this.storyPointsChanged.emit({
+      cardId: this.card().id,
+      storyPoints: pts,
+    });
+    if (pts !== null && pts !== undefined) {
+      this.notificationService.success(`Điểm ước lượng: ${pts} pts`);
+    } else {
+      this.notificationService.warning('Đã xoá điểm ước lượng');
     }
   }
 

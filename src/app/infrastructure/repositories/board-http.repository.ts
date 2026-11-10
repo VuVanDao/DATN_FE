@@ -138,8 +138,11 @@ export class BoardHttpRepository implements BoardRepository {
     if (request.dueDate) {
       formData.append('dueDate', request.dueDate);
     }
-    if (request.storyPoints !== undefined && request.storyPoints !== null) {
-      formData.append('storyPoints', String(request.storyPoints));
+    if (request.storyPoints !== undefined) {
+      formData.append(
+        'storyPoints',
+        request.storyPoints !== null ? String(request.storyPoints) : '',
+      );
     }
     if (request.progressPercentage !== undefined && request.progressPercentage !== null) {
       formData.append('progressPercentage', String(request.progressPercentage));

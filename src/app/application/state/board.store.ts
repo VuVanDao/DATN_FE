@@ -613,29 +613,43 @@ export class BoardStore {
       updates.progressPercentage !== undefined
         ? updates.progressPercentage
         : oldProgress;
-    const pts = currentCard.storyPoints || 0;
 
-    if (oldProgress < 100 && newProgress === 100) {
+    const oldPts = currentCard.storyPoints || 0;
+    const newPts =
+      updates.storyPoints !== undefined ? (updates.storyPoints || 0) : oldPts;
+    const diffPts = newPts - oldPts;
+
+    const completing = oldProgress < 100 && newProgress === 100;
+    const uncompleting = oldProgress === 100 && newProgress < 100;
+
+    if (completing || uncompleting || diffPts !== 0) {
       this.boardSignal.update((b) => {
         if (!b?.activeSprint) return b;
+        let compCards = b.activeSprint.completedCards || 0;
+        let compPts = b.activeSprint.completedStoryPoints || 0;
+        let totPts = b.activeSprint.totalStoryPoints || 0;
+
+        if (completing) {
+          compCards += 1;
+          compPts += newPts;
+        } else if (uncompleting) {
+          compCards = Math.max(0, compCards - 1);
+          compPts = Math.max(0, compPts - oldPts);
+        } else if (diffPts !== 0 && oldProgress === 100) {
+          compPts = Math.max(0, compPts + diffPts);
+        }
+
+        if (diffPts !== 0) {
+          totPts = Math.max(0, totPts + diffPts);
+        }
+
         return {
           ...b,
           activeSprint: {
             ...b.activeSprint,
-            completedCards: (b.activeSprint.completedCards || 0) + 1,
-            completedStoryPoints: (b.activeSprint.completedStoryPoints || 0) + pts,
-          },
-        };
-      });
-    } else if (oldProgress === 100 && newProgress < 100) {
-      this.boardSignal.update((b) => {
-        if (!b?.activeSprint) return b;
-        return {
-          ...b,
-          activeSprint: {
-            ...b.activeSprint,
-            completedCards: Math.max(0, (b.activeSprint.completedCards || 0) - 1),
-            completedStoryPoints: Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts),
+            completedCards: compCards,
+            completedStoryPoints: compPts,
+            totalStoryPoints: totPts,
           },
         };
       });

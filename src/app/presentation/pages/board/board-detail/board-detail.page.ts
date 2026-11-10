@@ -444,6 +444,18 @@ export class BoardDetailPage implements OnInit {
     );
   }
 
+  onCardDetailStoryPointsChanged(event: { cardId: string; storyPoints: number | null }): void {
+    this.boardStore.updateCard(
+      event.cardId,
+      { storyPoints: event.storyPoints },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+      undefined,
+      true,
+    );
+  }
+
   private syncSelectedCard(updated: CardSummary): void {
     if (this.selectedCardForDetail()?.id === updated.id) {
       this.selectedCardForDetail.set(updated);

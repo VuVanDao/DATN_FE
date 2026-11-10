@@ -338,5 +338,99 @@
         </div>
       }
     </div>
+
+    <!-- 5. STORY POINTS CHIP -->
+    <div class="relative">
+      <button
+        type="button"
+        (click)="toggleStoryPointsMenu($event)"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition cursor-pointer select-none bg-slate-100 hover:bg-slate-200 dark:bg-[#282e33] dark:hover:bg-[#333c43] text-slate-700 dark:text-[#b6c2cf] border border-slate-200/80 dark:border-[#38414a]"
+        title="Điểm độ phức tạp (Story Points)"
+      >
+        <mat-icon
+          fontIcon="bolt"
+          class="text-xs! w-3.5! h-3.5! text-amber-500"
+        ></mat-icon>
+        <span class="font-semibold">
+          @if (storyPoints() !== null && storyPoints() !== undefined) {
+            {{ storyPoints() }} pts
+          } @else {
+            Story Points
+          }
+        </span>
+        <mat-icon
+          fontIcon="expand_more"
+          class="text-xs! w-3! h-3! -mr-0.5 opacity-60"
+        ></mat-icon>
+      </button>
+
+      <!-- Story Points Dropdown -->
+      @if (isStoryPointsMenuOpen()) {
+        <div
+          (click)="$event.stopPropagation()"
+          class="absolute left-0 top-full mt-1.5 w-52 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-2.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-2.5"
+        >
+          <div
+            class="px-1 py-0.5 font-semibold text-[11px] text-slate-400 dark:text-[#9fadbc] uppercase tracking-wider border-b border-slate-100 dark:border-[#38414a] pb-1.5"
+          >
+            Điểm ước lượng (Story Points)
+          </div>
+
+          <!-- Quick Fibonacci Options -->
+          <div class="grid grid-cols-4 gap-1.5">
+            @for (pts of commonPointOptions; track pts) {
+              <button
+                type="button"
+                (click)="selectStoryPoints(pts)"
+                class="py-1 px-1.5 rounded-lg text-center text-xs font-semibold border transition cursor-pointer"
+                [class.bg-amber-500]="storyPoints() === pts"
+                [class.text-white]="storyPoints() === pts"
+                [class.border-amber-500]="storyPoints() === pts"
+                [class.bg-slate-50]="storyPoints() !== pts"
+                [class.dark:bg-[#22272b]]="storyPoints() !== pts"
+                [class.border-slate-200]="storyPoints() !== pts"
+                [class.dark:border-[#38414a]]="storyPoints() !== pts"
+                [class.text-slate-800]="storyPoints() !== pts"
+                [class.dark:text-[#b6c2cf]]="storyPoints() !== pts"
+                [class.hover:border-amber-400]="storyPoints() !== pts"
+              >
+                {{ pts }}
+              </button>
+            }
+          </div>
+
+          <!-- Custom Points Input -->
+          <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100 dark:border-[#38414a]">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              placeholder="Điểm khác..."
+              [ngModel]="customPoints()"
+              (ngModelChange)="customPoints.set($event)"
+              (keydown.enter)="saveCustomPoints()"
+              class="w-full px-2 py-1 bg-slate-50 dark:bg-[#22272b] border border-slate-200 dark:border-[#38414a] rounded-lg text-xs text-slate-800 dark:text-slate-100 outline-hidden focus:border-amber-500"
+            />
+            <button
+              type="button"
+              (click)="saveCustomPoints()"
+              class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg text-xs cursor-pointer transition shrink-0"
+            >
+              Lưu
+            </button>
+          </div>
+
+          @if (storyPoints() !== null && storyPoints() !== undefined) {
+            <button
+              type="button"
+              (click)="selectStoryPoints(null)"
+              class="w-full py-1 text-center text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition cursor-pointer"
+            >
+              Xoá điểm ước lượng
+            </button>
+          }
+        </div>
+      }
+    </div>
   </div>
 </div>

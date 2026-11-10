@@ -101,7 +101,7 @@
               </div>
             </div>
 
-            <!-- Action Chips: Priority, Type, Dates, Members -->
+            <!-- Action Chips: Priority, Type, Dates, Members, Story Points -->
             <app-card-action-chips
               [priority]="currentPriority()"
               [type]="currentType()"
@@ -111,10 +111,12 @@
               [assigneeName]="currentAssigneeName()"
               [reporterName]="currentReporterName()"
               [members]="members()"
+              [storyPoints]="currentStoryPoints()"
               (priorityChanged)="onPriorityChanged($event)"
               (typeChanged)="onTypeChanged($event)"
               (datesChanged)="onDatesChanged($event)"
               (assigneeChanged)="onAssigneeChanged($event)"
+              (storyPointsChanged)="onStoryPointsChanged($event)"
             ></app-card-action-chips>
 
             <!-- Description -->

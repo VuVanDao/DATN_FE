@@ -103,6 +103,52 @@
           (closed)="closeCoverPicker()"
         />
       </div>
+
+      <!-- Card Footer Metadata (Story Points & Assignee) -->
+      @if (
+        (card().storyPoints !== null && card().storyPoints !== undefined) ||
+        card().assigneeName
+      ) {
+        <div
+          class="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-700/50"
+        >
+          <div class="flex items-center gap-1.5">
+            @if (card().storyPoints !== null && card().storyPoints !== undefined) {
+              <span
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60"
+                title="Story Points"
+              >
+                <mat-icon
+                  fontIcon="bolt"
+                  class="text-[10px]! w-2.5! h-2.5! text-amber-500"
+                ></mat-icon>
+                <span>{{ card().storyPoints }} pts</span>
+              </span>
+            }
+          </div>
+
+          @if (card().assigneeName) {
+            <div
+              class="flex items-center gap-1 ml-auto"
+              [title]="'Người thực hiện: ' + card().assigneeName"
+            >
+              @if (card().assigneeAvatarUrl) {
+                <img
+                  [src]="card().assigneeAvatarUrl"
+                  [alt]="card().assigneeName"
+                  class="w-4 h-4 rounded-full object-cover border border-slate-200 dark:border-slate-600"
+                />
+              } @else {
+                <span
+                  class="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 text-[9px] font-bold flex items-center justify-center uppercase"
+                >
+                  {{ card().assigneeName?.charAt(0) }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
     }
   </div>
 </div>
