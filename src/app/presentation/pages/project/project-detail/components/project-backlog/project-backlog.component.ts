@@ -128,19 +128,24 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
     this.newBacklogCardStoryPoints = null;
   }
 
-  confirmAddCardToBacklog(): void {
+  confirmAddCardToBacklog(inputEl?: HTMLInputElement): void {
     const title = this.newBacklogCardTitle.trim();
     if (!title) return;
     this.sprintStore.createBacklogCard(
       {
         projectId: this.projectId,
-        boardId: this.selectedBoardId() || this.selectedBoard()?.id || undefined,
+        boardId: this.activeBoardId() || undefined,
         title,
         sprintId: null,
         storyPoints: this.newBacklogCardStoryPoints ?? undefined,
       },
       () => {
-        this.cancelAddCardToBacklog();
+        // Giữ form mở để người dùng tiếp tục tạo liên tục các thẻ khác
+        this.newBacklogCardTitle = '';
+        this.newBacklogCardStoryPoints = null;
+        if (inputEl) {
+          setTimeout(() => inputEl.focus(), 0);
+        }
       },
     );
   }
@@ -148,7 +153,7 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   onAddCardToSprint(sprintId: string, event: { title: string; storyPoints?: number }): void {
     this.sprintStore.createBacklogCard({
       projectId: this.projectId,
-      boardId: this.selectedBoardId() || this.selectedBoard()?.id || undefined,
+      boardId: this.activeBoardId() || undefined,
       title: event.title,
       sprintId,
       storyPoints: event.storyPoints,

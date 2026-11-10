@@ -70,14 +70,19 @@ export class SprintItemComponent {
     this.newCardStoryPoints = null;
   }
 
-  confirmAddCard(): void {
+  confirmAddCard(inputEl?: HTMLInputElement): void {
     const title = this.newCardTitle.trim();
     if (!title) return;
     this.addCard.emit({
       title,
       storyPoints: this.newCardStoryPoints ?? undefined,
     });
-    this.cancelAddCard();
+    // Giữ form mở để người dùng tiếp tục nhập thẻ liên tục
+    this.newCardTitle = '';
+    this.newCardStoryPoints = null;
+    if (inputEl) {
+      setTimeout(() => inputEl.focus(), 0);
+    }
   }
 
   toggleCollapse(): void {

@@ -81,8 +81,9 @@
 
       @if (selectedBoard(); as current) {
         <a
-          [routerLink]="['/board', current.slug]"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0"
+          [routerLink]="['/boards', current.slug]"
+          [queryParams]="{ projectId: current.projectId || projectId }"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0 cursor-pointer"
         >
           <span>Vào Bảng Scrum</span>
           <mat-icon fontIcon="arrow_forward" class="text-xs! w-3.5! h-3.5!"></mat-icon>
@@ -102,8 +103,9 @@
       </div>
 
       <a
-        [routerLink]="['/board', scrumBoards()[0].slug]"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0"
+        [routerLink]="['/boards', scrumBoards()[0].slug]"
+        [queryParams]="{ projectId: scrumBoards()[0].projectId || projectId }"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0 cursor-pointer"
       >
         <span>Vào Bảng Scrum</span>
         <mat-icon fontIcon="arrow_forward" class="text-xs! w-3.5! h-3.5!"></mat-icon>
@@ -261,9 +263,10 @@
             } @else {
               <div class="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2.5">
                 <input
+                  #backlogCardInput
                   type="text"
                   [(ngModel)]="newBacklogCardTitle"
-                  (keyup.enter)="confirmAddCardToBacklog()"
+                  (keyup.enter)="confirmAddCardToBacklog(backlogCardInput)"
                   (keyup.escape)="cancelAddCardToBacklog()"
                   placeholder="Cần phải làm gì trong Backlog? (Nhấn Enter để tạo)"
                   class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -290,7 +293,7 @@
                     </button>
                     <button
                       type="button"
-                      (click)="confirmAddCardToBacklog()"
+                      (click)="confirmAddCardToBacklog(backlogCardInput)"
                       [disabled]="!newBacklogCardTitle.trim()"
                       class="px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md shadow-xs transition cursor-pointer"
                     >
