@@ -16,6 +16,9 @@ import {
   ColumnCreatedMessage,
   ColumnUpdatedMessage,
   ColumnDeletedMessage,
+  CardCreatedMessage,
+  CardUpdatedMessage,
+  CardDeletedMessage,
 } from '../../domain/models/board-realtime.model';
 import {
   Board,
@@ -337,21 +340,39 @@ export class BoardStore {
         onError?.(err);
       },
       onSuccess: (newCard) => {
+        const pts = newCard.storyPoints || 0;
+        const isDone = (newCard.progressPercentage || 0) === 100;
+
         this.columnsSignal.update((cols) =>
           cols.map((col) =>
             col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
           ),
         );
-        this.boardSignal.update((b) =>
-          b
-            ? {
-                ...b,
-                columns: (b.columns || []).map((col) =>
-                  col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
-                ),
-              }
-            : null,
-        );
+        this.boardSignal.update((b) => {
+          if (!b) return null;
+          const updatedSprint =
+            b.activeSprint && (!newCard.sprintId || newCard.sprintId === b.activeSprint.id)
+              ? {
+                  ...b.activeSprint,
+                  totalCards: (b.activeSprint.totalCards || 0) + 1,
+                  completedCards: isDone
+                    ? (b.activeSprint.completedCards || 0) + 1
+                    : b.activeSprint.completedCards,
+                  totalStoryPoints: (b.activeSprint.totalStoryPoints || 0) + pts,
+                  completedStoryPoints: isDone
+                    ? (b.activeSprint.completedStoryPoints || 0) + pts
+                    : b.activeSprint.completedStoryPoints,
+                }
+              : b.activeSprint;
+
+          return {
+            ...b,
+            activeSprint: updatedSprint,
+            columns: (b.columns || []).map((col) =>
+              col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
+            ),
+          };
+        });
         this.notifications.success('Đã tạo thẻ mới');
         onSuccess?.(newCard);
       },
@@ -477,8 +498,20 @@ export class BoardStore {
   }
 
   deleteCard(cardId: string, columnId: string): void {
+    let deletedCard: CardSummary | null = null;
+    for (const col of this.columnsSignal()) {
+      const found = col.cards.find((c) => c.id === cardId);
+      if (found) {
+        deletedCard = found;
+        break;
+      }
+    }
+
     this.deleteCardUseCase.execute(cardId).subscribe({
       next: () => {
+        const pts = deletedCard?.storyPoints || 0;
+        const isDone = (deletedCard?.progressPercentage || 0) === 100;
+
         this.columnsSignal.update((cols) =>
           cols.map((col) =>
             col.id === columnId
@@ -486,18 +519,33 @@ export class BoardStore {
               : col,
           ),
         );
-        this.boardSignal.update((b) =>
-          b
-            ? {
-                ...b,
-                columns: (b.columns || []).map((col) =>
-                  col.id === columnId
-                    ? { ...col, cards: (col.cards || []).filter((card) => card.id !== cardId) }
-                    : col,
-                ),
-              }
-            : null,
-        );
+        this.boardSignal.update((b) => {
+          if (!b) return null;
+          const updatedSprint =
+            b.activeSprint && deletedCard
+              ? {
+                  ...b.activeSprint,
+                  totalCards: Math.max(0, (b.activeSprint.totalCards || 0) - 1),
+                  completedCards: isDone
+                    ? Math.max(0, (b.activeSprint.completedCards || 0) - 1)
+                    : b.activeSprint.completedCards,
+                  totalStoryPoints: Math.max(0, (b.activeSprint.totalStoryPoints || 0) - pts),
+                  completedStoryPoints: isDone
+                    ? Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts)
+                    : b.activeSprint.completedStoryPoints,
+                }
+              : b.activeSprint;
+
+          return {
+            ...b,
+            activeSprint: updatedSprint,
+            columns: (b.columns || []).map((col) =>
+              col.id === columnId
+                ? { ...col, cards: (col.cards || []).filter((card) => card.id !== cardId) }
+                : col,
+            ),
+          };
+        });
         if (this.cardDetailSignal()?.id === cardId) {
           this.cardDetailSignal.set(null);
         }
@@ -916,6 +964,18 @@ export class BoardStore {
       next: (message) => this.handleRemoteColumnDeleted(message),
     });
 
+    this.boardRealtimeService?.cardCreated$?.subscribe({
+      next: (message) => this.handleRemoteCardCreated(message),
+    });
+
+    this.boardRealtimeService?.cardUpdated$?.subscribe({
+      next: (message) => this.handleRemoteCardUpdated(message),
+    });
+
+    this.boardRealtimeService?.cardDeleted$?.subscribe({
+      next: (message) => this.handleRemoteCardDeleted(message),
+    });
+
     this.boardRealtimeService?.reconnected$?.subscribe({
       next: () => {
         const currentBoard = this.boardSignal();
@@ -1050,6 +1110,279 @@ export class BoardStore {
 
     if (targetCol) {
       this.notifications.warning(`Cột "${targetCol.title}" đã được gỡ bỏ bởi thành viên khác.`);
+    }
+  }
+
+  private handleRemoteCardCreated(message: CardCreatedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    // Kiểm tra xem thẻ đã tồn tại trong board chưa
+    const currentCols = this.columnsSignal();
+    const alreadyExists = currentCols.some((col) =>
+      col.cards.some((c) => c.id.toLowerCase() === message.card.id.toLowerCase()),
+    );
+    if (alreadyExists) {
+      return;
+    }
+
+    // Nếu là Scrum board có activeSprint: Thẻ tạo ra chỉ hiển thị trên bảng nếu nó thuộc activeSprint này
+    if (currentBoard.activeSprint && message.card.sprintId) {
+      if (message.card.sprintId.toLowerCase() !== currentBoard.activeSprint.id.toLowerCase()) {
+        return;
+      }
+    }
+
+    const targetCol = currentCols.find(
+      (c) => c.id.toLowerCase() === message.card.columnId.toLowerCase(),
+    );
+    if (!targetCol) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+      return;
+    }
+
+    const newCard: CardSummary = {
+      ...message.card,
+    };
+
+    this.columnsSignal.update((cols) =>
+      cols.map((col) =>
+        col.id.toLowerCase() === message.card.columnId.toLowerCase()
+          ? {
+              ...col,
+              cards: [...(col.cards || []), newCard].sort((a, b) => a.position - b.position),
+            }
+          : col,
+      ),
+    );
+
+    const pts = newCard.storyPoints || 0;
+    const isDone = (newCard.progressPercentage || 0) === 100;
+
+    this.boardSignal.update((b) => {
+      if (!b) return null;
+      const updatedSprint =
+        b.activeSprint &&
+        (!newCard.sprintId || newCard.sprintId.toLowerCase() === b.activeSprint.id.toLowerCase())
+          ? {
+              ...b.activeSprint,
+              totalCards: (b.activeSprint.totalCards || 0) + 1,
+              completedCards: isDone
+                ? (b.activeSprint.completedCards || 0) + 1
+                : b.activeSprint.completedCards,
+              totalStoryPoints: (b.activeSprint.totalStoryPoints || 0) + pts,
+              completedStoryPoints: isDone
+                ? (b.activeSprint.completedStoryPoints || 0) + pts
+                : b.activeSprint.completedStoryPoints,
+            }
+          : b.activeSprint;
+
+      return {
+        ...b,
+        activeSprint: updatedSprint,
+        columns: this.columnsSignal(),
+      };
+    });
+
+    this.notifications.info(`Thẻ "${newCard.title}" vừa được thêm bởi thành viên khác.`);
+  }
+
+  private handleRemoteCardUpdated(message: CardUpdatedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    const currentCols = this.columnsSignal();
+    let oldCard: CardSummary | null = null;
+    let oldColumnId: string | null = null;
+
+    for (const col of currentCols) {
+      const found = col.cards.find((c) => c.id.toLowerCase() === message.card.id.toLowerCase());
+      if (found) {
+        oldCard = found;
+        oldColumnId = col.id;
+        break;
+      }
+    }
+
+    if (!oldCard) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+      return;
+    }
+
+    const oldProgress = oldCard.progressPercentage || 0;
+    const newProgress = message.card.progressPercentage || 0;
+    const oldPts = oldCard.storyPoints || 0;
+    const newPts = message.card.storyPoints || 0;
+    const diffPts = newPts - oldPts;
+
+    const completing = oldProgress < 100 && newProgress === 100;
+    const uncompleting = oldProgress === 100 && newProgress < 100;
+
+    const targetColumnId = message.card.columnId.toLowerCase();
+    this.columnsSignal.update((cols) =>
+      cols.map((col) => {
+        const colId = col.id.toLowerCase();
+        if (oldColumnId && colId === oldColumnId.toLowerCase() && colId !== targetColumnId) {
+          return {
+            ...col,
+            cards: col.cards.filter((c) => c.id.toLowerCase() !== message.card.id.toLowerCase()),
+          };
+        }
+        if (colId === targetColumnId) {
+          const cardExists = col.cards.some(
+            (c) => c.id.toLowerCase() === message.card.id.toLowerCase(),
+          );
+          if (cardExists) {
+            return {
+              ...col,
+              cards: col.cards.map((c) =>
+                c.id.toLowerCase() === message.card.id.toLowerCase()
+                  ? { ...c, ...message.card }
+                  : c,
+              ),
+            };
+          } else {
+            return {
+              ...col,
+              cards: [...col.cards, message.card].sort((a, b) => a.position - b.position),
+            };
+          }
+        }
+        return col;
+      }),
+    );
+
+    this.boardSignal.update((b) => {
+      if (!b) return null;
+      let updatedSprint = b.activeSprint;
+      if (b.activeSprint && (completing || uncompleting || diffPts !== 0)) {
+        let compCards = b.activeSprint.completedCards || 0;
+        let compPts = b.activeSprint.completedStoryPoints || 0;
+        let totPts = b.activeSprint.totalStoryPoints || 0;
+
+        if (completing) {
+          compCards += 1;
+          compPts += newPts;
+        } else if (uncompleting) {
+          compCards = Math.max(0, compCards - 1);
+          compPts = Math.max(0, compPts - oldPts);
+        } else if (diffPts !== 0 && oldProgress === 100) {
+          compPts = Math.max(0, compPts + diffPts);
+        }
+
+        if (diffPts !== 0) {
+          totPts = Math.max(0, totPts + diffPts);
+        }
+
+        updatedSprint = {
+          ...b.activeSprint,
+          completedCards: compCards,
+          completedStoryPoints: compPts,
+          totalStoryPoints: totPts,
+        };
+      }
+
+      return {
+        ...b,
+        activeSprint: updatedSprint,
+        columns: this.columnsSignal(),
+      };
+    });
+
+    if (this.cardDetailSignal()?.id.toLowerCase() === message.card.id.toLowerCase()) {
+      this.cardDetailSignal.update((detail) =>
+        detail ? { ...detail, ...message.card } : null,
+      );
+    }
+
+    this.notifications.info(`Thẻ "${message.card.title}" vừa được cập nhật bởi thành viên khác.`);
+  }
+
+  private handleRemoteCardDeleted(message: CardDeletedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    let deletedCard: CardSummary | null = null;
+    for (const col of this.columnsSignal()) {
+      const found = col.cards.find((c) => c.id.toLowerCase() === message.cardId.toLowerCase());
+      if (found) {
+        deletedCard = found;
+        break;
+      }
+    }
+
+    this.columnsSignal.update((cols) =>
+      cols.map((col) => ({
+        ...col,
+        cards: col.cards.filter((c) => c.id.toLowerCase() !== message.cardId.toLowerCase()),
+      })),
+    );
+
+    const pts = deletedCard?.storyPoints || 0;
+    const isDone = (deletedCard?.progressPercentage || 0) === 100;
+
+    this.boardSignal.update((b) => {
+      if (!b) return null;
+      const updatedSprint =
+        b.activeSprint && deletedCard
+          ? {
+              ...b.activeSprint,
+              totalCards: Math.max(0, (b.activeSprint.totalCards || 0) - 1),
+              completedCards: isDone
+                ? Math.max(0, (b.activeSprint.completedCards || 0) - 1)
+                : b.activeSprint.completedCards,
+              totalStoryPoints: Math.max(0, (b.activeSprint.totalStoryPoints || 0) - pts),
+              completedStoryPoints: isDone
+                ? Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts)
+                : b.activeSprint.completedStoryPoints,
+            }
+          : b.activeSprint;
+
+      return {
+        ...b,
+        activeSprint: updatedSprint,
+        columns: this.columnsSignal(),
+      };
+    });
+
+    if (this.cardDetailSignal()?.id.toLowerCase() === message.cardId.toLowerCase()) {
+      this.clearCardDetail();
+      this.notifications.warning('Thẻ bạn đang xem vừa bị xoá bởi thành viên khác.');
+    } else if (deletedCard) {
+      this.notifications.warning(`Thẻ "${deletedCard.title}" vừa được xoá bởi thành viên khác.`);
     }
   }
 

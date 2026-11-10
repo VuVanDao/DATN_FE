@@ -1,3 +1,5 @@
+import { CardSummary } from './board-detail.model';
+
 export interface ColumnsReorderedMessage {
   boardId: string;
   orderedColumnIds: string[];
@@ -37,6 +39,28 @@ export interface ColumnUpdatedMessage {
 
 export interface ColumnDeletedMessage {
   boardId: string;
+  columnId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface CardCreatedMessage {
+  boardId: string;
+  card: CardSummary;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface CardUpdatedMessage {
+  boardId: string;
+  card: CardSummary;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface CardDeletedMessage {
+  boardId: string;
+  cardId: string;
   columnId: string;
   changedByUserId: string;
   occurredAt: string;

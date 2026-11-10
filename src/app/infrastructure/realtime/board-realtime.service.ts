@@ -14,6 +14,9 @@ import {
   ColumnCreatedMessage,
   ColumnUpdatedMessage,
   ColumnDeletedMessage,
+  CardCreatedMessage,
+  CardUpdatedMessage,
+  CardDeletedMessage,
 } from '../../domain/models/board-realtime.model';
 import { AuthStorageService } from '../storage/auth-storage.service';
 
@@ -44,6 +47,15 @@ export class BoardRealtimeService {
 
   private readonly columnDeletedSubject = new Subject<ColumnDeletedMessage>();
   readonly columnDeleted$ = this.columnDeletedSubject.asObservable();
+
+  private readonly cardCreatedSubject = new Subject<CardCreatedMessage>();
+  readonly cardCreated$ = this.cardCreatedSubject.asObservable();
+
+  private readonly cardUpdatedSubject = new Subject<CardUpdatedMessage>();
+  readonly cardUpdated$ = this.cardUpdatedSubject.asObservable();
+
+  private readonly cardDeletedSubject = new Subject<CardDeletedMessage>();
+  readonly cardDeleted$ = this.cardDeletedSubject.asObservable();
 
   private readonly reconnectedSubject = new Subject<void>();
   readonly reconnected$ = this.reconnectedSubject.asObservable();
@@ -110,6 +122,18 @@ export class BoardRealtimeService {
 
         this.hubConnection.on('ColumnDeleted', (message: ColumnDeletedMessage) => {
           this.columnDeletedSubject.next(message);
+        });
+
+        this.hubConnection.on('CardCreated', (message: CardCreatedMessage) => {
+          this.cardCreatedSubject.next(message);
+        });
+
+        this.hubConnection.on('CardUpdated', (message: CardUpdatedMessage) => {
+          this.cardUpdatedSubject.next(message);
+        });
+
+        this.hubConnection.on('CardDeleted', (message: CardDeletedMessage) => {
+          this.cardDeletedSubject.next(message);
         });
 
         this.hubConnection.onreconnecting(() => {
