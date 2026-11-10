@@ -13,6 +13,7 @@ export interface CardMovedMessage {
   sourceColumnId: string;
   targetColumnId: string;
   newPosition: number;
+  progressPercentage?: number;
   changedByUserId: string | null;
   occurredAt: string;
 }

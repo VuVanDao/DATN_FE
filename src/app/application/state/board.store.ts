@@ -410,7 +410,7 @@ export class BoardStore {
           movedCard.columnId = targetColumnId;
           const pts = movedCard.storyPoints ?? 0;
 
-          if (targetCol.isDoneColumn && !sourceCol.isDoneColumn) {
+          if (targetCol.isDoneColumn) {
             const wasCompleted = (movedCard.progressPercentage || 0) === 100;
             movedCard.progressPercentage = 100;
             // Cập nhật thống kê activeSprint trên header nếu thẻ trước đó chưa hoàn thành
@@ -438,9 +438,8 @@ export class BoardStore {
       this.cardDetailSignal.update((d) => {
         if (!d) return null;
         const targetCol = this.columnsSignal().find((c) => c.id === targetColumnId);
-        const sourceCol = this.columnsSignal().find((c) => c.id === sourceColumnId);
         let newProgress = d.progressPercentage;
-        if (targetCol?.isDoneColumn && !sourceCol?.isDoneColumn) {
+        if (targetCol?.isDoneColumn) {
           newProgress = 100;
         }
         return {
@@ -1476,6 +1475,10 @@ export class BoardStore {
     const sourceColId = foundSourceColId ?? message.sourceColumnId;
     const targetColId = message.targetColumnId;
 
+    let wasCompleted = false;
+    let isNowCompleted = false;
+    let newProgress = 0;
+
     this.columnsSignal.update((cols) => {
       const nextCols = cols.map((col) => ({
         ...col,
@@ -1495,11 +1498,23 @@ export class BoardStore {
       if (fromIndex === -1) {
         return cols;
       }
-      // splice trả vè danh sách các phần tử bị cắt, nên dùng destructuring để lấy phần tử đầu tiên
+      // splice trả về danh sách các phần tử bị cắt, nên dùng destructuring để lấy phần tử đầu tiên
       const [movedCard] = sourceCol.cards.splice(fromIndex, 1);
+
+      newProgress =
+        message.progressPercentage !== undefined
+          ? message.progressPercentage
+          : targetCol.isDoneColumn
+            ? 100
+            : (movedCard.progressPercentage || 0);
+
+      wasCompleted = (movedCard.progressPercentage || 0) === 100;
+      isNowCompleted = newProgress === 100;
+
       const updatedMovedCard: CardSummary = {
         ...movedCard,
         columnId: targetCol.id,
+        progressPercentage: newProgress,
       };
 
       const clampedIndex = Math.max(0, Math.min(message.newPosition, targetCol.cards.length));
@@ -1516,13 +1531,41 @@ export class BoardStore {
       return nextCols;
     });
 
-    // Đồng bộ lại boardSignal
-    this.boardSignal.update((b) => (b ? { ...b, columns: this.columnsSignal() } : null));
+    // Đồng bộ lại boardSignal và activeSprint
+    this.boardSignal.update((b) => {
+      if (!b) return null;
+      let updatedSprint = b.activeSprint;
+      if (b.activeSprint && wasCompleted !== isNowCompleted) {
+        const pts = existingCard.storyPoints || 0;
+        let compCards = b.activeSprint.completedCards || 0;
+        let compPts = b.activeSprint.completedStoryPoints || 0;
 
-    // Nếu modal chi tiết thẻ đang mở thẻ này, cập nhật lại columnId cho modal
+        if (!wasCompleted && isNowCompleted) {
+          compCards += 1;
+          compPts += pts;
+        } else if (wasCompleted && !isNowCompleted) {
+          compCards = Math.max(0, compCards - 1);
+          compPts = Math.max(0, compPts - pts);
+        }
+
+        updatedSprint = {
+          ...b.activeSprint,
+          completedCards: compCards,
+          completedStoryPoints: compPts,
+        };
+      }
+
+      return {
+        ...b,
+        activeSprint: updatedSprint,
+        columns: this.columnsSignal(),
+      };
+    });
+
+    // Nếu modal chi tiết thẻ đang mở thẻ này, cập nhật lại columnId và progressPercentage cho modal
     this.cardDetailSignal.update((detail) =>
       detail && detail.id.toLowerCase() === message.cardId.toLowerCase()
-        ? { ...detail, columnId: targetColId }
+        ? { ...detail, columnId: targetColId, progressPercentage: newProgress }
         : detail,
     );
 
