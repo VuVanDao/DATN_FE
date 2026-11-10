@@ -1,5 +1,6 @@
 import { CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   Component,
   computed,
@@ -17,7 +18,7 @@ import { BacklogCardItemComponent } from '../backlog-card-item/backlog-card-item
 @Component({
   selector: 'app-sprint-item',
   standalone: true,
-  imports: [CommonModule, MatIconModule, CdkDropList, BacklogCardItemComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, CdkDropList, BacklogCardItemComponent],
   templateUrl: './sprint-item.component.html',
   host: {
     class: 'block',
@@ -36,9 +37,14 @@ export class SprintItemComponent {
   @Output() deleteSprint = new EventEmitter<SprintSummary>();
   @Output() startSprint = new EventEmitter<SprintSummary>();
   @Output() completeSprint = new EventEmitter<SprintSummary>();
+  @Output() addCard = new EventEmitter<{ title: string; storyPoints?: number }>();
 
   readonly showActionsMenu = signal<boolean>(false);
   readonly isCollapsed = signal<boolean>(false);
+  readonly isAddingCard = signal<boolean>(false);
+
+  newCardTitle = '';
+  newCardStoryPoints: number | null = null;
 
   readonly isActive = computed(() => {
     const s = this.sprint?.status;
@@ -50,6 +56,28 @@ export class SprintItemComponent {
     if (this.showActionsMenu()) {
       this.showActionsMenu.set(false);
     }
+  }
+
+  startAddCard(): void {
+    this.isAddingCard.set(true);
+    this.newCardTitle = '';
+    this.newCardStoryPoints = null;
+  }
+
+  cancelAddCard(): void {
+    this.isAddingCard.set(false);
+    this.newCardTitle = '';
+    this.newCardStoryPoints = null;
+  }
+
+  confirmAddCard(): void {
+    const title = this.newCardTitle.trim();
+    if (!title) return;
+    this.addCard.emit({
+      title,
+      storyPoints: this.newCardStoryPoints ?? undefined,
+    });
+    this.cancelAddCard();
   }
 
   toggleCollapse(): void {

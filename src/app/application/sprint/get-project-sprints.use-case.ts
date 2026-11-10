@@ -9,7 +9,11 @@ import { SprintRepository } from '../../domain/repositories/sprint.repository';
 export class GetProjectSprintsUseCase {
   private readonly repository = inject(SprintRepository);
 
-  execute(projectId: string, includeClosed = false): Observable<SprintSummary[]> {
-    return this.repository.getProjectSprints(projectId, includeClosed);
+  execute(
+    projectId: string,
+    boardId?: string | null,
+    includeClosed = false,
+  ): Observable<SprintSummary[]> {
+    return this.repository.getProjectSprints(projectId, boardId, includeClosed);
   }
 }

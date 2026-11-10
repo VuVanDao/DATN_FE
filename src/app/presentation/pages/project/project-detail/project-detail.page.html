@@ -178,6 +178,7 @@
       [projectId]="proj.id"
       [canManageSprint]="canManageRoles()"
       [canMoveCard]="isCurrentMember()"
+      (createBoard)="openCreateBoardModal()"
     />
 
     <!-- PANEL 2: DANH SÁCH THÀNH VIÊN -->

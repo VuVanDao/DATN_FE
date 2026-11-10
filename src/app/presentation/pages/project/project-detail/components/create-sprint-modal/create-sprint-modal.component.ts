@@ -23,6 +23,7 @@ export class CreateSprintModalComponent implements OnChanges {
 
   @Input() isOpen = false;
   @Input() projectId = '';
+  @Input() boardId = '';
   @Input() suggestedSprintNumber = 1;
 
   @Output() closed = new EventEmitter<void>();
@@ -85,7 +86,7 @@ export class CreateSprintModalComponent implements OnChanges {
   }
 
   onSubmit(): void {
-    if (this.form.invalid || !this.projectId) {
+    if (this.form.invalid || !this.projectId || !this.boardId) {
       this.form.markAllAsTouched();
       return;
     }
@@ -95,6 +96,7 @@ export class CreateSprintModalComponent implements OnChanges {
     this.sprintStore.createSprint(
       {
         projectId: this.projectId,
+        boardId: this.boardId,
         name: name.trim(),
         goal: goal.trim() || undefined,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,

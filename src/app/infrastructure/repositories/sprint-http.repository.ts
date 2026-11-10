@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { CardSummary } from '../../domain/models/board-detail.model';
 import {
   CompleteSprintRequest,
+  CreateBacklogCardRequest,
   CreateSprintRequest,
   MoveCardToSprintRequest,
   ProjectBacklog,
@@ -61,23 +62,43 @@ export class SprintHttpRepository implements SprintRepository {
       .pipe(map((res) => res.data));
   }
 
-  getProjectSprints(projectId: string, includeClosed = false): Observable<SprintSummary[]> {
+  getProjectSprints(
+    projectId: string,
+    boardId?: string | null,
+    includeClosed = false,
+  ): Observable<SprintSummary[]> {
+    let url = `${this.sprintUrl}/project/${projectId}?includeClosed=${includeClosed}`;
+    if (boardId) {
+      url += `&boardId=${boardId}`;
+    }
     return this.http
-      .get<ApiResponse<SprintSummary[]>>(
-        `${this.sprintUrl}/project/${projectId}?includeClosed=${includeClosed}`,
-      )
+      .get<ApiResponse<SprintSummary[]>>(url)
       .pipe(map((res) => res.data));
   }
 
-  getProjectBacklogCards(projectId: string): Observable<CardSummary[]> {
+  getProjectBacklogCards(projectId: string, boardId?: string | null): Observable<CardSummary[]> {
+    let url = `${environment.apiUrl}/cards/project/${projectId}/backlog`;
+    if (boardId) {
+      url += `?boardId=${boardId}`;
+    }
     return this.http
-      .get<ApiResponse<CardSummary[]>>(`${environment.apiUrl}/cards/project/${projectId}/backlog`)
+      .get<ApiResponse<CardSummary[]>>(url)
       .pipe(map((res) => res.data));
   }
 
-  getProjectBacklog(projectId: string): Observable<ProjectBacklog> {
+  getProjectBacklog(projectId: string, boardId?: string | null): Observable<ProjectBacklog> {
+    let url = `${this.sprintUrl}/project/${projectId}/backlog`;
+    if (boardId) {
+      url += `?boardId=${boardId}`;
+    }
     return this.http
-      .get<ApiResponse<ProjectBacklog>>(`${this.sprintUrl}/project/${projectId}/backlog`)
+      .get<ApiResponse<ProjectBacklog>>(url)
+      .pipe(map((res) => res.data));
+  }
+
+  createBacklogCard(request: CreateBacklogCardRequest): Observable<CardSummary> {
+    return this.http
+      .post<ApiResponse<CardSummary>>(`${environment.apiUrl}/cards/backlog`, request)
       .pipe(map((res) => res.data));
   }
 }

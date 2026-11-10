@@ -225,6 +225,59 @@
           Chuyển nhanh.
         </div>
       }
+      @if (canMoveCard || canManageSprint) {
+        @if (!isAddingCard()) {
+          <button
+            type="button"
+            (click)="startAddCard()"
+            class="w-full flex items-center gap-2 py-2 px-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-semibold transition cursor-pointer"
+          >
+            <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
+            <span>Tạo công việc trong Sprint này</span>
+          </button>
+        } @else {
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2.5">
+            <input
+              type="text"
+              [(ngModel)]="newCardTitle"
+              (keyup.enter)="confirmAddCard()"
+              (keyup.escape)="cancelAddCard()"
+              placeholder="Cần phải làm gì trong Sprint này? (Nhấn Enter để tạo)"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              autofocus
+            />
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                <span>Điểm SP:</span>
+                <input
+                  type="number"
+                  min="0"
+                  [(ngModel)]="newCardStoryPoints"
+                  placeholder="0"
+                  class="w-16 px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  (click)="cancelAddCard()"
+                  class="px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  (click)="confirmAddCard()"
+                  [disabled]="!newCardTitle.trim()"
+                  class="px-3 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md shadow-xs transition cursor-pointer"
+                >
+                  Tạo
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      }
     </div>
   }
 </div>

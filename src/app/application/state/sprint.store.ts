@@ -3,6 +3,7 @@ import { forkJoin, Subject } from 'rxjs';
 import { CardSummary } from '../../domain/models/board-detail.model';
 import {
   CompleteSprintRequest,
+  CreateBacklogCardRequest,
   CreateSprintRequest,
   ProjectBacklog,
   SprintSummary,
@@ -10,6 +11,7 @@ import {
   UpdateSprintRequest,
 } from '../../domain/models/sprint.model';
 import { CompleteSprintUseCase } from '../sprint/complete-sprint.use-case';
+import { CreateBacklogCardUseCase } from '../sprint/create-backlog-card.use-case';
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
 import { DeleteSprintUseCase } from '../sprint/delete-sprint.use-case';
 import { GetProjectBacklogCardsUseCase } from '../sprint/get-project-backlog-cards.use-case';
@@ -30,11 +32,13 @@ export class SprintStore {
   private readonly moveCardToSprintUseCase = inject(MoveCardToSprintUseCase);
   private readonly startSprintUseCase = inject(StartSprintUseCase);
   private readonly completeSprintUseCase = inject(CompleteSprintUseCase);
+  private readonly createBacklogCardUseCase = inject(CreateBacklogCardUseCase);
   private readonly notifications = inject(NotificationService);
   private readonly requests = inject(StoreRequestRunner);
 
   private readonly cancel$ = new Subject<void>();
   private readonly currentProjectIdSignal = signal<string>('');
+  private readonly currentBoardIdSignal = signal<string | null>(null);
   private readonly sprintsSignal = signal<SprintSummary[]>([]);
   private readonly backlogCardsSignal = signal<CardSummary[]>([]);
 
@@ -53,6 +57,7 @@ export class SprintStore {
   // Expose independent Sprint & Backlog collections
   readonly sprints = this.sprintsSignal.asReadonly();
   readonly backlogCards = this.backlogCardsSignal.asReadonly();
+  readonly currentBoardId = this.currentBoardIdSignal.asReadonly();
 
   readonly activeSprint = computed<SprintSummary | null>(() => {
     return this.sprints().find((s) => s.status === 'Active' || String(s.status) === '1') || null;
@@ -65,6 +70,7 @@ export class SprintStore {
   // Backward-compatible unified Backlog object for existing components
   readonly backlog = computed<ProjectBacklog | null>(() => {
     const projectId = this.currentProjectIdSignal();
+    const boardId = this.currentBoardIdSignal();
     const sprints = this.sprintsSignal();
     const cards = this.backlogCardsSignal();
 
@@ -74,6 +80,7 @@ export class SprintStore {
 
     return {
       projectId,
+      boardId,
       activeSprint: this.activeSprint(),
       futureSprints: this.futureSprints(),
       backlogCards: cards,
@@ -100,16 +107,17 @@ export class SprintStore {
   readonly isMovingCard = this.movingCardSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
 
-  loadBacklog(projectId: string): void {
+  loadBacklog(projectId: string, boardId?: string | null): void {
     this.currentProjectIdSignal.set(projectId);
+    this.currentBoardIdSignal.set(boardId || null);
     this.cancel$.next();
     this.errorSignal.set(null);
 
     this.requests.run({
       loading: this.loadingBacklogSignal,
       request$: forkJoin({
-        sprints: this.getProjectSprintsUseCase.execute(projectId),
-        cards: this.getProjectBacklogCardsUseCase.execute(projectId),
+        sprints: this.getProjectSprintsUseCase.execute(projectId, boardId),
+        cards: this.getProjectBacklogCardsUseCase.execute(projectId, boardId),
       }),
       cancel$: this.cancel$,
       fallbackErrorMessage: 'Không thể tải dữ liệu Backlog của dự án.',
@@ -123,11 +131,12 @@ export class SprintStore {
     });
   }
 
-  loadSprints(projectId: string, onSuccess?: () => void): void {
+  loadSprints(projectId: string, boardId?: string | null, onSuccess?: () => void): void {
     this.currentProjectIdSignal.set(projectId);
+    this.currentBoardIdSignal.set(boardId || null);
     this.requests.run({
       loading: this.loadingSprintsSignal,
-      request$: this.getProjectSprintsUseCase.execute(projectId),
+      request$: this.getProjectSprintsUseCase.execute(projectId, boardId),
       fallbackErrorMessage: 'Không thể tải danh sách Sprint.',
       onSuccess: (sprints) => {
         this.sprintsSignal.set(sprints);
@@ -136,11 +145,12 @@ export class SprintStore {
     });
   }
 
-  loadBacklogCards(projectId: string, onSuccess?: () => void): void {
+  loadBacklogCards(projectId: string, boardId?: string | null, onSuccess?: () => void): void {
     this.currentProjectIdSignal.set(projectId);
+    this.currentBoardIdSignal.set(boardId || null);
     this.requests.run({
       loading: this.loadingBacklogCardsSignal,
-      request$: this.getProjectBacklogCardsUseCase.execute(projectId),
+      request$: this.getProjectBacklogCardsUseCase.execute(projectId, boardId),
       fallbackErrorMessage: 'Không thể tải danh sách thẻ Backlog.',
       onSuccess: (cards) => {
         this.backlogCardsSignal.set(cards);
@@ -156,7 +166,7 @@ export class SprintStore {
       fallbackErrorMessage: 'Không thể tạo mới Sprint.',
       onSuccess: (newSprint) => {
         this.notifications.success(`Đã tạo thành công "${newSprint.name}"`);
-        this.loadSprints(request.projectId);
+        this.loadBacklog(request.projectId, request.boardId);
         if (onSuccess) {
           onSuccess();
         }
@@ -261,7 +271,7 @@ export class SprintStore {
           const targetName = sprintId ? 'Sprint' : 'Backlog';
           this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
         }
-        this.loadBacklog(projectId);
+        this.loadBacklog(projectId, this.currentBoardIdSignal());
         if (onSuccess) {
           onSuccess();
         }
@@ -270,7 +280,23 @@ export class SprintStore {
         this.movingCardSignal.set(false);
         const msg = err?.error?.message || err?.message || 'Không thể chuyển thẻ vào Sprint.';
         this.notifications.error(msg);
-        this.loadBacklog(projectId);
+        this.loadBacklog(projectId, this.currentBoardIdSignal());
+      },
+    });
+  }
+
+  createBacklogCard(request: CreateBacklogCardRequest, onSuccess?: () => void): void {
+    this.createBacklogCardUseCase.execute(request).subscribe({
+      next: (card) => {
+        this.notifications.success(`Đã tạo thành công "${card.title}"`);
+        this.loadBacklog(request.projectId, request.boardId || this.currentBoardIdSignal());
+        if (onSuccess) {
+          onSuccess();
+        }
+      },
+      error: (err) => {
+        const msg = err?.error?.message || err?.message || 'Không thể tạo công việc mới.';
+        this.notifications.error(msg);
       },
     });
   }

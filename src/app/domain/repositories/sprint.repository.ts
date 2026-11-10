@@ -2,6 +2,7 @@ import { Observable } from 'rxjs';
 import { CardSummary } from '../models/board-detail.model';
 import {
   CompleteSprintRequest,
+  CreateBacklogCardRequest,
   CreateSprintRequest,
   MoveCardToSprintRequest,
   ProjectBacklog,
@@ -20,7 +21,8 @@ export abstract class SprintRepository {
     request: CompleteSprintRequest,
   ): Observable<SprintSummary>;
   abstract moveCardToSprint(request: MoveCardToSprintRequest): Observable<CardSummary>;
-  abstract getProjectSprints(projectId: string, includeClosed?: boolean): Observable<SprintSummary[]>;
-  abstract getProjectBacklogCards(projectId: string): Observable<CardSummary[]>;
-  abstract getProjectBacklog(projectId: string): Observable<ProjectBacklog>;
+  abstract getProjectSprints(projectId: string, boardId?: string | null, includeClosed?: boolean): Observable<SprintSummary[]>;
+  abstract getProjectBacklogCards(projectId: string, boardId?: string | null): Observable<CardSummary[]>;
+  abstract getProjectBacklog(projectId: string, boardId?: string | null): Observable<ProjectBacklog>;
+  abstract createBacklogCard(request: CreateBacklogCardRequest): Observable<CardSummary>;
 }

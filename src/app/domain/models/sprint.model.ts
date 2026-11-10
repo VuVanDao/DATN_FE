@@ -5,6 +5,7 @@ export type SprintStatus = 'Future' | 'Active' | 'Closed';
 export interface SprintSummary {
   id: string;
   projectId: string;
+  boardId: string;
   name: string;
   goal?: string | null;
   startDate: string;
@@ -20,6 +21,9 @@ export interface SprintSummary {
 
 export interface ProjectBacklog {
   projectId: string;
+  boardId?: string | null;
+  boardTitle?: string | null;
+  defaultScrumColumnId?: string | null;
   activeSprint?: SprintSummary | null;
   futureSprints: SprintSummary[];
   backlogCards: CardSummary[];
@@ -29,6 +33,7 @@ export interface ProjectBacklog {
 
 export interface CreateSprintRequest {
   projectId: string;
+  boardId: string;
   name: string;
   goal?: string;
   startDate?: string;
@@ -55,4 +60,14 @@ export interface CompleteSprintRequest {
 export interface MoveCardToSprintRequest {
   cardId: string;
   sprintId?: string | null;
+}
+
+export interface CreateBacklogCardRequest {
+  projectId: string;
+  boardId?: string | null;
+  title: string;
+  description?: string;
+  sprintId?: string | null;
+  storyPoints?: number;
+  type?: string;
 }

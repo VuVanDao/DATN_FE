@@ -35,7 +35,7 @@
         <span class="leading-none">Làm mới</span>
       </button>
 
-      @if (canManageSprint) {
+      @if (canManageSprint && (selectedBoardId() || selectedBoard())) {
         <button
           type="button"
           (click)="openCreateSprintModal()"
@@ -47,6 +47,92 @@
       }
     </div>
   </div>
+
+  <!-- 1.1 Scrum Boards Switcher -->
+  @if (scrumBoards().length > 1) {
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 shadow-xs">
+      <div class="flex items-center gap-2 overflow-x-auto py-1">
+        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0">
+          Bảng Scrum:
+        </span>
+        @for (board of scrumBoards(); track board.id) {
+          <button
+            type="button"
+            (click)="selectBoard(board.id)"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-2 shrink-0 border"
+            [class.bg-indigo-600]="activeBoardId() === board.id"
+            [class.border-indigo-600]="activeBoardId() === board.id"
+            [class.text-white]="activeBoardId() === board.id"
+            [class.shadow-sm]="activeBoardId() === board.id"
+            [class.bg-slate-50]="activeBoardId() !== board.id"
+            [class.dark:bg-slate-800/80]="activeBoardId() !== board.id"
+            [class.border-slate-200]="activeBoardId() !== board.id"
+            [class.dark:border-slate-700]="activeBoardId() !== board.id"
+            [class.text-slate-700]="activeBoardId() !== board.id"
+            [class.dark:text-slate-300]="activeBoardId() !== board.id"
+            [class.hover:border-indigo-300]="activeBoardId() !== board.id"
+            [class.dark:hover:border-indigo-600]="activeBoardId() !== board.id"
+          >
+            <mat-icon fontIcon="view_column" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+            <span>{{ board.title }}</span>
+          </button>
+        }
+      </div>
+
+      @if (selectedBoard(); as current) {
+        <a
+          [routerLink]="['/board', current.slug]"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0"
+        >
+          <span>Vào Bảng Scrum</span>
+          <mat-icon fontIcon="arrow_forward" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+        </a>
+      }
+    </div>
+  } @else if (scrumBoards().length === 1) {
+    <div class="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 shadow-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          Bảng Scrum:
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80">
+          <mat-icon fontIcon="view_column" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+          {{ scrumBoards()[0].title }}
+        </span>
+      </div>
+
+      <a
+        [routerLink]="['/board', scrumBoards()[0].slug]"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0"
+      >
+        <span>Vào Bảng Scrum</span>
+        <mat-icon fontIcon="arrow_forward" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+      </a>
+    </div>
+  } @else if (!projectStore.isLoadingBoards() && scrumBoards().length === 0) {
+    <!-- Empty state: No Scrum boards in project -->
+    <div class="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-xs">
+        <mat-icon fontIcon="view_kanban" class="text-3xl! w-8! h-8!"></mat-icon>
+      </div>
+      <div class="space-y-1.5 max-w-md mx-auto">
+        <h4 class="text-base font-bold text-slate-900 dark:text-white">Dự án chưa có Bảng Scrum nào</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          Mô hình Backlog & Sprint theo Agile yêu cầu một Bảng làm việc dạng Scrum. Bạn có thể tạo Bảng Scrum để bắt đầu lên kế hoạch và quản lý Sprint.
+        </p>
+      </div>
+      @if (canManageSprint) {
+        <button
+          type="button"
+          (click)="createBoard.emit()"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm shadow-indigo-600/30 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
+          <span>Tạo Bảng Scrum mới</span>
+        </button>
+      }
+    </div>
+  }
 
   <!-- 2. Loading State -->
   @if (sprintStore.isLoadingBacklog() && !sprintStore.backlog()) {
@@ -93,6 +179,7 @@
           (deleteSprint)="openDeleteSprintModal($event)"
           (startSprint)="openStartSprintModal($event)"
           (completeSprint)="openCompleteSprintModal($event)"
+          (addCard)="onAddCardToSprint(active.id, $event)"
         />
       }
 
@@ -110,6 +197,7 @@
           (editSprint)="openEditSprintModal($event)"
           (deleteSprint)="openDeleteSprintModal($event)"
           (startSprint)="openStartSprintModal($event)"
+          (addCard)="onAddCardToSprint(sprint.id, $event)"
         />
       }
 
@@ -160,6 +248,59 @@
               </p>
             </div>
           }
+          @if (canMoveCard || canManageSprint) {
+            @if (!isAddingCardToBacklog()) {
+              <button
+                type="button"
+                (click)="startAddCardToBacklog()"
+                class="w-full flex items-center gap-2 py-2.5 px-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-semibold transition cursor-pointer"
+              >
+                <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
+                <span>Tạo công việc vào Product Backlog</span>
+              </button>
+            } @else {
+              <div class="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2.5">
+                <input
+                  type="text"
+                  [(ngModel)]="newBacklogCardTitle"
+                  (keyup.enter)="confirmAddCardToBacklog()"
+                  (keyup.escape)="cancelAddCardToBacklog()"
+                  placeholder="Cần phải làm gì trong Backlog? (Nhấn Enter để tạo)"
+                  class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  autofocus
+                />
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                    <span>Điểm SP:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      [(ngModel)]="newBacklogCardStoryPoints"
+                      placeholder="0"
+                      class="w-16 px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      (click)="cancelAddCardToBacklog()"
+                      class="px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition cursor-pointer"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      (click)="confirmAddCardToBacklog()"
+                      [disabled]="!newBacklogCardTitle.trim()"
+                      class="px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md shadow-xs transition cursor-pointer"
+                    >
+                      Tạo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          }
         </div>
       </div>
     </div>
@@ -169,6 +310,7 @@
   <app-create-sprint-modal
     [isOpen]="showCreateSprintModal()"
     [projectId]="projectId"
+    [boardId]="activeBoardId()"
     [suggestedSprintNumber]="suggestedSprintNumber()"
     (closed)="closeCreateSprintModal()"
     (sprintCreated)="refreshBacklog()"

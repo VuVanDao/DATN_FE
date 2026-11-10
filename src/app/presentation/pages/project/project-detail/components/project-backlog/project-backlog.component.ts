@@ -6,9 +6,11 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   Component,
   computed,
+  effect,
   EventEmitter,
   inject,
   Input,
@@ -17,9 +19,12 @@ import {
   Output,
   signal,
   SimpleChanges,
+  untracked,
 } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
+import { ProjectStore } from '../../../../../../application/state/project.store';
 import { SprintStore } from '../../../../../../application/state/sprint.store';
 import { CardSummary } from '../../../../../../domain/models/board-detail.model';
 import { SprintSummary } from '../../../../../../domain/models/sprint.model';
@@ -36,6 +41,8 @@ import { SprintItemComponent } from './components/sprint-item/sprint-item.compon
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
+    RouterModule,
     MatIconModule,
     CdkDropListGroup,
     CdkDropList,
@@ -51,6 +58,7 @@ import { SprintItemComponent } from './components/sprint-item/sprint-item.compon
 })
 export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly sprintStore = inject(SprintStore);
+  readonly projectStore = inject(ProjectStore);
   private readonly notifications = inject(NotificationService);
 
   @Input({ required: true }) projectId = '';
@@ -58,6 +66,40 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   @Input() canMoveCard = false;
 
   @Output() cardClick = new EventEmitter<CardSummary>();
+  @Output() createBoard = new EventEmitter<void>();
+
+  readonly selectedBoardId = signal<string>('');
+
+  readonly scrumBoards = computed(() => {
+    return this.projectStore.boards().filter((b) => b.type?.toLowerCase() === 'scrum' || String(b.type) === '1');
+  });
+
+  readonly selectedBoard = computed(() => {
+    const boards = this.scrumBoards();
+    return boards.find((b) => b.id === this.selectedBoardId()) || boards[0] || null;
+  });
+
+  readonly activeBoardId = computed(() => {
+    return this.selectedBoardId() || this.selectedBoard()?.id || '';
+  });
+
+  constructor() {
+    effect(() => {
+      const boards = this.scrumBoards();
+      const pId = this.projectId;
+      if (!pId) return;
+
+      const currentSelected = untracked(() => this.selectedBoardId());
+      if (boards.length > 0) {
+        const stillValid = boards.some((b) => b.id === currentSelected);
+        if (!currentSelected || !stillValid) {
+          const defaultBoardId = boards[0].id;
+          this.selectedBoardId.set(defaultBoardId);
+          this.sprintStore.loadBacklog(pId, defaultBoardId);
+        }
+      }
+    });
+  }
 
   readonly showCreateSprintModal = signal<boolean>(false);
   readonly showEditSprintModal = signal<boolean>(false);
@@ -69,6 +111,49 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly selectedSprintForDelete = signal<SprintSummary | null>(null);
   readonly selectedSprintForStart = signal<SprintSummary | null>(null);
   readonly selectedSprintForComplete = signal<SprintSummary | null>(null);
+
+  readonly isAddingCardToBacklog = signal<boolean>(false);
+  newBacklogCardTitle = '';
+  newBacklogCardStoryPoints: number | null = null;
+
+  startAddCardToBacklog(): void {
+    this.isAddingCardToBacklog.set(true);
+    this.newBacklogCardTitle = '';
+    this.newBacklogCardStoryPoints = null;
+  }
+
+  cancelAddCardToBacklog(): void {
+    this.isAddingCardToBacklog.set(false);
+    this.newBacklogCardTitle = '';
+    this.newBacklogCardStoryPoints = null;
+  }
+
+  confirmAddCardToBacklog(): void {
+    const title = this.newBacklogCardTitle.trim();
+    if (!title) return;
+    this.sprintStore.createBacklogCard(
+      {
+        projectId: this.projectId,
+        boardId: this.selectedBoardId() || this.selectedBoard()?.id || undefined,
+        title,
+        sprintId: null,
+        storyPoints: this.newBacklogCardStoryPoints ?? undefined,
+      },
+      () => {
+        this.cancelAddCardToBacklog();
+      },
+    );
+  }
+
+  onAddCardToSprint(sprintId: string, event: { title: string; storyPoints?: number }): void {
+    this.sprintStore.createBacklogCard({
+      projectId: this.projectId,
+      boardId: this.selectedBoardId() || this.selectedBoard()?.id || undefined,
+      title: event.title,
+      sprintId,
+      storyPoints: event.storyPoints,
+    });
+  }
 
   readonly suggestedSprintNumber = computed(() => {
     const backlog = this.sprintStore.backlog();
@@ -102,20 +187,34 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   });
 
   ngOnInit(): void {
-    if (this.projectId) {
-      this.sprintStore.loadBacklog(this.projectId);
-    }
+    this.initSelectedBoardAndLoad();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId'] && !changes['projectId'].firstChange && this.projectId) {
-      this.sprintStore.loadBacklog(this.projectId);
+      this.initSelectedBoardAndLoad();
     }
+  }
+
+  private initSelectedBoardAndLoad(): void {
+    if (!this.projectId) return;
+    const boards = this.scrumBoards();
+    let boardId = this.selectedBoardId();
+    if (!boardId && boards.length > 0) {
+      boardId = boards[0].id;
+      this.selectedBoardId.set(boardId);
+    }
+    this.sprintStore.loadBacklog(this.projectId, boardId || null);
+  }
+
+  selectBoard(boardId: string): void {
+    this.selectedBoardId.set(boardId);
+    this.sprintStore.loadBacklog(this.projectId, boardId);
   }
 
   refreshBacklog(): void {
     if (this.projectId) {
-      this.sprintStore.loadBacklog(this.projectId);
+      this.sprintStore.loadBacklog(this.projectId, this.selectedBoardId() || null);
     }
   }
 

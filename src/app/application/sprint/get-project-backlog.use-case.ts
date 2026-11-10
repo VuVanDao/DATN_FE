@@ -9,7 +9,7 @@ import { SprintRepository } from '../../domain/repositories/sprint.repository';
 export class GetProjectBacklogUseCase {
   private readonly repository = inject(SprintRepository);
 
-  execute(projectId: string): Observable<ProjectBacklog> {
-    return this.repository.getProjectBacklog(projectId);
+  execute(projectId: string, boardId?: string | null): Observable<ProjectBacklog> {
+    return this.repository.getProjectBacklog(projectId, boardId);
   }
 }
