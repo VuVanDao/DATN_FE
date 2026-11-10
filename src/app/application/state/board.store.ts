@@ -13,6 +13,9 @@ import {
 import {
   CardMovedMessage,
   ColumnsReorderedMessage,
+  ColumnCreatedMessage,
+  ColumnUpdatedMessage,
+  ColumnDeletedMessage,
 } from '../../domain/models/board-realtime.model';
 import {
   Board,
@@ -901,6 +904,18 @@ export class BoardStore {
       next: (message) => this.handleRemoteCardMoved(message),
     });
 
+    this.boardRealtimeService?.columnCreated$?.subscribe({
+      next: (message) => this.handleRemoteColumnCreated(message),
+    });
+
+    this.boardRealtimeService?.columnUpdated$?.subscribe({
+      next: (message) => this.handleRemoteColumnUpdated(message),
+    });
+
+    this.boardRealtimeService?.columnDeleted$?.subscribe({
+      next: (message) => this.handleRemoteColumnDeleted(message),
+    });
+
     this.boardRealtimeService?.reconnected$?.subscribe({
       next: () => {
         const currentBoard = this.boardSignal();
@@ -915,6 +930,127 @@ export class BoardStore {
         this.boardRealtimeService?.stopConnection();
       },
     });
+  }
+
+  private handleRemoteColumnCreated(message: ColumnCreatedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    const currentCols = this.columnsSignal();
+    if (currentCols.some((c) => c.id.toLowerCase() === message.columnId.toLowerCase())) {
+      return;
+    }
+
+    const newCol: ColumnSummary = {
+      id: message.columnId,
+      boardId: message.boardId,
+      title: message.title,
+      position: message.position,
+      isDoneColumn: message.isDoneColumn,
+      cards: [],
+    };
+
+    const nextCols = [...currentCols, newCol].sort((a, b) => a.position - b.position);
+    this.columnsSignal.set(nextCols);
+    this.boardSignal.update((b) => (b ? { ...b, columns: nextCols } : null));
+    this.notifications.info(`Cột "${message.title}" vừa được thêm bởi thành viên khác.`);
+  }
+
+  private handleRemoteColumnUpdated(message: ColumnUpdatedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    this.columnsSignal.update((cols) =>
+      cols.map((col) =>
+        col.id.toLowerCase() === message.columnId.toLowerCase()
+          ? {
+              ...col,
+              title: message.title,
+              isDoneColumn: message.isDoneColumn,
+              position: message.position,
+            }
+          : col,
+      ),
+    );
+
+    this.boardSignal.update((b) =>
+      b
+        ? {
+            ...b,
+            columns: (b.columns || []).map((col) =>
+              col.id.toLowerCase() === message.columnId.toLowerCase()
+                ? {
+                    ...col,
+                    title: message.title,
+                    isDoneColumn: message.isDoneColumn,
+                    position: message.position,
+                  }
+                : col,
+            ),
+          }
+        : null,
+    );
+  }
+
+  private handleRemoteColumnDeleted(message: ColumnDeletedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    if (
+      message.changedByUserId &&
+      currentUserId &&
+      message.changedByUserId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
+      return;
+    }
+
+    const targetCol = this.columnsSignal().find(
+      (c) => c.id.toLowerCase() === message.columnId.toLowerCase(),
+    );
+
+    this.columnsSignal.update((cols) =>
+      cols.filter((c) => c.id.toLowerCase() !== message.columnId.toLowerCase()),
+    );
+
+    this.boardSignal.update((b) =>
+      b
+        ? {
+            ...b,
+            columns: (b.columns || []).filter(
+              (c) => c.id.toLowerCase() !== message.columnId.toLowerCase(),
+            ),
+          }
+        : null,
+    );
+
+    if (targetCol) {
+      this.notifications.warning(`Cột "${targetCol.title}" đã được gỡ bỏ bởi thành viên khác.`);
+    }
   }
 
   private handleRemoteColumnsReordered(message: ColumnsReorderedMessage): void {
