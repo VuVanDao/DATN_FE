@@ -51,7 +51,7 @@ export class CardActionChipsComponent {
 
   // Story Points options & custom input
   readonly commonPointOptions: number[] = [1, 2, 3, 5, 8, 13, 21];
-  readonly customPoints = signal<string>('');
+  readonly customPoints = signal<number | string | null>(null);
 
   readonly priorityOptions: PriorityOption[] = DEFAULT_PRIORITY_OPTIONS;
   readonly typeOptions: WorkTypeOption[] = DEFAULT_WORK_TYPE_OPTIONS;
@@ -170,11 +170,7 @@ export class CardActionChipsComponent {
     this.isDatesMenuOpen.set(false);
     this.isMembersMenuOpen.set(false);
     if (this.isStoryPointsMenuOpen()) {
-      this.customPoints.set(
-        this.storyPoints() !== null && this.storyPoints() !== undefined
-          ? String(this.storyPoints())
-          : '',
-      );
+      this.customPoints.set(this.storyPoints() ?? null);
     }
   }
 
@@ -184,14 +180,14 @@ export class CardActionChipsComponent {
   }
 
   saveCustomPoints(): void {
-    const raw = this.customPoints().trim();
-    if (!raw) {
+    const raw = this.customPoints();
+    if (raw === null || raw === undefined || raw === '') {
       this.selectStoryPoints(null);
       return;
     }
-    const val = parseInt(raw, 10);
+    const val = typeof raw === 'number' ? raw : parseInt(String(raw).trim(), 10);
     if (!isNaN(val) && val >= 0) {
-      this.selectStoryPoints(val);
+      this.selectStoryPoints(Math.floor(val));
     } else {
       this.isStoryPointsMenuOpen.set(false);
     }
