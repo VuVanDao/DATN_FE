@@ -1,6 +1,6 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
@@ -25,6 +25,10 @@ export class BoardCardComponent {
   private readonly notificationService = inject(NotificationService);
 
   readonly card = input.required<CardSummary>();
+  readonly isDoneColumn = input<boolean>(false);
+  readonly isCompleted = computed(
+    () => this.card().progressPercentage === 100 || this.isDoneColumn(),
+  );
 
   readonly cardClick = output<CardSummary>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();

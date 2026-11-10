@@ -531,6 +531,7 @@ export class BoardStore {
     },
     onSuccess?: (updated: CardSummary) => void,
     onError?: (err: string) => void,
+    silent = false,
   ): void {
     let currentCard: CardSummary | null = null;
     for (const col of this.columnsSignal()) {
@@ -590,7 +591,9 @@ export class BoardStore {
         if (this.cardDetailSignal()?.id === cardId) {
           this.cardDetailSignal.update((d) => (d ? { ...d, ...updatedCard } : null));
         }
-        this.notifications.success('Đã lưu thông tin thẻ thành công');
+        if (!silent) {
+          this.notifications.success('Đã lưu thông tin thẻ thành công');
+        }
         onSuccess?.(updatedCard);
       },
       error: (err) => {

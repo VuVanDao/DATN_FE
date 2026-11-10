@@ -217,6 +217,7 @@
         cdkDrag
         [cdkDragData]="card"
         [card]="card"
+        [isDoneColumn]="column().isDoneColumn"
         (cardClick)="cardClick.emit($event)"
         (deleteCard)="deleteCard.emit($event)"
         (updateTitle)="updateCardTitle.emit($event)"

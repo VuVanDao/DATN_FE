@@ -356,6 +356,8 @@ export class BoardDetailPage implements OnInit {
       (updated) => {
         this.syncSelectedCard(updated);
       },
+      undefined,
+      true,
     );
   }
 
@@ -364,16 +366,28 @@ export class BoardDetailPage implements OnInit {
   }
 
   onCardDetailPriorityChanged(event: { cardId: string; priority: string }): void {
-    this.boardStore.updateCard(event.cardId, { priority: event.priority }, (updated) => {
-      this.syncSelectedCard(updated);
-    });
+    this.boardStore.updateCard(
+      event.cardId,
+      { priority: event.priority },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+      undefined,
+      true,
+    );
   }
 
   onCardDetailTypeChanged(event: { cardId: string; type: string }): void {
     const backendType = event.type === 'Feature' ? 'Features' : event.type;
-    this.boardStore.updateCard(event.cardId, { type: backendType }, (updated) => {
-      this.syncSelectedCard(updated);
-    });
+    this.boardStore.updateCard(
+      event.cardId,
+      { type: backendType },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+      undefined,
+      true,
+    );
   }
 
   onCardDetailDatesChanged(event: {
@@ -390,6 +404,8 @@ export class BoardDetailPage implements OnInit {
       (updated) => {
         this.syncSelectedCard(updated);
       },
+      undefined,
+      true,
     );
   }
 
@@ -411,6 +427,8 @@ export class BoardDetailPage implements OnInit {
       (updated) => {
         this.syncSelectedCard(updated);
       },
+      undefined,
+      true,
     );
   }
 
@@ -421,6 +439,8 @@ export class BoardDetailPage implements OnInit {
       (updated) => {
         this.syncSelectedCard(updated);
       },
+      undefined,
+      true,
     );
   }
 

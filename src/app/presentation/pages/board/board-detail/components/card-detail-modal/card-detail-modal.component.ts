@@ -10,6 +10,7 @@ import {
   OnInit,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -131,9 +132,20 @@ export class CardDetailModalComponent implements OnInit {
 
   constructor() {
     effect(() => {
+      const c = this.card();
+      if (c) {
+        untracked(() => {
+          this.initCardData();
+        });
+      }
+    });
+
+    effect(() => {
       const detail = this.cardDetail();
       if (detail && detail.id === this.card().id) {
-        this.syncWithDetail(detail);
+        untracked(() => {
+          this.syncWithDetail(detail);
+        });
       }
     });
   }
@@ -161,7 +173,12 @@ export class CardDetailModalComponent implements OnInit {
       this.currentAssigneeName.set(null);
     }
     this.currentReporterName.set(d.reporterName || 'Đạo Vũ Văn');
-    this.currentProgress.set(d.progressPercentage || 0);
+    
+    // Progress & Completion
+    const progress = d.progressPercentage || 0;
+    this.currentProgress.set(progress);
+    const col = this.columns().find((item) => item.id === d.columnId);
+    this.isCompleted.set(progress === 100 || (col?.isDoneColumn ?? false));
 
     // Sync Attachments
     if (d.coverUrl) {
@@ -224,7 +241,9 @@ export class CardDetailModalComponent implements OnInit {
     const c = this.card();
     if (!c) return;
 
-    this.currentTitle.set(c.title || '');
+    if (!this.isEditingTitle()) {
+      this.currentTitle.set(c.title || '');
+    }
     this.currentDescription.set(c.description || '');
     this.currentCoverUrl.set(c.coverUrl || null);
     this.currentColumnId.set(c.columnId || '');
@@ -247,8 +266,11 @@ export class CardDetailModalComponent implements OnInit {
     }
     this.currentReporterName.set(c.reporterName || 'Đạo Vũ Văn');
 
-    // Progress
-    this.currentProgress.set(c.progressPercentage || 0);
+    // Progress & Completion
+    const progress = c.progressPercentage || 0;
+    this.currentProgress.set(progress);
+    const col = this.columns().find((item) => item.id === c.columnId);
+    this.isCompleted.set(progress === 100 || (col?.isDoneColumn ?? false));
 
     // Attachments
     if (c.coverUrl) {
@@ -277,7 +299,10 @@ export class CardDetailModalComponent implements OnInit {
       createdAt: this.formatDisplayDate(c.createdAt),
     };
 
-    this.activities.set([defaultActivity]);
+    const hasComments = this.activities().some((a) => a.isComment);
+    if (!hasComments) {
+      this.activities.set([defaultActivity]);
+    }
   }
 
   private normalizePriority(val: number | string | undefined): PriorityType {
@@ -334,6 +359,12 @@ export class CardDetailModalComponent implements OnInit {
   // Column Status Dropdown Handler
   onColumnSelected(column: ColumnSummary): void {
     this.currentColumnId.set(column.id);
+
+    if (column.isDoneColumn) {
+      this.isCompleted.set(true);
+      this.currentProgress.set(100);
+      this.progressChanged.emit({ cardId: this.card().id, progress: 100 });
+    }
 
     const user = this.sessionService.currentUser();
     const userName = user?.userName || 'Đạo Vũ Văn';
