@@ -41,7 +41,7 @@
                 [class.border-slate-300]="!isCompleted()"
                 [class.dark:border-[#38414a]]="!isCompleted()"
                 [class.hover:border-indigo-500]="!isCompleted()"
-                title="Đánh dấu đã hoàn thành"
+                [title]="isCompleted() ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã hoàn thành'"
               >
                 @if (isCompleted()) {
                   <svg

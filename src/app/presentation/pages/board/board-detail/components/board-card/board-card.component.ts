@@ -27,7 +27,7 @@ export class BoardCardComponent {
   readonly card = input.required<CardSummary>();
   readonly isDoneColumn = input<boolean>(false);
   readonly isCompleted = computed(
-    () => this.card().progressPercentage === 100 || this.isDoneColumn(),
+    () => this.card().progressPercentage === 100,
   );
 
   readonly cardClick = output<CardSummary>();

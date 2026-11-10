@@ -177,8 +177,7 @@ export class CardDetailModalComponent implements OnInit {
     // Progress & Completion
     const progress = d.progressPercentage || 0;
     this.currentProgress.set(progress);
-    const col = this.columns().find((item) => item.id === d.columnId);
-    this.isCompleted.set(progress === 100 || (col?.isDoneColumn ?? false));
+    this.isCompleted.set(progress === 100);
 
     // Sync Attachments
     if (d.coverUrl) {
@@ -269,8 +268,7 @@ export class CardDetailModalComponent implements OnInit {
     // Progress & Completion
     const progress = c.progressPercentage || 0;
     this.currentProgress.set(progress);
-    const col = this.columns().find((item) => item.id === c.columnId);
-    this.isCompleted.set(progress === 100 || (col?.isDoneColumn ?? false));
+    this.isCompleted.set(progress === 100);
 
     // Attachments
     if (c.coverUrl) {
@@ -360,6 +358,7 @@ export class CardDetailModalComponent implements OnInit {
   onColumnSelected(column: ColumnSummary): void {
     this.currentColumnId.set(column.id);
 
+    // Kéo vào cột hoàn thành thì đánh dấu xong (100%), chuyển sang cột khác giữ nguyên trạng thái
     if (column.isDoneColumn) {
       this.isCompleted.set(true);
       this.currentProgress.set(100);

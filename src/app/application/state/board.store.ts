@@ -380,14 +380,52 @@ export class BoardStore {
         moveItemInArray(sourceCol.cards, previousIndex, currentIndex);
       } else {
         transferArrayItem(sourceCol.cards, targetCol.cards, previousIndex, currentIndex);
-        // Cập nhật columnId cho card chuyển sang
-        if (targetCol.cards[currentIndex]) {
-          targetCol.cards[currentIndex].columnId = targetColumnId;
+        // Cập nhật columnId & tiến độ hoàn thành 2 chiều cho card chuyển sang
+        const movedCard = targetCol.cards[currentIndex];
+        if (movedCard) {
+          movedCard.columnId = targetColumnId;
+          const pts = movedCard.storyPoints ?? 0;
+
+          if (targetCol.isDoneColumn && !sourceCol.isDoneColumn) {
+            const wasCompleted = (movedCard.progressPercentage || 0) === 100;
+            movedCard.progressPercentage = 100;
+            // Cập nhật thống kê activeSprint trên header nếu thẻ trước đó chưa hoàn thành
+            if (!wasCompleted) {
+              this.boardSignal.update((b) => {
+                if (!b?.activeSprint) return b;
+                return {
+                  ...b,
+                  activeSprint: {
+                    ...b.activeSprint,
+                    completedCards: (b.activeSprint.completedCards || 0) + 1,
+                    completedStoryPoints: (b.activeSprint.completedStoryPoints || 0) + pts,
+                  },
+                };
+              });
+            }
+          }
         }
       }
 
       return nextCols;
     });
+
+    if (this.cardDetailSignal()?.id === cardId) {
+      this.cardDetailSignal.update((d) => {
+        if (!d) return null;
+        const targetCol = this.columnsSignal().find((c) => c.id === targetColumnId);
+        const sourceCol = this.columnsSignal().find((c) => c.id === sourceColumnId);
+        let newProgress = d.progressPercentage;
+        if (targetCol?.isDoneColumn && !sourceCol?.isDoneColumn) {
+          newProgress = 100;
+        }
+        return {
+          ...d,
+          columnId: targetColumnId,
+          progressPercentage: newProgress,
+        };
+      });
+    }
 
     this.moveCardUseCase
       .execute(cardId, {
@@ -548,6 +586,7 @@ export class BoardStore {
 
     const previousCols = this.columnsSignal();
     const previousDetail = this.cardDetailSignal();
+    const previousBoard = this.boardSignal();
 
     const fullRequest: UpdateCardRequest = {
       title: updates.title !== undefined ? updates.title : currentCard.title,
@@ -569,6 +608,39 @@ export class BoardStore {
     };
 
     // Optimistic update
+    const oldProgress = currentCard.progressPercentage || 0;
+    const newProgress =
+      updates.progressPercentage !== undefined
+        ? updates.progressPercentage
+        : oldProgress;
+    const pts = currentCard.storyPoints || 0;
+
+    if (oldProgress < 100 && newProgress === 100) {
+      this.boardSignal.update((b) => {
+        if (!b?.activeSprint) return b;
+        return {
+          ...b,
+          activeSprint: {
+            ...b.activeSprint,
+            completedCards: (b.activeSprint.completedCards || 0) + 1,
+            completedStoryPoints: (b.activeSprint.completedStoryPoints || 0) + pts,
+          },
+        };
+      });
+    } else if (oldProgress === 100 && newProgress < 100) {
+      this.boardSignal.update((b) => {
+        if (!b?.activeSprint) return b;
+        return {
+          ...b,
+          activeSprint: {
+            ...b.activeSprint,
+            completedCards: Math.max(0, (b.activeSprint.completedCards || 0) - 1),
+            completedStoryPoints: Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts),
+          },
+        };
+      });
+    }
+
     this.columnsSignal.update((cols) =>
       cols.map((col) => ({
         ...col,
@@ -599,6 +671,7 @@ export class BoardStore {
       error: (err) => {
         this.columnsSignal.set(previousCols);
         this.cardDetailSignal.set(previousDetail);
+        this.boardSignal.set(previousBoard);
         this.notifications.error('Không thể cập nhật thông tin thẻ.');
         onError?.(err?.message || 'Lỗi cập nhật thẻ');
       },

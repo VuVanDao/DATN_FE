@@ -65,34 +65,17 @@
 
         <!-- Right: Story Points + Progress bar + Link to Backlog -->
         <div class="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
-          <!-- Story Points Pill & Mini Progress Bar -->
-          <div class="flex items-center gap-2">
-            <div
-              class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
-            >
-              <mat-icon
-                fontIcon="bolt"
-                class="icon-xs text-emerald-600 dark:text-emerald-400"
-              ></mat-icon>
-              <span class="leading-none">
-                {{ sprint.completedStoryPoints || 0 }}/{{ sprint.totalStoryPoints || 0 }} pts
-              </span>
-            </div>
-
-            <div
-              class="hidden md:flex flex-col gap-0.5 w-24"
-              [title]="'Tiến độ: ' + calculateSprintProgress(sprint) + '%'"
-            >
-              <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                  [style.width.%]="calculateSprintProgress(sprint)"
-                ></div>
-              </div>
-              <span class="text-[10px] text-right font-medium text-slate-400 dark:text-slate-500">
-                {{ calculateSprintProgress(sprint) }}%
-              </span>
-            </div>
+          <!-- Story Points Pill -->
+          <div
+            class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
+          >
+            <mat-icon
+              fontIcon="bolt"
+              class="icon-xs text-emerald-600 dark:text-emerald-400"
+            ></mat-icon>
+            <span class="leading-none">
+              {{ sprint.completedStoryPoints || 0 }}/{{ sprint.totalStoryPoints || 0 }} pts
+            </span>
           </div>
 
           <!-- Go to Backlog Button -->
