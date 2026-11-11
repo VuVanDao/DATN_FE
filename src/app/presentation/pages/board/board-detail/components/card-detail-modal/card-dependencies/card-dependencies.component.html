@@ -84,7 +84,7 @@
           type="text"
           [ngModel]="searchQuery()"
           (ngModelChange)="onSearchChange($event)"
-          placeholder="Nhập tên thẻ cần liên kết trong dự án..."
+          placeholder="Nhập tên thẻ cần liên kết trên bảng..."
           class="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-[#1b1f23] border border-slate-300 dark:border-[#38414a] rounded-lg text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-hidden focus:border-indigo-500 shadow-2xs"
         />
       </div>
@@ -98,7 +98,7 @@
           </div>
         } @else if (candidates().length === 0) {
           <div class="py-4 text-center text-xs text-slate-400">
-            Không tìm thấy thẻ nào khả dụng để liên kết.
+            Không tìm thấy thẻ nào khả dụng trên bảng này để liên kết.
           </div>
         } @else {
           @for (c of candidates(); track c.id) {
