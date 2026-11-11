@@ -26,6 +26,19 @@
       ></app-card-detail-header>
 
       <div class="px-5 sm:px-8 pt-3 pb-6 sm:pt-4 sm:pb-8 overflow-y-auto space-y-5 flex-1 min-h-0">
+        <!-- Dependency Conflict Alert Banner (Tiên quyết chưa xong) -->
+        @if (hasUnfinishedBlockersWhileCompleted()) {
+          <div class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs shadow-2xs">
+            <mat-icon fontIcon="warning" class="text-base! w-4! h-4! text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></mat-icon>
+            <div class="flex-1 leading-relaxed">
+              <span class="font-bold">Xung đột phụ thuộc:</span>
+              Thẻ này đã hoàn thành, nhưng có công việc tiên quyết
+              <span class="font-semibold underline">{{ unfinishedBlockerNames() }}</span>
+              chưa hoàn thành. Vui lòng kiểm tra lại nếu cần mở lại thẻ này.
+            </div>
+          </div>
+        }
+
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
           <!-- LEFT COLUMN (TITLE, CHIPS, DESC, ATTACHMENTS)      -->
           <div class="md:col-span-7 space-y-5">

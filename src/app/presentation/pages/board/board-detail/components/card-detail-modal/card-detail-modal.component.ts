@@ -141,6 +141,20 @@ export class CardDetailModalComponent implements OnInit {
   readonly blockedBy = signal<CardDependencyItem[]>([]);
   readonly blocking = signal<CardDependencyItem[]>([]);
 
+  readonly unfinishedBlockers = computed(() =>
+    this.blockedBy().filter((d) => !d.isDone),
+  );
+
+  readonly hasUnfinishedBlockersWhileCompleted = computed(
+    () => this.isCompleted() && this.unfinishedBlockers().length > 0,
+  );
+
+  readonly unfinishedBlockerNames = computed(() =>
+    this.unfinishedBlockers()
+      .map((d) => `"${d.title}"`)
+      .join(', '),
+  );
+
   constructor() {
     effect(() => {
       const c = this.card();

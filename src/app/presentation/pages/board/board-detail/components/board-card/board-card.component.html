@@ -115,16 +115,29 @@
         >
           <div class="flex items-center gap-1.5 flex-wrap">
             @if (card().isBlocked) {
-              <span
-                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60"
-                [title]="'Thẻ này đang bị chặn bởi ' + (card().blockedByCount || 1) + ' công việc chưa hoàn thành'"
-              >
-                <mat-icon
-                  fontIcon="block"
-                  class="text-[10px]! w-2.5! h-2.5! text-rose-500"
-                ></mat-icon>
-                <span>Bị chặn ({{ card().blockedByCount || 1 }})</span>
-              </span>
+              @if (isCompleted()) {
+                <span
+                  class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60"
+                  [title]="'Cảnh báo: Thẻ này đã hoàn thành nhưng có ' + (card().blockedByCount || 1) + ' công việc tiên quyết chưa hoàn thành'"
+                >
+                  <mat-icon
+                    fontIcon="warning"
+                    class="text-[10px]! w-2.5! h-2.5! text-amber-500"
+                  ></mat-icon>
+                  <span>Tiên quyết chưa xong</span>
+                </span>
+              } @else {
+                <span
+                  class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60"
+                  [title]="'Thẻ này đang bị chặn bởi ' + (card().blockedByCount || 1) + ' công việc chưa hoàn thành'"
+                >
+                  <mat-icon
+                    fontIcon="block"
+                    class="text-[10px]! w-2.5! h-2.5! text-rose-500"
+                  ></mat-icon>
+                  <span>Bị chặn ({{ card().blockedByCount || 1 }})</span>
+                </span>
+              }
             }
 
             @if (card().storyPoints !== null && card().storyPoints !== undefined) {
