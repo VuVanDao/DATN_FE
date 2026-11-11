@@ -31,14 +31,13 @@ import { CardDescriptionComponent } from './card-description/card-description.co
 import { CardDetailHeaderComponent } from './card-detail-header/card-detail-header.component';
 import {
   CardDetailActivity,
-  CardDetailAttachment,
   PriorityOption,
   PriorityType,
   WorkType,
   WorkTypeOption,
 } from './card-detail.types';
 
-export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetailAttachment, CardDetailActivity };
+export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetailActivity };
 
 @Component({
   selector: 'app-card-detail-modal',
@@ -94,7 +93,6 @@ export class CardDetailModalComponent implements OnInit {
 
   // Element refs
   readonly titleInputRef = viewChild<ElementRef<HTMLTextAreaElement>>('titleInput');
-  readonly headerRef = viewChild<CardDetailHeaderComponent>(CardDetailHeaderComponent);
 
   // Local Editable States
   readonly currentTitle = signal<string>('');
@@ -130,9 +128,6 @@ export class CardDetailModalComponent implements OnInit {
     return u?.userName || 'Tôi';
   });
   readonly currentUserAvatar = computed(() => this.currentUser()?.avatarUrl ?? null);
-
-  // Attachments mock list
-  readonly attachments = signal<CardDetailAttachment[]>([]);
 
   // Activity list
   readonly activities = signal<CardDetailActivity[]>([]);
@@ -208,21 +203,6 @@ export class CardDetailModalComponent implements OnInit {
     // Sync Dependencies
     this.blockedBy.set(d.blockedBy || []);
     this.blocking.set(d.blocking || []);
-
-    // Sync Attachments
-    if (d.coverUrl) {
-      this.attachments.set([
-        {
-          id: 'cover-att',
-          name: 'Cover Image',
-          url: d.coverUrl,
-          createdAt: this.formatDisplayDate(d.createdAt),
-          isCover: true,
-        },
-      ]);
-    } else {
-      this.attachments.set([]);
-    }
 
     // Sync Comments from Backend API
     const defaultActivity: CardDetailActivity = {
@@ -309,21 +289,6 @@ export class CardDetailModalComponent implements OnInit {
     } else {
       this.blockedBy.set([]);
       this.blocking.set([]);
-    }
-
-    // Attachments
-    if (c.coverUrl) {
-      this.attachments.set([
-        {
-          id: 'cover-att',
-          name: 'Cover Image',
-          url: c.coverUrl,
-          createdAt: this.formatDisplayDate(c.createdAt),
-          isCover: true,
-        },
-      ]);
-    } else {
-      this.attachments.set([]);
     }
 
     // Initial activities
@@ -580,10 +545,6 @@ export class CardDetailModalComponent implements OnInit {
     this.currentCoverUrl.set(null);
     this.coverChanged.emit({ cardId: this.card().id, coverUrl: null });
     this.notificationService.warning('Đã gỡ ảnh bìa thẻ');
-  }
-
-  openCoverPickerFromAttachment(): void {
-    this.headerRef()?.openCoverPicker();
   }
 
   // Add Comment & Activity

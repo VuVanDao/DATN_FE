@@ -17,14 +17,6 @@ export interface WorkTypeOption {
   bgPillClass: string;
 }
 
-export interface CardDetailAttachment {
-  id: string;
-  name: string;
-  url: string;
-  createdAt: string;
-  isCover: boolean;
-}
-
 export interface CardDetailActivity {
   id: string;
   authorName: string;
