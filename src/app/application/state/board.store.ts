@@ -391,6 +391,19 @@ export class BoardStore {
     previousIndex: number,
     currentIndex: number,
   ): void {
+    const currentCols = this.columnsSignal();
+    const sourceCol = currentCols.find((c) => c.id === sourceColumnId);
+    const targetCol = currentCols.find((c) => c.id === targetColumnId);
+    const movingCard = sourceCol?.cards?.find((c) => c.id === cardId);
+
+    // Nếu chuyển sang cột Hoàn thành mà thẻ đang bị chặn -> chặn ngay trên UI!
+    if (targetCol?.isDoneColumn && movingCard?.isBlocked) {
+      this.notifications.error(
+        `Không thể chuyển thẻ "${movingCard.title}" vào cột "${targetCol.title}" vì đang bị chặn bởi công việc khác chưa hoàn thành.`,
+      );
+      return;
+    }
+
     const previousCols = JSON.parse(JSON.stringify(this.columnsSignal())) as ColumnSummary[];
 
     // Thực hiện di chuyển optimistic trên UI
@@ -455,6 +468,9 @@ export class BoardStore {
       });
     }
 
+    const isSourceDone = sourceCol?.isDoneColumn ?? false;
+    const isTargetDone = targetCol?.isDoneColumn ?? false;
+
     this.moveCardUseCase
       .execute(cardId, {
         targetColumnId,
@@ -463,11 +479,19 @@ export class BoardStore {
       .subscribe({
         next: () => {
           // Success
+          const currentBoard = this.boardSignal();
+          if (currentBoard && isSourceDone !== isTargetDone) {
+            this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+          }
         },
-        error: () => {
+        error: (err) => {
           // Rollback khi lỗi
           this.columnsSignal.set(previousCols);
-          this.notifications.error('Không thể di chuyển thẻ. Đã khôi phục lại vị trí.');
+          const errorMsg =
+            err?.error?.message ||
+            err?.message ||
+            'Không thể di chuyển thẻ. Đã khôi phục lại vị trí.';
+          this.notifications.error(errorMsg);
         },
       });
   }
@@ -567,6 +591,34 @@ export class BoardStore {
       next: (detail) => {
         this.cardDetailSignal.set(detail);
         this.isLoadingCardDetailSignal.set(false);
+
+        // Đồng bộ các thuộc tính phụ thuộc (isBlocked, blockedByCount, tiến độ) vào columnsSignal
+        this.columnsSignal.update((cols) =>
+          cols.map((col) => ({
+            ...col,
+            cards: col.cards.map((c) =>
+              c.id.toLowerCase() === detail.id.toLowerCase()
+                ? {
+                    ...c,
+                    title: detail.title,
+                    description: detail.description,
+                    priority: detail.priority,
+                    type: detail.type,
+                    coverUrl: detail.coverUrl,
+                    storyPoints: detail.storyPoints,
+                    startDate: detail.startDate,
+                    dueDate: detail.dueDate,
+                    progressPercentage: detail.progressPercentage,
+                    assigneeId: detail.assigneeId,
+                    assigneeName: detail.assigneeName,
+                    assigneeAvatarUrl: detail.assigneeAvatarUrl,
+                    isBlocked: detail.isBlocked,
+                    blockedByCount: detail.blockedByCount,
+                  }
+                : c,
+            ),
+          })),
+        );
       },
       error: (err) => {
         this.isLoadingCardDetailSignal.set(false);
@@ -710,10 +762,37 @@ export class BoardStore {
       });
     }
 
+    // Optimistic update: nếu thẻ này đang chặn các thẻ khác, cập nhật ngay trạng thái isBlocked của các thẻ đó trên bảng
+    const currentDetail = this.cardDetailSignal();
+    const isTargetingCurrentDetail =
+      currentDetail && currentDetail.id.toLowerCase() === cardId.toLowerCase();
+    const blockingList = isTargetingCurrentDetail ? currentDetail?.blocking || [] : [];
+    const blockingCardIds = new Set(blockingList.map((b) => b.cardId.toLowerCase()));
+
     this.columnsSignal.update((cols) =>
       cols.map((col) => ({
         ...col,
-        cards: col.cards.map((c) => (c.id === cardId ? { ...c, ...updates } : c)),
+        cards: col.cards.map((c) => {
+          if (c.id === cardId) {
+            return { ...c, ...updates };
+          }
+          if (uncompleting && blockingCardIds.has(c.id.toLowerCase())) {
+            return {
+              ...c,
+              isBlocked: true,
+              blockedByCount: Math.max(1, (c.blockedByCount || 0) + 1),
+            };
+          }
+          if (completing && blockingCardIds.has(c.id.toLowerCase())) {
+            const newCount = Math.max(0, (c.blockedByCount || 1) - 1);
+            return {
+              ...c,
+              isBlocked: newCount > 0,
+              blockedByCount: newCount,
+            };
+          }
+          return c;
+        }),
       })),
     );
 
@@ -736,6 +815,12 @@ export class BoardStore {
           this.notifications.success('Đã lưu thông tin thẻ thành công');
         }
         onSuccess?.(updatedCard);
+
+        // NẾU TRẠNG THÁI HOÀN THÀNH THAY ĐỔI -> TẢI LẠI BẢNG NGẦM ĐỂ CẬP NHẬT TRẠNG THÁI BỊ CHẶN (isBlocked) CỦA CÁC THẺ KHÁC!
+        const currentBoard = this.boardSignal();
+        if (currentBoard && (completing || uncompleting)) {
+          this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+        }
       },
       error: (err) => {
         this.columnsSignal.set(previousCols);
@@ -1362,6 +1447,10 @@ export class BoardStore {
       );
     }
 
+    if (completing || uncompleting) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+    }
+
     this.notifications.info(`Thẻ "${message.card.title}" vừa được cập nhật bởi thành viên khác.`);
   }
 
@@ -1615,6 +1704,12 @@ export class BoardStore {
         : detail,
     );
 
+    const sourceColObj = currentCols.find((c) => c.id.toLowerCase() === sourceColId.toLowerCase());
+    const targetColObj = currentCols.find((c) => c.id.toLowerCase() === targetColId.toLowerCase());
+    if (sourceColObj?.isDoneColumn !== targetColObj?.isDoneColumn || wasCompleted !== isNowCompleted) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+    }
+
     this.notifications.warning(
       `Thẻ "${existingCard.title}" vừa được di chuyển bởi thành viên khác.`,
     );
@@ -1803,6 +1898,13 @@ export class BoardStore {
         currentDetail.id.toLowerCase() === blockingCardId.toLowerCase())
     ) {
       this.loadCardDetail(currentDetail.id);
+    }
+  }
+
+  refreshBoard(): void {
+    const currentBoard = this.boardSignal();
+    if (currentBoard) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
     }
   }
 

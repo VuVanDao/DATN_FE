@@ -473,6 +473,10 @@ export class BoardDetailPage implements OnInit {
     );
   }
 
+  onDependencyChanged(): void {
+    this.boardStore.refreshBoard();
+  }
+
   private syncSelectedCard(updated: CardSummary): void {
     if (this.selectedCardForDetail()?.id === updated.id) {
       this.selectedCardForDetail.set(updated);

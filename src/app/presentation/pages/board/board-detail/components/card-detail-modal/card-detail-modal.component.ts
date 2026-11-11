@@ -90,6 +90,7 @@ export class CardDetailModalComponent implements OnInit {
   readonly storyPointsChanged = output<{ cardId: string; storyPoints: number | null }>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();
   readonly cardNavigated = output<string>();
+  readonly dependencyChanged = output<void>();
 
   // Element refs
   readonly titleInputRef = viewChild<ElementRef<HTMLTextAreaElement>>('titleInput');
@@ -382,6 +383,17 @@ export class CardDetailModalComponent implements OnInit {
 
   // Column Status Dropdown Handler
   onColumnSelected(column: ColumnSummary): void {
+    if (column.isDoneColumn) {
+      const unfinished = this.blockedBy().filter((d) => !d.isDone);
+      if (unfinished.length > 0) {
+        const names = unfinished.map((u) => `"${u.title}"`).join(', ');
+        this.notificationService.error(
+          `Không thể chuyển sang cột "${column.title}" vì thẻ đang bị chặn bởi: ${names}.`,
+        );
+        return;
+      }
+    }
+
     this.currentColumnId.set(column.id);
 
     // Kéo vào cột hoàn thành thì đánh dấu xong (100%), chuyển sang cột khác giữ nguyên trạng thái
@@ -444,11 +456,20 @@ export class CardDetailModalComponent implements OnInit {
   // Toggle Completed checkbox
   toggleCompletion(): void {
     const next = !this.isCompleted();
-    this.isCompleted.set(next);
     if (next) {
+      const unfinished = this.blockedBy().filter((d) => !d.isDone);
+      if (unfinished.length > 0) {
+        const names = unfinished.map((u) => `"${u.title}"`).join(', ');
+        this.notificationService.error(
+          `Không thể hoàn thành thẻ vì đang bị chặn bởi công việc chưa xong: ${names}.`,
+        );
+        return;
+      }
+      this.isCompleted.set(true);
       this.currentProgress.set(100);
       this.notificationService.success('Thẻ đã được đánh dấu hoàn thành');
     } else {
+      this.isCompleted.set(false);
       this.currentProgress.set(0);
       this.notificationService.warning('Đã bỏ đánh dấu hoàn thành');
     }
@@ -596,11 +617,13 @@ export class CardDetailModalComponent implements OnInit {
     } else {
       this.blocking.update((list) => [item, ...list.filter((x) => x.dependencyId !== item.dependencyId)]);
     }
+    this.dependencyChanged.emit();
   }
 
   onDependencyRemoved(dependencyId: string): void {
     this.blockedBy.update((list) => list.filter((item) => item.dependencyId !== dependencyId));
     this.blocking.update((list) => list.filter((item) => item.dependencyId !== dependencyId));
+    this.dependencyChanged.emit();
   }
 
   onDependencyCardSelected(targetCardId: string): void {
