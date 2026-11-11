@@ -18,7 +18,7 @@
             <mat-icon fontIcon="person_add" class="text-xl"></mat-icon>
           </div>
           <div>
-            <h3 class="font-bold text-slate-900 dark:text-white text-base">Mời thành viên</h3>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">Thêm thành viên</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
               Thêm thành viên vào không gian làm việc bằng email (tối đa 10 người mỗi lượt).
             </p>
@@ -41,7 +41,10 @@
             class="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/90 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 text-xs space-y-2"
           >
             <div class="flex items-start gap-2">
-              <mat-icon fontIcon="error_outline" class="icon-sm text-rose-500 shrink-0 mt-0.5"></mat-icon>
+              <mat-icon
+                fontIcon="error_outline"
+                class="icon-sm text-rose-500 shrink-0 mt-0.5"
+              ></mat-icon>
               <div class="flex-1 font-medium leading-relaxed">{{ submitError() }}</div>
             </div>
             @if (isNotFoundError()) {
@@ -155,7 +158,7 @@
               <span>Đang gửi...</span>
             } @else {
               <mat-icon fontIcon="send" class="icon-xs"></mat-icon>
-              <span>Gửi lời mời</span>
+              <span>Thêm thành viên</span>
             }
           </button>
         </div>
