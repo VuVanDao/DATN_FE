@@ -24,6 +24,7 @@ import {
   SprintCompletedMessage,
   SprintDeletedMessage,
   CardSprintChangedMessage,
+  CardCommentAddedMessage,
 } from '../../domain/models/board-realtime.model';
 import {
   Board,
@@ -77,6 +78,7 @@ export class BoardStore {
   private readonly sessionService = inject(SessionService);
 
   private readonly cancel$ = new Subject<void>();
+  private readonly processedCommentIds = new Set<string>();
 
   private readonly boardSignal = signal<BoardDetail | null>(null);
   private readonly columnsSignal = signal<ColumnSummary[]>([]);
@@ -842,26 +844,7 @@ export class BoardStore {
 
     this.addCardCommentUseCase.execute(cardId, trimmed).subscribe({
       next: (newComment) => {
-        if (this.cardDetailSignal()?.id === cardId) {
-          this.cardDetailSignal.update((d) => {
-            if (!d) return null;
-            return {
-              ...d,
-              comments: [newComment, ...(d.comments || [])],
-              commentsCount: (d.commentsCount || 0) + 1,
-            };
-          });
-        }
-
-        this.columnsSignal.update((cols) =>
-          cols.map((col) => ({
-            ...col,
-            cards: col.cards.map((c) =>
-              c.id === cardId ? { ...c, commentsCount: (c.commentsCount || 0) + 1 } : c,
-            ),
-          })),
-        );
-
+        this.applyIncomingCardComment(newComment);
         this.notifications.success('Đã gửi bình luận');
         onSuccess?.(newComment);
       },
@@ -1027,6 +1010,7 @@ export class BoardStore {
       this.boardRealtimeService?.leaveBoard(current.id);
     }
     this.cancel$.next();
+    this.processedCommentIds.clear();
     this.boardSignal.set(null);
     this.columnsSignal.set([]);
     this.errorSignal.set(null);
@@ -1101,6 +1085,10 @@ export class BoardStore {
           message.blockedCardId,
           message.blockingCardId,
         ),
+    });
+
+    this.boardRealtimeService?.cardCommentAdded$?.subscribe({
+      next: (message) => this.handleRemoteCardCommentAdded(message),
     });
 
     this.boardRealtimeService?.reconnected$?.subscribe({
@@ -1899,6 +1887,96 @@ export class BoardStore {
     ) {
       this.loadCardDetail(currentDetail.id);
     }
+  }
+
+  private handleRemoteCardCommentAdded(message: CardCommentAddedMessage): void {
+    const currentBoard = this.boardSignal();
+    if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
+      return;
+    }
+
+    const applied = this.applyIncomingCardComment(message.comment);
+    if (!applied) {
+      return;
+    }
+
+    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const isOwnAction =
+      Boolean(message.changedByUserId) &&
+      Boolean(currentUserId) &&
+      message.changedByUserId.toLowerCase() === currentUserId!.toLowerCase();
+
+    const isViewingThisCard =
+      this.cardDetailSignal()?.id.toLowerCase() === message.comment.cardId.toLowerCase();
+
+    if (!isOwnAction && !isViewingThisCard) {
+      let cardTitle = '';
+      for (const col of this.columnsSignal()) {
+        const found = col.cards.find(
+          (c) => c.id.toLowerCase() === message.comment.cardId.toLowerCase(),
+        );
+        if (found) {
+          cardTitle = found.title;
+          break;
+        }
+      }
+      const cardLabel = cardTitle ? ` trong thẻ "${cardTitle}"` : '';
+      this.notifications.info(`${message.comment.username} vừa bình luận${cardLabel}.`);
+    }
+  }
+
+  private applyIncomingCardComment(comment: CardComment): boolean {
+    const normalizedCommentId = comment.id.toLowerCase();
+    if (this.processedCommentIds.has(normalizedCommentId)) {
+      return false;
+    }
+    this.processedCommentIds.add(normalizedCommentId);
+
+    const targetCardIdLower = comment.cardId.toLowerCase();
+
+    if (this.cardDetailSignal()?.id.toLowerCase() === targetCardIdLower) {
+      this.cardDetailSignal.update((d) => {
+        if (!d) return null;
+        const exists = (d.comments || []).some(
+          (c) => c.id.toLowerCase() === normalizedCommentId,
+        );
+        if (exists) return d;
+        return {
+          ...d,
+          comments: [comment, ...(d.comments || [])],
+          commentsCount: (d.commentsCount || 0) + 1,
+        };
+      });
+    }
+
+    this.columnsSignal.update((cols) =>
+      cols.map((col) => ({
+        ...col,
+        cards: col.cards.map((c) =>
+          c.id.toLowerCase() === targetCardIdLower
+            ? { ...c, commentsCount: (c.commentsCount || 0) + 1 }
+            : c,
+        ),
+      })),
+    );
+
+    this.boardSignal.update((b) =>
+      b
+        ? {
+            ...b,
+            columns: (b.columns || []).map((col) => ({
+              ...col,
+              cards: (col.cards || []).map((c) =>
+                c.id.toLowerCase() === targetCardIdLower
+                  ? { ...c, commentsCount: (c.commentsCount || 0) + 1 }
+                  : c,
+              ),
+            })),
+          }
+        : null,
+    );
+
+    return true;
   }
 
   refreshBoard(): void {

@@ -25,6 +25,7 @@ import {
   CardSprintChangedMessage,
   CardDependencyAddedMessage,
   CardDependencyRemovedMessage,
+  CardCommentAddedMessage,
 } from '../../domain/models/board-realtime.model';
 import { AuthStorageService } from '../storage/auth-storage.service';
 
@@ -88,6 +89,9 @@ export class BoardRealtimeService {
 
   private readonly cardDependencyRemovedSubject = new Subject<CardDependencyRemovedMessage>();
   readonly cardDependencyRemoved$ = this.cardDependencyRemovedSubject.asObservable();
+
+  private readonly cardCommentAddedSubject = new Subject<CardCommentAddedMessage>();
+  readonly cardCommentAdded$ = this.cardCommentAddedSubject.asObservable();
 
   private readonly reconnectedSubject = new Subject<void>();
   readonly reconnected$ = this.reconnectedSubject.asObservable();
@@ -198,6 +202,10 @@ export class BoardRealtimeService {
 
         this.hubConnection.on('CardDependencyRemoved', (message: CardDependencyRemovedMessage) => {
           this.cardDependencyRemovedSubject.next(message);
+        });
+
+        this.hubConnection.on('CardCommentAdded', (message: CardCommentAddedMessage) => {
+          this.cardCommentAddedSubject.next(message);
         });
 
         this.hubConnection.onreconnecting(() => {

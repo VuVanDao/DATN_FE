@@ -1,4 +1,4 @@
-import { CardSummary } from './board-detail.model';
+import { CardComment, CardSummary } from './board-detail.model';
 import { SprintSummary } from './sprint.model';
 
 export interface ColumnsReorderedMessage {
@@ -126,6 +126,13 @@ export interface CardDependencyRemovedMessage {
   dependencyId: string;
   blockedCardId: string;
   blockingCardId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface CardCommentAddedMessage {
+  boardId: string;
+  comment: CardComment;
   changedByUserId: string;
   occurredAt: string;
 }
