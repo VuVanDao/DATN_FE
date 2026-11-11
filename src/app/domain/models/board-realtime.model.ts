@@ -111,3 +111,21 @@ export interface CardSprintChangedMessage {
   changedByUserId: string;
   occurredAt: string;
 }
+
+export interface CardDependencyAddedMessage {
+  boardId: string;
+  dependencyId: string;
+  blockedCardId: string;
+  blockingCardId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}
+
+export interface CardDependencyRemovedMessage {
+  boardId: string;
+  dependencyId: string;
+  blockedCardId: string;
+  blockingCardId: string;
+  changedByUserId: string;
+  occurredAt: string;
+}

@@ -22,6 +22,42 @@ export interface CardSummary {
   sprintId?: string | null;
   createdAt: string;
   commentsCount: number;
+  isBlocked?: boolean;
+  blockedByCount?: number;
+}
+
+export interface CardDependencyItem {
+  dependencyId: string;
+  cardId: string;
+  title: string;
+  columnTitle?: string | null;
+  isDone: boolean;
+  type: number | string;
+  priority: number | string;
+  assigneeName?: string | null;
+  assigneeAvatarUrl?: string | null;
+  dependencyType: 'BlockedBy' | 'Blocking';
+  createdAt: string;
+}
+
+export interface CardDependenciesResult {
+  blockedBy: CardDependencyItem[];
+  blocking: CardDependencyItem[];
+}
+
+export interface CardCandidate {
+  id: string;
+  title: string;
+  columnTitle?: string | null;
+  isDone: boolean;
+  type: number | string;
+  priority: number | string;
+  assigneeName?: string | null;
+}
+
+export interface AddCardDependencyRequest {
+  targetCardId: string;
+  direction: 'BlockedBy' | 'Blocking' | number;
 }
 
 export interface CardComment {
@@ -36,6 +72,8 @@ export interface CardComment {
 
 export interface CardDetail extends CardSummary {
   comments: CardComment[];
+  blockedBy?: CardDependencyItem[];
+  blocking?: CardDependencyItem[];
 }
 
 export interface ColumnSummary {

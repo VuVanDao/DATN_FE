@@ -1000,6 +1000,24 @@ export class BoardStore {
       next: (message) => this.handleRemoteCardSprintChanged(message),
     });
 
+    this.boardRealtimeService?.cardDependencyAdded$?.subscribe({
+      next: (message) =>
+        this.handleRemoteCardDependencyChanged(
+          message.boardId,
+          message.blockedCardId,
+          message.blockingCardId,
+        ),
+    });
+
+    this.boardRealtimeService?.cardDependencyRemoved$?.subscribe({
+      next: (message) =>
+        this.handleRemoteCardDependencyChanged(
+          message.boardId,
+          message.blockedCardId,
+          message.blockingCardId,
+        ),
+    });
+
     this.boardRealtimeService?.reconnected$?.subscribe({
       next: () => {
         const currentBoard = this.boardSignal();
@@ -1766,6 +1784,25 @@ export class BoardStore {
       this.cardDetailSignal.update((detail) =>
         detail ? { ...detail, sprintId: message.newSprintId } : null,
       );
+    }
+  }
+
+  private handleRemoteCardDependencyChanged(
+    boardId: string,
+    blockedCardId: string,
+    blockingCardId: string,
+  ): void {
+    const currentBoard = this.boardSignal();
+    if (currentBoard && currentBoard.id.toLowerCase() === boardId.toLowerCase()) {
+      this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+    }
+    const currentDetail = this.cardDetailSignal();
+    if (
+      currentDetail &&
+      (currentDetail.id.toLowerCase() === blockedCardId.toLowerCase() ||
+        currentDetail.id.toLowerCase() === blockingCardId.toLowerCase())
+    ) {
+      this.loadCardDetail(currentDetail.id);
     }
   }
 

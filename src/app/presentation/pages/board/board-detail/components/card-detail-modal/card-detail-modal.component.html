@@ -125,6 +125,16 @@
               (descriptionSaved)="onDescriptionSaved($event)"
             ></app-card-description>
 
+            <!-- Card Dependencies (BlockedBy & Blocking) -->
+            <app-card-dependencies
+              [cardId]="card().id"
+              [blockedBy]="blockedBy()"
+              [blocking]="blocking()"
+              (dependencyAdded)="onDependencyAdded($event)"
+              (dependencyRemoved)="onDependencyRemoved($event)"
+              (cardSelected)="onDependencyCardSelected($event)"
+            ></app-card-dependencies>
+
             <!-- Attachments Section -->
             @if (attachments().length > 0) {
               <div class="space-y-2.5 pt-1">

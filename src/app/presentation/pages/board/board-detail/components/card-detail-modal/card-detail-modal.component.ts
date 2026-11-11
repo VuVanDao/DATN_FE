@@ -18,6 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { SessionService } from '../../../../../../application/auth/session.service';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
 import {
+  CardDependencyItem,
   CardDetail,
   CardSummary,
   ColumnSummary,
@@ -25,6 +26,7 @@ import {
 import { ProjectMember } from '../../../../../../domain/models/project.model';
 import { CardActionChipsComponent } from './card-action-chips/card-action-chips.component';
 import { CardActivityFeedComponent } from './card-activity-feed/card-activity-feed.component';
+import { CardDependenciesComponent } from './card-dependencies/card-dependencies.component';
 import { CardDescriptionComponent } from './card-description/card-description.component';
 import { CardDetailHeaderComponent } from './card-detail-header/card-detail-header.component';
 import {
@@ -48,6 +50,7 @@ export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetail
     CardDetailHeaderComponent,
     CardActionChipsComponent,
     CardDescriptionComponent,
+    CardDependenciesComponent,
     CardActivityFeedComponent,
   ],
   templateUrl: './card-detail-modal.component.html',
@@ -86,6 +89,7 @@ export class CardDetailModalComponent implements OnInit {
   readonly progressChanged = output<{ cardId: string; progress: number }>();
   readonly storyPointsChanged = output<{ cardId: string; storyPoints: number | null }>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();
+  readonly cardNavigated = output<string>();
 
   // Element refs
   readonly titleInputRef = viewChild<ElementRef<HTMLTextAreaElement>>('titleInput');
@@ -131,6 +135,10 @@ export class CardDetailModalComponent implements OnInit {
 
   // Activity list
   readonly activities = signal<CardDetailActivity[]>([]);
+
+  // Card Dependencies
+  readonly blockedBy = signal<CardDependencyItem[]>([]);
+  readonly blocking = signal<CardDependencyItem[]>([]);
 
   constructor() {
     effect(() => {
@@ -181,6 +189,10 @@ export class CardDetailModalComponent implements OnInit {
     this.currentProgress.set(progress);
     this.isCompleted.set(progress === 100);
     this.currentStoryPoints.set(d.storyPoints ?? null);
+
+    // Sync Dependencies
+    this.blockedBy.set(d.blockedBy || []);
+    this.blocking.set(d.blocking || []);
 
     // Sync Attachments
     if (d.coverUrl) {
@@ -273,6 +285,16 @@ export class CardDetailModalComponent implements OnInit {
     this.currentProgress.set(progress);
     this.isCompleted.set(progress === 100);
     this.currentStoryPoints.set(c.storyPoints ?? null);
+
+    // Dependencies
+    const detail = this.cardDetail();
+    if (detail && detail.id === c.id) {
+      this.blockedBy.set(detail.blockedBy || []);
+      this.blocking.set(detail.blocking || []);
+    } else {
+      this.blockedBy.set([]);
+      this.blocking.set([]);
+    }
 
     // Attachments
     if (c.coverUrl) {
@@ -566,5 +588,22 @@ export class CardDetailModalComponent implements OnInit {
 
   onMoreAction(action: string): void {
     this.notificationService.warning(`Thao tác "${action}" đã được ghi nhận`);
+  }
+
+  onDependencyAdded(item: CardDependencyItem): void {
+    if (item.dependencyType === 'BlockedBy') {
+      this.blockedBy.update((list) => [item, ...list.filter((x) => x.dependencyId !== item.dependencyId)]);
+    } else {
+      this.blocking.update((list) => [item, ...list.filter((x) => x.dependencyId !== item.dependencyId)]);
+    }
+  }
+
+  onDependencyRemoved(dependencyId: string): void {
+    this.blockedBy.update((list) => list.filter((item) => item.dependencyId !== dependencyId));
+    this.blocking.update((list) => list.filter((item) => item.dependencyId !== dependencyId));
+  }
+
+  onDependencyCardSelected(targetCardId: string): void {
+    this.cardNavigated.emit(targetCardId);
   }
 }

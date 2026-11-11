@@ -3,8 +3,12 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  AddCardDependencyRequest,
   BoardDetail,
+  CardCandidate,
   CardComment,
+  CardDependenciesResult,
+  CardDependencyItem,
   CardDetail,
   CardSummary,
   ColumnSummary,
@@ -187,6 +191,45 @@ export class BoardHttpRepository implements BoardRepository {
     }
     return this.http
       .get<ApiResponse<MyBoards>>(`${this.boardUrl}/my-boards`, { params })
+      .pipe(map((res) => res.data));
+  }
+
+  addCardDependency(
+    cardId: string,
+    request: AddCardDependencyRequest,
+  ): Observable<CardDependencyItem> {
+    return this.http
+      .post<ApiResponse<CardDependencyItem>>(`${this.cardsUrl}/${cardId}/dependencies`, {
+        targetCardId: request.targetCardId,
+        direction: request.direction,
+      })
+      .pipe(map((res) => res.data));
+  }
+
+  removeCardDependency(dependencyId: string): Observable<boolean> {
+    return this.http
+      .delete<ApiResponse<boolean>>(`${this.cardsUrl}/dependencies/${dependencyId}`)
+      .pipe(map((res) => res.data));
+  }
+
+  getCardDependencies(cardId: string): Observable<CardDependenciesResult> {
+    return this.http
+      .get<ApiResponse<CardDependenciesResult>>(`${this.cardsUrl}/${cardId}/dependencies`)
+      .pipe(map((res) => res.data));
+  }
+
+  searchCardCandidates(
+    cardId: string,
+    query?: string,
+  ): Observable<CardCandidate[]> {
+    let params = new HttpParams();
+    if (query && query.trim()) {
+      params = params.set('query', query.trim());
+    }
+    return this.http
+      .get<ApiResponse<CardCandidate[]>>(`${this.cardsUrl}/${cardId}/dependency-candidates`, {
+        params,
+      })
       .pipe(map((res) => res.data));
   }
 }

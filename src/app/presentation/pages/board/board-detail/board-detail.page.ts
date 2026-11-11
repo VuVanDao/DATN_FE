@@ -327,6 +327,19 @@ export class BoardDetailPage implements OnInit {
     this.boardStore.loadCardDetail(card.id);
   }
 
+  onCardNavigated(targetCardId: string): void {
+    const cols = this.columns();
+    for (const col of cols) {
+      const found = col.cards?.find((c) => c.id.toLowerCase() === targetCardId.toLowerCase());
+      if (found) {
+        this.selectedCardForDetail.set(found);
+        this.boardStore.loadCardDetail(found.id);
+        return;
+      }
+    }
+    this.boardStore.loadCardDetail(targetCardId);
+  }
+
   closeCardDetailModal(): void {
     this.showCardDetailModal.set(false);
     this.selectedCardForDetail.set(null);

@@ -1,7 +1,11 @@
 import { Observable } from 'rxjs';
 import {
+  AddCardDependencyRequest,
   BoardDetail,
+  CardCandidate,
   CardComment,
+  CardDependenciesResult,
+  CardDependencyItem,
   CardDetail,
   CardSummary,
   ColumnSummary,
@@ -43,4 +47,14 @@ export abstract class BoardRepository {
     request: UpdateBoardPreferenceRequest,
   ): Observable<BoardPreference>;
   abstract getMyBoards(limit?: number): Observable<MyBoards>;
+  abstract addCardDependency(
+    cardId: string,
+    request: AddCardDependencyRequest,
+  ): Observable<CardDependencyItem>;
+  abstract removeCardDependency(dependencyId: string): Observable<boolean>;
+  abstract getCardDependencies(cardId: string): Observable<CardDependenciesResult>;
+  abstract searchCardCandidates(
+    cardId: string,
+    query?: string,
+  ): Observable<CardCandidate[]>;
 }
