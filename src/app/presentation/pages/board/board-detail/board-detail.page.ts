@@ -80,7 +80,27 @@ export class BoardDetailPage implements OnInit {
   readonly selectedCardForDetail = signal<CardSummary | null>(null);
   readonly showCardDetailModal = signal<boolean>(false);
 
-  // Kiểm tra vai trò ProjectLeader đối với dự án của bảng hiện tại
+  // Kiểm tra người dùng hiện tại có phải WorkspaceOwner không
+  readonly isWorkspaceOwner = computed<boolean>(() => {
+    const currentUserId = this.session.currentUser()?.id;
+    if (!currentUserId) return false;
+    const currentProject = this.projectStore.currentProject();
+    if (currentProject?.currentUserRole === 'WorkspaceOwner') return true;
+    const currentWorkspace = this.workspaceStore.currentWorkspace();
+    if (currentWorkspace && currentWorkspace.ownerId.toLowerCase() === currentUserId.toLowerCase()) {
+      return true;
+    }
+    const projectWorkspaceId = currentProject?.workspaceId;
+    if (projectWorkspaceId) {
+      const ws = this.workspaceStore.workspaces().find((w) => w.id === projectWorkspaceId);
+      if (ws && ws.ownerId.toLowerCase() === currentUserId.toLowerCase()) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  // Kiểm tra quyền quản trị Bảng (ProjectLeader hoặc WorkspaceOwner)
   readonly isProjectLeader = computed<boolean>(() => {
     const currentUserId = this.session.currentUser()?.id;
     if (!currentUserId) return false;
@@ -91,7 +111,7 @@ export class BoardDetailPage implements OnInit {
           m.userId.toLowerCase() === currentUserId.toLowerCase() && m.roleName === 'ProjectLeader',
       );
     const isRoleLeader = this.projectStore.currentProject()?.currentUserRole === 'ProjectLeader';
-    return isMemberLeader || isRoleLeader;
+    return isMemberLeader || isRoleLeader || this.isWorkspaceOwner();
   });
 
   // Thêm nhanh Thẻ (ID cột đang mở form nhập thẻ)

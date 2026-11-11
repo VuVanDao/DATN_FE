@@ -163,7 +163,7 @@
       [class.hidden]="activeMainTab() !== 'boards'"
       [boards]="boards()"
       [isLoading]="projectStore.isLoadingBoards()"
-      [canCreateBoard]="isCurrentLeader()"
+      [canCreateBoard]="canManageRoles()"
       (createBoard)="openCreateBoardModal()"
       (boardClick)="onBoardClick($event)"
       (togglePin)="onTogglePin($event)"

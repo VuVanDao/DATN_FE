@@ -213,8 +213,8 @@ export class ProjectDetailPage implements OnInit {
   }
 
   openCreateBoardModal(): void {
-    if (!this.isCurrentLeader()) {
-      this.notifications.error('Chỉ Trưởng dự án mới có quyền tạo Bảng mới.');
+    if (!this.canManageRoles()) {
+      this.notifications.error('Chỉ Chủ sở hữu Workspace hoặc Trưởng dự án mới có quyền tạo Bảng mới.');
       return;
     }
     this.showCreateBoardModal.set(true);
