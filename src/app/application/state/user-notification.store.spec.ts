@@ -66,6 +66,7 @@ describe('UserNotificationStore', () => {
   let workspaceStore: {
     hasLoaded: ReturnType<typeof signal<boolean>>;
     loadWorkspaces: ReturnType<typeof vi.fn>;
+    onProjectInviteReceived: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -109,6 +110,7 @@ describe('UserNotificationStore', () => {
     workspaceStore = {
       hasLoaded: signal(true),
       loadWorkspaces: vi.fn(),
+      onProjectInviteReceived: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -156,6 +158,23 @@ describe('UserNotificationStore', () => {
     expect(store.unreadCount()).toBe(2);
     expect(toast.info).toHaveBeenCalledOnce();
     expect(workspaceStore.loadWorkspaces).toHaveBeenCalledWith(true);
+  });
+
+  it('refreshes workspace projects in realtime when receiving ProjectInvite notification', () => {
+    store.initialize();
+
+    notificationReceived$.next(
+      makeNotification({
+        id: 'notif-proj-1',
+        type: 'ProjectInvite',
+        entityType: 'Project',
+        entityId: 'proj-1',
+        targetUrl: '/workspaces/ws-guid-123/projects/WEB',
+        content: 'Owner đã thêm bạn vào dự án "Website" (WEB)',
+      }),
+    );
+
+    expect(workspaceStore.onProjectInviteReceived).toHaveBeenCalledWith('ws-guid-123');
   });
 
   it('marks one notification read once across REST + SignalR sync and supports markAllAsRead', () => {

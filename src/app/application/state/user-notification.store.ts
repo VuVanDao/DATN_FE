@@ -188,7 +188,16 @@ export class UserNotificationStore {
 
     if (incoming.type === 'WorkspaceInvite' && this.workspaceStore.hasLoaded()) {
       this.workspaceStore.loadWorkspaces(true);
+    } else if (incoming.type === 'ProjectInvite') {
+      const workspaceId = this.extractWorkspaceIdFromTargetUrl(incoming.targetUrl);
+      this.workspaceStore.onProjectInviteReceived(workspaceId);
     }
+  }
+
+  private extractWorkspaceIdFromTargetUrl(targetUrl: string | null): string | null {
+    if (!targetUrl) return null;
+    const match = /^\/workspaces\/([^/]+)\/projects\//i.exec(targetUrl);
+    return match?.[1] ?? null;
   }
 
   private applyMarkedRead(notificationId: string, readAt: string | null): void {

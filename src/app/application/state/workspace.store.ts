@@ -252,6 +252,18 @@ export class WorkspaceStore {
     this.invalidateTabLists(workspaceId, 'projects');
   }
 
+  onProjectInviteReceived(workspaceId?: string | null): void {
+    if (this.hasLoaded()) {
+      this._list.loadWorkspaces(true);
+    }
+
+    const currentWsId = this._detail.currentWorkspace()?.id ?? this.workspaceId;
+    if (currentWsId && (!workspaceId || currentWsId.toLowerCase() === workspaceId.toLowerCase())) {
+      this.invalidateTabLists(currentWsId, 'projects');
+      this._detail.refreshSummary(currentWsId);
+    }
+  }
+
   clearDetail(): void {
     this.clearTabLists();
     this._detail.clearView();
