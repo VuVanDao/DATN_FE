@@ -17,6 +17,7 @@ import { BoardRepository } from './domain/repositories/board.repository';
 import { ProjectRepository } from './domain/repositories/project.repository';
 import { SecurityRepository } from './domain/repositories/security.repository';
 import { SprintRepository } from './domain/repositories/sprint.repository';
+import { UserNotificationRepository } from './domain/repositories/user-notification.repository';
 import { UserRepository } from './domain/repositories/user.repository';
 import { WorkspaceRepository } from './domain/repositories/workspace.repository';
 import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
@@ -28,6 +29,7 @@ import { ProjectHttpRepository } from './infrastructure/repositories/project-htt
 import { SecurityHttpRepository } from './infrastructure/repositories/security-http.repository';
 import { SprintHttpRepository } from './infrastructure/repositories/sprint-http.repository';
 import { UserHttpRepository } from './infrastructure/repositories/user-http.repository';
+import { UserNotificationHttpRepository } from './infrastructure/repositories/user-notification-http.repository';
 import { WorkspaceHttpRepository } from './infrastructure/repositories/workspace-http.repository';
 import { ToastNotificationService } from './presentation/services/toast-notification.service';
 
@@ -74,6 +76,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: SprintRepository,
       useClass: SprintHttpRepository,
+    },
+    {
+      provide: UserNotificationRepository,
+      useClass: UserNotificationHttpRepository,
     },
   ],
 };

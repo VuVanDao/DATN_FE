@@ -136,9 +136,7 @@ export class CardDetailModalComponent implements OnInit {
   readonly blockedBy = signal<CardDependencyItem[]>([]);
   readonly blocking = signal<CardDependencyItem[]>([]);
 
-  readonly unfinishedBlockers = computed(() =>
-    this.blockedBy().filter((d) => !d.isDone),
-  );
+  readonly unfinishedBlockers = computed(() => this.blockedBy().filter((d) => !d.isDone));
 
   readonly hasUnfinishedBlockersWhileCompleted = computed(
     () => this.isCompleted() && this.unfinishedBlockers().length > 0,
@@ -188,12 +186,14 @@ export class CardDetailModalComponent implements OnInit {
     this.currentAssigneeId.set(d.assigneeId || null);
     if (d.assigneeId) {
       const member = this.members().find((m) => m.userId === d.assigneeId);
-      this.currentAssigneeName.set(d.assigneeName || member?.username || this.currentAssigneeName());
+      this.currentAssigneeName.set(
+        d.assigneeName || member?.username || this.currentAssigneeName(),
+      );
     } else {
       this.currentAssigneeName.set(null);
     }
     this.currentReporterName.set(d.reporterName || 'Đạo Vũ Văn');
-    
+
     // Progress & Completion & Points
     const progress = d.progressPercentage || 0;
     this.currentProgress.set(progress);
@@ -471,17 +471,21 @@ export class CardDetailModalComponent implements OnInit {
 
   // Dates Handler
   onDatesChanged(dates: { startDate: string | null; dueDate: string | null }): void {
-    this.currentStartDate.set(dates.startDate || '');
-    this.currentDueDate.set(dates.dueDate || '');
-    this.datesChanged.emit({
-      cardId: this.card().id,
-      startDate: dates.startDate,
-      dueDate: dates.dueDate,
-    });
-    if (dates.dueDate || dates.startDate) {
+    if (dates.dueDate && dates.startDate && dates.startDate < dates.dueDate) {
+      this.currentStartDate.set(dates.startDate || '');
+      this.currentDueDate.set(dates.dueDate || '');
+      this.datesChanged.emit({
+        cardId: this.card().id,
+        startDate: dates.startDate,
+        dueDate: dates.dueDate,
+      });
       this.notificationService.success('Đã cập nhật thời hạn');
+    } else if (dates.dueDate && dates.startDate && dates.startDate >= dates.dueDate) {
+      this.notificationService.warning(
+        'Ngày bắt đầu phải nhỏ hơn ngày kết thúc. Vui lòng kiểm tra lại.',
+      );
     } else {
-      this.notificationService.warning('Đã xóa thời hạn công việc');
+      this.notificationService.warning('Đã xoá thời hạn');
     }
   }
 
@@ -529,7 +533,11 @@ export class CardDetailModalComponent implements OnInit {
   onCoverSaved(event: { coverUrl: string | null; file?: File | null }): void {
     if (event.file) {
       this.currentCoverUrl.set(event.coverUrl);
-      this.coverChanged.emit({ cardId: this.card().id, coverUrl: event.coverUrl, file: event.file });
+      this.coverChanged.emit({
+        cardId: this.card().id,
+        coverUrl: event.coverUrl,
+        file: event.file,
+      });
     } else {
       this.currentCoverUrl.set(event.coverUrl);
       this.coverChanged.emit({ cardId: this.card().id, coverUrl: event.coverUrl });
@@ -588,9 +596,15 @@ export class CardDetailModalComponent implements OnInit {
 
   onDependencyAdded(item: CardDependencyItem): void {
     if (item.dependencyType === 'BlockedBy') {
-      this.blockedBy.update((list) => [item, ...list.filter((x) => x.dependencyId !== item.dependencyId)]);
+      this.blockedBy.update((list) => [
+        item,
+        ...list.filter((x) => x.dependencyId !== item.dependencyId),
+      ]);
     } else {
-      this.blocking.update((list) => [item, ...list.filter((x) => x.dependencyId !== item.dependencyId)]);
+      this.blocking.update((list) => [
+        item,
+        ...list.filter((x) => x.dependencyId !== item.dependencyId),
+      ]);
     }
     this.dependencyChanged.emit();
   }

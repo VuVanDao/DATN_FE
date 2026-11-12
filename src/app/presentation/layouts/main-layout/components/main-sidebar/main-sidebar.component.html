@@ -6,7 +6,7 @@
 >
   <!-- Top Section: Menu Navigation & Workspaces -->
   <div class="p-3 space-y-4 overflow-y-auto overflow-x-hidden flex-1 slim-scrollbar pr-1.5">
-    <!-- 1. Primary Navigation Links (Trang chủ, Boards, Sprints) -->
+    <!-- 1. Primary Navigation Links -->
     <nav class="space-y-1">
       <!-- Trang chủ -->
       <a
@@ -21,34 +21,6 @@
         <mat-icon fontIcon="dashboard"></mat-icon>
         @if (!layoutService.isSidebarCollapsed()) {
           <span class="text-sm truncate">Trang chủ</span>
-        }
-      </a>
-
-      <!-- Bảng Kanban (Boards) -->
-      <a
-        routerLink="/home-page"
-        [matTooltip]="layoutService.isSidebarCollapsed() ? 'Bảng Kanban' : ''"
-        matTooltipPosition="right"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
-        [class.justify-center]="layoutService.isSidebarCollapsed()"
-      >
-        <mat-icon fontIcon="view_kanban"></mat-icon>
-        @if (!layoutService.isSidebarCollapsed()) {
-          <span class="text-sm truncate">Bảng Kanban</span>
-        }
-      </a>
-
-      <!-- Sprint -->
-      <a
-        routerLink="/home-page"
-        [matTooltip]="layoutService.isSidebarCollapsed() ? 'Sprint' : ''"
-        matTooltipPosition="right"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
-        [class.justify-center]="layoutService.isSidebarCollapsed()"
-      >
-        <mat-icon fontIcon="rocket_launch"></mat-icon>
-        @if (!layoutService.isSidebarCollapsed()) {
-          <span class="text-sm truncate">Sprint</span>
         }
       </a>
 
