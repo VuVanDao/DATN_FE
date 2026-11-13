@@ -11,7 +11,11 @@ import { NotificationService } from '../../../../application/shared/notification
 import { BoardStore } from '../../../../application/state/board.store';
 import { ProjectStore } from '../../../../application/state/project.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
-import { CardSummary, ColumnSummary, MoveCardEvent } from '../../../../domain/models/board-detail.model';
+import {
+  CardSummary,
+  ColumnSummary,
+  MoveCardEvent,
+} from '../../../../domain/models/board-detail.model';
 import { Board, ProjectMember } from '../../../../domain/models/project.model';
 import { SprintSummary } from '../../../../domain/models/sprint.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
@@ -63,6 +67,7 @@ export class BoardDetailPage implements OnInit {
   // Lưu giữ slug và projectId hiện tại để phục vụ tính năng retry
   private currentSlug = '';
   private currentProjectId = '';
+  private pendingOpenCardId: string | null = null;
 
   // Trạng thái modal đổi bảng (Switch board modal)
   readonly showSwitchBoardModal = signal<boolean>(false);
@@ -87,7 +92,10 @@ export class BoardDetailPage implements OnInit {
     const currentProject = this.projectStore.currentProject();
     if (currentProject?.currentUserRole === 'WorkspaceOwner') return true;
     const currentWorkspace = this.workspaceStore.currentWorkspace();
-    if (currentWorkspace && currentWorkspace.ownerId.toLowerCase() === currentUserId.toLowerCase()) {
+    if (
+      currentWorkspace &&
+      currentWorkspace.ownerId.toLowerCase() === currentUserId.toLowerCase()
+    ) {
       return true;
     }
     const projectWorkspaceId = currentProject?.workspaceId;
@@ -153,8 +161,25 @@ export class BoardDetailPage implements OnInit {
       .subscribe(([params, query]) => {
         const slug = params.get('boardSlug') || '';
         const projectId = query.get('projectId') || this.projectStore.currentProject()?.id || '';
+        const cardId = query.get('cardId') || '';
 
-        if (slug && projectId) {
+        if (!slug || !projectId) {
+          return;
+        }
+
+        const isSameBoard = slug === this.currentSlug && projectId === this.currentProjectId;
+        if (cardId) {
+          if (isSameBoard && this.currentBoard()?.slug === slug) {
+            const existing = this.findCardInColumns(cardId);
+            if (existing) {
+              this.openCardAndClearQueryParam(existing);
+              return;
+            }
+          }
+          this.pendingOpenCardId = cardId;
+        }
+
+        if (!isSameBoard || cardId) {
           this.loadBoard(slug, projectId);
         }
       });
@@ -170,6 +195,34 @@ export class BoardDetailPage implements OnInit {
         this.projectStore.loadMembers(board.projectId);
       }
       this.projectStore.markBoardViewed(board.id);
+
+      if (this.pendingOpenCardId) {
+        const targetId = this.pendingOpenCardId;
+        this.pendingOpenCardId = null;
+        const found = this.findCardInColumns(targetId);
+        if (found) {
+          this.openCardAndClearQueryParam(found);
+        }
+      }
+    });
+  }
+
+  private findCardInColumns(cardId: string): CardSummary | null {
+    const normalized = cardId.toLowerCase();
+    for (const col of this.columns()) {
+      const match = col.cards?.find((c) => c.id.toLowerCase() === normalized);
+      if (match) return match;
+    }
+    return null;
+  }
+
+  private openCardAndClearQueryParam(card: CardSummary): void {
+    this.onCardClick(card);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { cardId: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
     });
   }
 
@@ -366,7 +419,11 @@ export class BoardDetailPage implements OnInit {
     this.boardStore.clearCardDetail();
   }
 
-  onCardDetailColumnChanged(event: { cardId: string; columnId: string; columnTitle: string }): void {
+  onCardDetailColumnChanged(event: {
+    cardId: string;
+    columnId: string;
+    columnTitle: string;
+  }): void {
     this.boardStore.moveCardToColumn(event.cardId, event.columnId);
   }
 
