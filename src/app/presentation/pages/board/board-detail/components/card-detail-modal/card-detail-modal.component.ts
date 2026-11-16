@@ -196,7 +196,7 @@ export class CardDetailModalComponent implements OnInit {
     } else {
       this.currentAssigneeName.set(null);
     }
-    this.currentReporterName.set(d.reporterName || 'Đạo Vũ Văn');
+    this.currentReporterName.set(d.reporterName || 'Thành viên');
 
     // Progress & Completion & Points
     const progress = d.progressPercentage || 0;
@@ -256,7 +256,7 @@ export class CardDetailModalComponent implements OnInit {
     } else {
       this.currentAssigneeName.set(null);
     }
-    this.currentReporterName.set(c.reporterName || 'Đạo Vũ Văn');
+    this.currentReporterName.set(c.reporterName || 'Thành viên');
 
     // Progress & Completion & Points
     const progress = c.progressPercentage || 0;
@@ -284,35 +284,13 @@ export class CardDetailModalComponent implements OnInit {
     this.getCardActivitiesUseCase.execute(cardId, 1, 50).subscribe({
       next: (paged) => {
         const mapped = (paged.items || []).map((log) => this.mapActivityLogToDetail(log));
-        if (mapped.length > 0) {
-          this.activities.set(mapped);
-        } else {
-          this.activities.set([this.createDefaultInitialActivity()]);
-        }
+        this.activities.set(mapped);
         this.isLoadingActivities.set(false);
       },
       error: () => {
         this.isLoadingActivities.set(false);
       },
     });
-  }
-
-  private createDefaultInitialActivity(): CardDetailActivity {
-    const c = this.card();
-    const d = this.cardDetail();
-    const user = this.sessionService.currentUser();
-    const reporterName = d?.reporterName || c?.reporterName || user?.userName || 'Thành viên';
-    const reporterAvatar =
-      d?.reporterAvatarUrl ||
-      c?.reporterAvatarUrl ||
-      (c?.reporterId === user?.id ? user?.avatarUrl : null);
-    return {
-      id: 'initial-act',
-      authorName: reporterName,
-      authorAvatarUrl: reporterAvatar,
-      actionText: 'đã tạo thẻ này',
-      createdAt: this.formatDisplayDate(d?.createdAt || c?.createdAt || new Date().toISOString()),
-    };
   }
 
   private mapActivityLogToDetail(log: ActivityLog): CardDetailActivity {
@@ -479,23 +457,15 @@ export class CardDetailModalComponent implements OnInit {
       this.progressChanged.emit({ cardId: this.card().id, progress: 100 });
     }
 
-    const user = this.sessionService.currentUser();
-    const userName = user?.userName || 'Đạo Vũ Văn';
-    this.activities.update((items) => [
-      {
-        id: `act-${Date.now()}`,
-        authorName: userName,
-        actionText: `chuyển thẻ sang danh sách ${column.title}`,
-        createdAt: 'Vừa xong',
-      },
-      ...items,
-    ]);
-
     this.columnChanged.emit({
       cardId: this.card().id,
       columnId: column.id,
       columnTitle: column.title,
     });
+
+    setTimeout(() => {
+      this.loadActivities(this.card().id);
+    }, 800);
   }
 
   // Title Editing
