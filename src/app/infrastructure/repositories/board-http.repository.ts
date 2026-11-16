@@ -2,6 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { ActivityLog } from '../../domain/models/activity-log.model';
+import { PagedResult } from '../../shared/models/paged-result.model';
 import {
   AddCardDependencyRequest,
   BoardDetail,
@@ -230,6 +232,23 @@ export class BoardHttpRepository implements BoardRepository {
       .get<ApiResponse<CardCandidate[]>>(`${this.cardsUrl}/${cardId}/dependency-candidates`, {
         params,
       })
+      .pipe(map((res) => res.data));
+  }
+
+  getCardActivities(
+    cardId: string,
+    pageIndex = 1,
+    pageSize = 20,
+  ): Observable<PagedResult<ActivityLog>> {
+    let params = new HttpParams()
+      .set('pageIndex', pageIndex.toString())
+      .set('pageSize', pageSize.toString());
+
+    return this.http
+      .get<ApiResponse<PagedResult<ActivityLog>>>(
+        `${this.cardsUrl}/${cardId}/activities`,
+        { params },
+      )
       .pipe(map((res) => res.data));
   }
 }

@@ -1,4 +1,6 @@
 import { Observable } from 'rxjs';
+import { ActivityLog } from '../models/activity-log.model';
+import { PagedResult } from '../../shared/models/paged-result.model';
 import {
   AddCardDependencyRequest,
   BoardDetail,
@@ -57,4 +59,9 @@ export abstract class BoardRepository {
     cardId: string,
     query?: string,
   ): Observable<CardCandidate[]>;
+  abstract getCardActivities(
+    cardId: string,
+    pageIndex?: number,
+    pageSize?: number,
+  ): Observable<PagedResult<ActivityLog>>;
 }

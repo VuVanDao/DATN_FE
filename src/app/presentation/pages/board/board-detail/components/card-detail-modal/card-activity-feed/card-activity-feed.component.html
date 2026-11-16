@@ -76,48 +76,59 @@
 
   <!-- Activity & Comments Stream -->
   @if (showDetails()) {
-    <div class="space-y-3 pt-1">
-      @for (item of activities(); track item.id) {
-        <div class="flex items-start gap-2.5 text-xs">
-          <!-- User Avatar -->
-          <div
-            class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs overflow-hidden"
-          >
-            @if (item.authorAvatarUrl) {
-              <img
-                [src]="item.authorAvatarUrl"
-                [alt]="item.authorName"
-                (error)="item.authorAvatarUrl = null"
-                class="w-full h-full object-cover"
-              />
-            } @else {
-              {{ item.authorName.charAt(0).toUpperCase() }}
-            }
-          </div>
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-6 text-xs text-slate-400 dark:text-[#8c9bab]">
+        <mat-icon fontIcon="sync" class="animate-spin text-sm! w-4! h-4! mr-1.5"></mat-icon>
+        Đang tải hoạt động...
+      </div>
+    } @else {
+      <div class="space-y-3 pt-1">
+        @for (item of activities(); track item.id) {
+          <div class="flex items-start gap-2.5 text-xs">
+            <!-- User Avatar -->
+            <div
+              class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs overflow-hidden"
+            >
+              @if (item.authorAvatarUrl) {
+                <img
+                  [src]="item.authorAvatarUrl"
+                  [alt]="item.authorName"
+                  (error)="item.authorAvatarUrl = null"
+                  class="w-full h-full object-cover"
+                />
+              } @else {
+                {{ item.authorName.charAt(0).toUpperCase() }}
+              }
+            </div>
 
-          <!-- Details -->
-          <div class="flex-1 min-w-0">
-            <p class="leading-snug">
-              <span class="font-semibold text-slate-900 dark:text-white">{{
-                item.authorName
-              }}</span>
-              <span class="text-slate-600 dark:text-[#9fadbc]"> {{ item.actionText }}</span>
-            </p>
-            <p class="text-[11px] text-slate-400 dark:text-[#8c9bab] mt-0.5">
-              {{ item.createdAt }}
-            </p>
+            <!-- Details -->
+            <div class="flex-1 min-w-0">
+              <p class="leading-snug">
+                <span class="font-semibold text-slate-900 dark:text-white">{{
+                  item.authorName
+                }}</span>
+                <span class="text-slate-600 dark:text-[#9fadbc]"> {{ item.actionText }}</span>
+              </p>
+              <p class="text-[11px] text-slate-400 dark:text-[#8c9bab] mt-0.5">
+                {{ item.createdAt }}
+              </p>
 
-            <!-- Comment message box (if this activity is a comment) -->
-            @if (item.isComment && item.commentContent) {
-              <div
-                class="mt-1.5 p-2.5 rounded-xl bg-slate-50 dark:bg-[#22272b] border border-slate-200 dark:border-[#38414a] text-xs text-slate-800 dark:text-[#b6c2cf] leading-relaxed shadow-2xs whitespace-pre-wrap break-words"
-              >
-                {{ item.commentContent }}
-              </div>
-            }
+              <!-- Comment message box (if this activity is a comment) -->
+              @if (item.isComment && item.commentContent) {
+                <div
+                  class="mt-1.5 p-2.5 rounded-xl bg-slate-50 dark:bg-[#22272b] border border-slate-200 dark:border-[#38414a] text-xs text-slate-800 dark:text-[#b6c2cf] leading-relaxed shadow-2xs whitespace-pre-wrap break-words"
+                >
+                  {{ item.commentContent }}
+                </div>
+              }
+            </div>
           </div>
-        </div>
-      }
-    </div>
+        } @empty {
+          <p class="text-xs text-slate-400 dark:text-[#8c9bab] py-3 italic text-center">
+            Chưa có hoạt động nào được ghi nhận.
+          </p>
+        }
+      </div>
+    }
   }
 </div>

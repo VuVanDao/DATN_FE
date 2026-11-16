@@ -17,6 +17,7 @@ export class CardActivityFeedComponent {
   readonly activities = input<CardDetailActivity[]>([]);
   readonly currentUserAvatar = input<string | null | undefined>(null);
   readonly currentUserName = input<string>('Tôi');
+  readonly isLoading = input<boolean>(false);
 
   readonly commentAdded = output<string>();
 

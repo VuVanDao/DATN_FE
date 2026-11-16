@@ -16,7 +16,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { SessionService } from '../../../../../../application/auth/session.service';
+import { GetCardActivitiesUseCase } from '../../../../../../application/board/get-card-activities.use-case';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
+import { ActivityLog } from '../../../../../../domain/models/activity-log.model';
 import {
   CardDependencyItem,
   CardDetail,
@@ -57,12 +59,14 @@ export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetail
 export class CardDetailModalComponent implements OnInit {
   private readonly sessionService = inject(SessionService);
   private readonly notificationService = inject(NotificationService);
+  private readonly getCardActivitiesUseCase = inject(GetCardActivitiesUseCase);
 
   // Inputs
   readonly isOpen = input<boolean>(false);
   readonly card = input.required<CardSummary>();
   readonly cardDetail = input<CardDetail | null>(null);
   readonly isLoading = input<boolean>(false);
+  readonly isLoadingActivities = signal<boolean>(false);
   readonly columns = input<ColumnSummary[]>([]);
   readonly members = input<ProjectMember[]>([]);
 
@@ -204,29 +208,8 @@ export class CardDetailModalComponent implements OnInit {
     this.blockedBy.set(d.blockedBy || []);
     this.blocking.set(d.blocking || []);
 
-    // Sync Comments from Backend API
-    const defaultActivity: CardDetailActivity = {
-      id: 'initial-act',
-      authorName: d.reporterName || 'Thành viên',
-      authorAvatarUrl: d.reporterAvatarUrl,
-      actionText: 'đã tạo thẻ',
-      createdAt: this.formatDisplayDate(d.createdAt),
-    };
-
-    if (d.comments && d.comments.length > 0) {
-      const commentActivities: CardDetailActivity[] = d.comments.map((c) => ({
-        id: c.id,
-        authorName: c.username || 'Thành viên',
-        authorAvatarUrl: c.userAvatarUrl,
-        actionText: 'đã bình luận',
-        commentContent: c.contentText,
-        createdAt: this.formatDisplayDate(c.createdAt),
-        isComment: true,
-      }));
-      this.activities.set([...commentActivities, defaultActivity]);
-    } else {
-      this.activities.set([defaultActivity]);
-    }
+    // Load actual Activity Logs from backend API
+    this.loadActivities(d.id);
   }
 
   private formatDisplayDate(dateStr: string): string {
@@ -291,22 +274,123 @@ export class CardDetailModalComponent implements OnInit {
       this.blocking.set([]);
     }
 
-    // Initial activities
+    // Load Activity Logs
+    this.loadActivities(c.id);
+  }
+
+  private loadActivities(cardId: string): void {
+    if (!cardId) return;
+    this.isLoadingActivities.set(true);
+    this.getCardActivitiesUseCase.execute(cardId, 1, 50).subscribe({
+      next: (paged) => {
+        const mapped = (paged.items || []).map((log) => this.mapActivityLogToDetail(log));
+        if (mapped.length > 0) {
+          this.activities.set(mapped);
+        } else {
+          this.activities.set([this.createDefaultInitialActivity()]);
+        }
+        this.isLoadingActivities.set(false);
+      },
+      error: () => {
+        this.isLoadingActivities.set(false);
+      },
+    });
+  }
+
+  private createDefaultInitialActivity(): CardDetailActivity {
+    const c = this.card();
+    const d = this.cardDetail();
     const user = this.sessionService.currentUser();
-    const userName = user?.userName || c.reporterName || 'Thành viên';
-
-    const defaultActivity: CardDetailActivity = {
+    const reporterName = d?.reporterName || c?.reporterName || user?.userName || 'Thành viên';
+    const reporterAvatar =
+      d?.reporterAvatarUrl ||
+      c?.reporterAvatarUrl ||
+      (c?.reporterId === user?.id ? user?.avatarUrl : null);
+    return {
       id: 'initial-act',
-      authorName: c.reporterName || userName,
-      authorAvatarUrl: c.reporterAvatarUrl || (c.reporterId === user?.id ? user?.avatarUrl : null),
-      actionText: 'đã tạo thẻ',
-      createdAt: this.formatDisplayDate(c.createdAt),
+      authorName: reporterName,
+      authorAvatarUrl: reporterAvatar,
+      actionText: 'đã tạo thẻ này',
+      createdAt: this.formatDisplayDate(d?.createdAt || c?.createdAt || new Date().toISOString()),
     };
+  }
 
-    const hasComments = this.activities().some((a) => a.isComment);
-    if (!hasComments) {
-      this.activities.set([defaultActivity]);
+  private mapActivityLogToDetail(log: ActivityLog): CardDetailActivity {
+    let details: any = null;
+    if (log.detailsJson) {
+      try {
+        details = JSON.parse(log.detailsJson);
+      } catch {
+        details = null;
+      }
     }
+
+    let actionText = 'đã cập nhật thẻ';
+    let isComment = false;
+    let commentContent: string | undefined;
+
+    switch (log.actionType) {
+      case 'Created':
+        actionText = 'đã tạo thẻ này';
+        break;
+      case 'MovedColumn':
+        if (details?.fromColumnTitle && details?.toColumnTitle) {
+          actionText = `đã chuyển thẻ từ cột "${details.fromColumnTitle}" sang "${details.toColumnTitle}"`;
+        } else {
+          actionText = 'đã di chuyển thẻ sang cột khác';
+        }
+        break;
+      case 'AssignedUser':
+        actionText = `đã giao việc cho ${details?.assigneeName || 'thành viên'}`;
+        break;
+      case 'UnassignedUser':
+        actionText = details?.previousAssigneeName
+          ? `đã huỷ phân công cho ${details.previousAssigneeName}`
+          : 'đã huỷ phân công công việc';
+        break;
+      case 'UpdatedDueDate':
+        actionText = 'đã cập nhật hạn chót';
+        break;
+      case 'Commented':
+        actionText = 'đã bình luận';
+        isComment = true;
+        commentContent = details?.preview || '';
+        break;
+      case 'Deleted':
+        actionText = 'đã xoá thẻ';
+        break;
+      case 'Updated':
+        if (details?.priority) {
+          actionText = `đã cập nhật độ ưu tiên thành ${details.priority}`;
+        } else if (details?.progressPercentage !== undefined) {
+          actionText = `đã cập nhật tiến độ ${details.progressPercentage}%`;
+        } else {
+          actionText = 'đã chỉnh sửa thông tin thẻ';
+        }
+        break;
+      default:
+        actionText = 'đã cập nhật thẻ';
+        break;
+    }
+
+    if (isComment && details?.commentId) {
+      const fullComment = this.cardDetail()?.comments?.find(
+        (comm) => comm.id.toLowerCase() === String(details.commentId).toLowerCase(),
+      );
+      if (fullComment) {
+        commentContent = fullComment.contentText;
+      }
+    }
+
+    return {
+      id: log.id,
+      authorName: log.username || 'Thành viên',
+      authorAvatarUrl: log.userAvatarUrl,
+      actionText,
+      createdAt: this.formatDisplayDate(log.createdAt),
+      isComment,
+      commentContent,
+    };
   }
 
   private normalizePriority(val: number | string | undefined): PriorityType {
@@ -576,6 +660,10 @@ export class CardDetailModalComponent implements OnInit {
       cardId: this.card().id,
       content: text,
     });
+
+    setTimeout(() => {
+      this.loadActivities(this.card().id);
+    }, 800);
   }
 
   onDeleteCardFromModal(): void {
