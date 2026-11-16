@@ -666,7 +666,7 @@ export class CardDetailModalComponent implements OnInit {
   }
 
   onDependencyAdded(item: CardDependencyItem): void {
-    if (item.dependencyType === 'BlockedBy') {
+    if (item.direction === 'BlockedBy') {
       this.blockedBy.update((list) => [
         item,
         ...list.filter((x) => x.dependencyId !== item.dependencyId),

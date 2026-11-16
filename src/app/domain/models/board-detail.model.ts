@@ -36,7 +36,7 @@ export interface CardDependencyItem {
   priority: number | string;
   assigneeName?: string | null;
   assigneeAvatarUrl?: string | null;
-  dependencyType: 'BlockedBy' | 'Blocking';
+  direction?: 'BlockedBy' | 'Blocking';
   createdAt: string;
 }
 
