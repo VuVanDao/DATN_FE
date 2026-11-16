@@ -360,10 +360,23 @@ export class CardDetailModalComponent implements OnInit {
         actionText = 'đã xoá thẻ';
         break;
       case 'Updated':
-        if (details?.priority) {
-          actionText = `đã cập nhật độ ưu tiên thành ${details.priority}`;
-        } else if (details?.progressPercentage !== undefined) {
-          actionText = `đã cập nhật tiến độ ${details.progressPercentage}%`;
+        if (details?.field === 'Type' || details?.newType) {
+          actionText = `đã đổi loại công việc thành "${details.newType}"`;
+        } else if (details?.field === 'StoryPoints' || details?.newStoryPoints !== undefined) {
+          actionText =
+            details.newStoryPoints !== null && details.newStoryPoints !== undefined
+              ? `đã cập nhật điểm ước lượng thành ${details.newStoryPoints} pts`
+              : 'đã gỡ điểm ước lượng';
+        } else if (details?.field === 'Priority' || details?.newPriority || details?.priority) {
+          actionText = `đã cập nhật độ ưu tiên thành "${details.newPriority || details.priority}"`;
+        } else if (
+          details?.field === 'Progress' ||
+          details?.newProgress !== undefined ||
+          details?.progressPercentage !== undefined
+        ) {
+          actionText = `đã cập nhật tiến độ ${details.newProgress ?? details.progressPercentage}%`;
+        } else if (details?.field === 'Title' || details?.newTitle) {
+          actionText = `đã đổi tiêu đề thành "${details.newTitle}"`;
         } else {
           actionText = 'đã chỉnh sửa thông tin thẻ';
         }
