@@ -89,7 +89,7 @@ export class CardDetailModalComponent implements OnInit {
     assigneeId: string | null;
     assigneeName: string | null;
   }>();
-  readonly progressChanged = output<{ cardId: string; progress: number }>();
+  readonly completionChanged = output<{ cardId: string; isCompleted: boolean }>();
   readonly storyPointsChanged = output<{ cardId: string; storyPoints: number | null }>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();
   readonly cardNavigated = output<string>();
@@ -121,8 +121,7 @@ export class CardDetailModalComponent implements OnInit {
   readonly currentAssigneeName = signal<string | null>(null);
   readonly currentReporterName = signal<string>('');
 
-  // Progress Percentage State
-  readonly currentProgress = signal<number>(0);
+  // Points State
   readonly currentStoryPoints = signal<number | null>(null);
 
   // User
@@ -198,10 +197,8 @@ export class CardDetailModalComponent implements OnInit {
     }
     this.currentReporterName.set(d.reporterName || 'Thành viên');
 
-    // Progress & Completion & Points
-    const progress = d.progressPercentage || 0;
-    this.currentProgress.set(progress);
-    this.isCompleted.set(progress === 100);
+    // Completion & Points
+    this.isCompleted.set(!!d.isCompleted);
     this.currentStoryPoints.set(d.storyPoints ?? null);
 
     // Sync Dependencies
@@ -258,10 +255,8 @@ export class CardDetailModalComponent implements OnInit {
     }
     this.currentReporterName.set(c.reporterName || 'Thành viên');
 
-    // Progress & Completion & Points
-    const progress = c.progressPercentage || 0;
-    this.currentProgress.set(progress);
-    this.isCompleted.set(progress === 100);
+    // Completion & Points
+    this.isCompleted.set(!!c.isCompleted);
     this.currentStoryPoints.set(c.storyPoints ?? null);
 
     // Dependencies
@@ -348,11 +343,17 @@ export class CardDetailModalComponent implements OnInit {
         } else if (details?.field === 'Priority' || details?.newPriority || details?.priority) {
           actionText = `đã cập nhật độ ưu tiên thành "${details.newPriority || details.priority}"`;
         } else if (
+          details?.field === 'IsCompleted' ||
           details?.field === 'Progress' ||
+          details?.newIsCompleted !== undefined ||
           details?.newProgress !== undefined ||
           details?.progressPercentage !== undefined
         ) {
-          actionText = `đã cập nhật tiến độ ${details.newProgress ?? details.progressPercentage}%`;
+          const isDone =
+            details?.newIsCompleted !== undefined
+              ? details.newIsCompleted
+              : (details.newProgress ?? details.progressPercentage) === 100;
+          actionText = isDone ? 'đã đánh dấu hoàn thành thẻ' : 'đã bỏ đánh dấu hoàn thành thẻ';
         } else if (details?.field === 'Title' || details?.newTitle) {
           actionText = `đã đổi tiêu đề thành "${details.newTitle}"`;
         } else {
@@ -450,11 +451,10 @@ export class CardDetailModalComponent implements OnInit {
 
     this.currentColumnId.set(column.id);
 
-    // Kéo vào cột hoàn thành thì đánh dấu xong (100%), chuyển sang cột khác giữ nguyên trạng thái
+    // Kéo vào cột hoàn thành thì đánh dấu xong, chuyển sang cột khác giữ nguyên trạng thái
     if (column.isDoneColumn) {
       this.isCompleted.set(true);
-      this.currentProgress.set(100);
-      this.progressChanged.emit({ cardId: this.card().id, progress: 100 });
+      this.completionChanged.emit({ cardId: this.card().id, isCompleted: true });
     }
 
     this.columnChanged.emit({
@@ -512,14 +512,12 @@ export class CardDetailModalComponent implements OnInit {
         return;
       }
       this.isCompleted.set(true);
-      this.currentProgress.set(100);
       this.notificationService.success('Thẻ đã được đánh dấu hoàn thành');
     } else {
       this.isCompleted.set(false);
-      this.currentProgress.set(0);
       this.notificationService.warning('Đã bỏ đánh dấu hoàn thành');
     }
-    this.progressChanged.emit({ cardId: this.card().id, progress: this.currentProgress() });
+    this.completionChanged.emit({ cardId: this.card().id, isCompleted: this.isCompleted() });
   }
 
   // Priority Handler

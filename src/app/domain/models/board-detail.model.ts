@@ -11,7 +11,7 @@ export interface CardSummary {
   storyPoints?: number | null;
   startDate?: string | null;
   dueDate?: string | null;
-  progressPercentage: number;
+  isCompleted: boolean;
   columnId: string;
   assigneeId?: string | null;
   assigneeName?: string | null;
@@ -149,5 +149,5 @@ export interface UpdateCardRequest {
   startDate?: string | null;
   dueDate?: string | null;
   storyPoints?: number | null;
-  progressPercentage?: number;
+  isCompleted?: boolean;
 }

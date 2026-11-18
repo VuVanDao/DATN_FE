@@ -526,10 +526,10 @@ export class BoardDetailPage implements OnInit {
     );
   }
 
-  onCardDetailProgressChanged(event: { cardId: string; progress: number }): void {
+  onCardDetailCompletionChanged(event: { cardId: string; isCompleted: boolean }): void {
     this.boardStore.updateCard(
       event.cardId,
-      { progressPercentage: event.progress },
+      { isCompleted: event.isCompleted },
       (updated) => {
         this.syncSelectedCard(updated);
       },

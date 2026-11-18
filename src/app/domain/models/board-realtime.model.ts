@@ -14,7 +14,7 @@ export interface CardMovedMessage {
   sourceColumnId: string;
   targetColumnId: string;
   newPosition: number;
-  progressPercentage?: number;
+  isCompleted?: boolean;
   changedByUserId: string | null;
   occurredAt: string;
 }

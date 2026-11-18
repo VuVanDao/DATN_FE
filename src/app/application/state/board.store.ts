@@ -348,7 +348,7 @@ export class BoardStore {
       },
       onSuccess: (newCard) => {
         const pts = newCard.storyPoints || 0;
-        const isDone = (newCard.progressPercentage || 0) === 100;
+        const isDone = !!newCard.isCompleted;
 
         this.columnsSignal.update((cols) =>
           cols.map((col) =>
@@ -431,8 +431,8 @@ export class BoardStore {
           const pts = movedCard.storyPoints ?? 0;
 
           if (targetCol.isDoneColumn) {
-            const wasCompleted = (movedCard.progressPercentage || 0) === 100;
-            movedCard.progressPercentage = 100;
+            const wasCompleted = !!movedCard.isCompleted;
+            movedCard.isCompleted = true;
             // Cập nhật thống kê activeSprint trên header nếu thẻ trước đó chưa hoàn thành
             if (!wasCompleted) {
               this.boardSignal.update((b) => {
@@ -458,14 +458,14 @@ export class BoardStore {
       this.cardDetailSignal.update((d) => {
         if (!d) return null;
         const targetCol = this.columnsSignal().find((c) => c.id === targetColumnId);
-        let newProgress = d.progressPercentage;
+        let newIsCompleted = d.isCompleted;
         if (targetCol?.isDoneColumn) {
-          newProgress = 100;
+          newIsCompleted = true;
         }
         return {
           ...d,
           columnId: targetColumnId,
-          progressPercentage: newProgress,
+          isCompleted: newIsCompleted,
         };
       });
     }
@@ -540,7 +540,7 @@ export class BoardStore {
     this.deleteCardUseCase.execute(cardId).subscribe({
       next: () => {
         const pts = deletedCard?.storyPoints || 0;
-        const isDone = (deletedCard?.progressPercentage || 0) === 100;
+        const isDone = !!deletedCard?.isCompleted;
 
         this.columnsSignal.update((cols) =>
           cols.map((col) =>
@@ -610,7 +610,7 @@ export class BoardStore {
                     storyPoints: detail.storyPoints,
                     startDate: detail.startDate,
                     dueDate: detail.dueDate,
-                    progressPercentage: detail.progressPercentage,
+                    isCompleted: detail.isCompleted,
                     assigneeId: detail.assigneeId,
                     assigneeName: detail.assigneeName,
                     assigneeAvatarUrl: detail.assigneeAvatarUrl,
@@ -710,26 +710,26 @@ export class BoardStore {
       dueDate: updates.dueDate !== undefined ? updates.dueDate : currentCard.dueDate,
       storyPoints:
         updates.storyPoints !== undefined ? updates.storyPoints : currentCard.storyPoints,
-      progressPercentage:
-        updates.progressPercentage !== undefined
-          ? updates.progressPercentage
-          : currentCard.progressPercentage,
+      isCompleted:
+        updates.isCompleted !== undefined
+          ? updates.isCompleted
+          : currentCard.isCompleted,
     };
 
     // Optimistic update
-    const oldProgress = currentCard.progressPercentage || 0;
-    const newProgress =
-      updates.progressPercentage !== undefined
-        ? updates.progressPercentage
-        : oldProgress;
+    const oldIsCompleted = !!currentCard.isCompleted;
+    const newIsCompleted =
+      updates.isCompleted !== undefined
+        ? !!updates.isCompleted
+        : oldIsCompleted;
 
     const oldPts = currentCard.storyPoints || 0;
     const newPts =
       updates.storyPoints !== undefined ? (updates.storyPoints || 0) : oldPts;
     const diffPts = newPts - oldPts;
 
-    const completing = oldProgress < 100 && newProgress === 100;
-    const uncompleting = oldProgress === 100 && newProgress < 100;
+    const completing = !oldIsCompleted && newIsCompleted;
+    const uncompleting = oldIsCompleted && !newIsCompleted;
 
     if (completing || uncompleting || diffPts !== 0) {
       this.boardSignal.update((b) => {
@@ -744,7 +744,7 @@ export class BoardStore {
         } else if (uncompleting) {
           compCards = Math.max(0, compCards - 1);
           compPts = Math.max(0, compPts - oldPts);
-        } else if (diffPts !== 0 && oldProgress === 100) {
+        } else if (diffPts !== 0 && oldIsCompleted) {
           compPts = Math.max(0, compPts + diffPts);
         }
 
@@ -1286,7 +1286,7 @@ export class BoardStore {
     );
 
     const pts = newCard.storyPoints || 0;
-    const isDone = (newCard.progressPercentage || 0) === 100;
+    const isDone = !!newCard.isCompleted;
 
     this.boardSignal.update((b) => {
       if (!b) return null;
@@ -1349,14 +1349,14 @@ export class BoardStore {
       return;
     }
 
-    const oldProgress = oldCard.progressPercentage || 0;
-    const newProgress = message.card.progressPercentage || 0;
+    const oldIsCompleted = !!oldCard.isCompleted;
+    const newIsCompleted = !!message.card.isCompleted;
     const oldPts = oldCard.storyPoints || 0;
     const newPts = message.card.storyPoints || 0;
     const diffPts = newPts - oldPts;
 
-    const completing = oldProgress < 100 && newProgress === 100;
-    const uncompleting = oldProgress === 100 && newProgress < 100;
+    const completing = !oldIsCompleted && newIsCompleted;
+    const uncompleting = oldIsCompleted && !newIsCompleted;
 
     const targetColumnId = message.card.columnId.toLowerCase();
     this.columnsSignal.update((cols) =>
@@ -1406,7 +1406,7 @@ export class BoardStore {
         } else if (uncompleting) {
           compCards = Math.max(0, compCards - 1);
           compPts = Math.max(0, compPts - oldPts);
-        } else if (diffPts !== 0 && oldProgress === 100) {
+        } else if (diffPts !== 0 && oldIsCompleted) {
           compPts = Math.max(0, compPts + diffPts);
         }
 
@@ -1474,7 +1474,7 @@ export class BoardStore {
     );
 
     const pts = deletedCard?.storyPoints || 0;
-    const isDone = (deletedCard?.progressPercentage || 0) === 100;
+    const isDone = !!deletedCard?.isCompleted;
 
     this.boardSignal.update((b) => {
       if (!b) return null;
@@ -1600,7 +1600,7 @@ export class BoardStore {
 
     let wasCompleted = false;
     let isNowCompleted = false;
-    let newProgress = 0;
+    let newIsCompleted = false;
 
     this.columnsSignal.update((cols) => {
       const nextCols = cols.map((col) => ({
@@ -1624,20 +1624,20 @@ export class BoardStore {
       // splice trả về danh sách các phần tử bị cắt, nên dùng destructuring để lấy phần tử đầu tiên
       const [movedCard] = sourceCol.cards.splice(fromIndex, 1);
 
-      newProgress =
-        message.progressPercentage !== undefined
-          ? message.progressPercentage
+      newIsCompleted =
+        message.isCompleted !== undefined
+          ? message.isCompleted
           : targetCol.isDoneColumn
-            ? 100
-            : (movedCard.progressPercentage || 0);
+            ? true
+            : !!movedCard.isCompleted;
 
-      wasCompleted = (movedCard.progressPercentage || 0) === 100;
-      isNowCompleted = newProgress === 100;
+      wasCompleted = !!movedCard.isCompleted;
+      isNowCompleted = newIsCompleted;
 
       const updatedMovedCard: CardSummary = {
         ...movedCard,
         columnId: targetCol.id,
-        progressPercentage: newProgress,
+        isCompleted: newIsCompleted,
       };
 
       const clampedIndex = Math.max(0, Math.min(message.newPosition, targetCol.cards.length));
@@ -1685,10 +1685,10 @@ export class BoardStore {
       };
     });
 
-    // Nếu modal chi tiết thẻ đang mở thẻ này, cập nhật lại columnId và progressPercentage cho modal
+    // Nếu modal chi tiết thẻ đang mở thẻ này, cập nhật lại columnId và isCompleted cho modal
     this.cardDetailSignal.update((detail) =>
       detail && detail.id.toLowerCase() === message.cardId.toLowerCase()
-        ? { ...detail, columnId: targetColId, progressPercentage: newProgress }
+        ? { ...detail, columnId: targetColId, isCompleted: newIsCompleted }
         : detail,
     );
 
@@ -1832,7 +1832,7 @@ export class BoardStore {
       );
 
       const pts = message.card.storyPoints || 0;
-      const isDone = (message.card.progressPercentage || 0) === 100;
+      const isDone = !!message.card.isCompleted;
       this.boardSignal.update((b) => {
         if (!b?.activeSprint) return b;
         return {

@@ -25,8 +25,8 @@
     ></mat-icon>
     <span
       class="text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
-      [class.line-through]="card.progressPercentage === 100"
-      [class.opacity-60]="card.progressPercentage === 100"
+      [class.line-through]="card.isCompleted"
+      [class.opacity-60]="card.isCompleted"
     >
       {{ card.title }}
     </span>
@@ -35,7 +35,7 @@
   <!-- Right: Points, Priority, Assignee & Quick Move Menu -->
   <div class="flex items-center gap-2 shrink-0">
     @if (card.isBlocked) {
-      @if (card.progressPercentage === 100) {
+      @if (card.isCompleted) {
         <span
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60"
           [title]="'Cảnh báo: Thẻ này đã hoàn thành nhưng có ' + (card.blockedByCount || 1) + ' công việc tiên quyết chưa hoàn thành'"

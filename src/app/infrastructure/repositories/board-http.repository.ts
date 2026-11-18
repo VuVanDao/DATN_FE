@@ -150,8 +150,8 @@ export class BoardHttpRepository implements BoardRepository {
         request.storyPoints !== null ? String(request.storyPoints) : '',
       );
     }
-    if (request.progressPercentage !== undefined && request.progressPercentage !== null) {
-      formData.append('progressPercentage', String(request.progressPercentage));
+    if (request.isCompleted !== undefined && request.isCompleted !== null) {
+      formData.append('isCompleted', String(request.isCompleted));
     }
 
     return this.http
