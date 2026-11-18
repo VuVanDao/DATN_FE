@@ -342,18 +342,10 @@ export class CardDetailModalComponent implements OnInit {
               : 'đã gỡ điểm ước lượng';
         } else if (details?.field === 'Priority' || details?.newPriority || details?.priority) {
           actionText = `đã cập nhật độ ưu tiên thành "${details.newPriority || details.priority}"`;
-        } else if (
-          details?.field === 'IsCompleted' ||
-          details?.field === 'Progress' ||
-          details?.newIsCompleted !== undefined ||
-          details?.newProgress !== undefined ||
-          details?.progressPercentage !== undefined
-        ) {
-          const isDone =
-            details?.newIsCompleted !== undefined
-              ? details.newIsCompleted
-              : (details.newProgress ?? details.progressPercentage) === 100;
-          actionText = isDone ? 'đã đánh dấu hoàn thành thẻ' : 'đã bỏ đánh dấu hoàn thành thẻ';
+        } else if (details?.field === 'IsCompleted' || details?.newIsCompleted !== undefined) {
+          actionText = details.newIsCompleted
+            ? 'đã đánh dấu hoàn thành thẻ'
+            : 'đã bỏ đánh dấu hoàn thành thẻ';
         } else if (details?.field === 'Title' || details?.newTitle) {
           actionText = `đã đổi tiêu đề thành "${details.newTitle}"`;
         } else {
