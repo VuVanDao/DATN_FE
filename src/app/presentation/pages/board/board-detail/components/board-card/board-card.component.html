@@ -108,6 +108,7 @@
       @if (
         (card().storyPoints !== null && card().storyPoints !== undefined) ||
         card().isBlocked ||
+        card().dueDate ||
         (card().commentsCount || 0) > 0 ||
         card().assigneeName
       ) {
@@ -139,6 +140,47 @@
                   <span>Bị chặn ({{ card().blockedByCount || 1 }})</span>
                 </span>
               }
+            }
+
+            @if (dueDateStatus(); as ds) {
+              <span
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border select-none transition-colors"
+                [class]="
+                  ds.isCompleted
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    : ds.isOverdue
+                      ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 font-bold'
+                      : ds.isDueSoon
+                        ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 font-semibold'
+                        : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-600/50'
+                "
+                [title]="
+                  ds.isCompleted
+                    ? 'Đã hoàn thành'
+                    : ds.isOverdue
+                      ? 'Đã quá hạn chót (' + ds.formatted + ')'
+                      : ds.diffDays === 0
+                        ? 'Hôm nay là hạn chót (' + ds.formatted + ')'
+                        : ds.isDueSoon
+                          ? 'Sắp đến hạn (' + ds.formatted + ')'
+                          : 'Hạn chót: ' + ds.formatted
+                "
+              >
+                <mat-icon
+                  [fontIcon]="ds.isCompleted ? 'check_circle' : ds.isOverdue ? 'alarm' : 'schedule'"
+                  class="text-[10px]! w-2.5! h-2.5!"
+                  [class]="
+                    ds.isCompleted
+                      ? 'text-emerald-500'
+                      : ds.isOverdue
+                        ? 'text-rose-500'
+                        : ds.isDueSoon
+                          ? 'text-amber-500'
+                          : 'text-slate-400'
+                  "
+                ></mat-icon>
+                <span>{{ ds.formatted }}</span>
+              </span>
             }
 
             @if (card().storyPoints !== null && card().storyPoints !== undefined) {

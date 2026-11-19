@@ -30,6 +30,37 @@ export class BoardCardComponent {
     () => !!this.card().isCompleted,
   );
 
+  readonly dueDateStatus = computed(() => {
+    const raw = this.card().dueDate;
+    if (!raw) return null;
+    const due = new Date(raw);
+    if (isNaN(due.getTime())) return null;
+
+    // Chuẩn hóa về mốc ngày (00:00:00) theo giờ địa phương
+    const today = new Date();
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const dueMidnight = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
+
+    const diffDays = Math.round((dueMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+    const isCompleted = this.isCompleted();
+
+    const isOverdue = !isCompleted && diffDays < 0;
+    const isDueSoon = !isCompleted && !isOverdue && (diffDays === 0 || diffDays === 1);
+
+    const day = due.getDate().toString().padStart(2, '0');
+    const month = (due.getMonth() + 1).toString().padStart(2, '0');
+    const formatted = `${day}/${month}`;
+
+    return {
+      formatted,
+      isOverdue,
+      isDueSoon,
+      diffDays,
+      isCompleted,
+      raw,
+    };
+  });
+
   readonly cardClick = output<CardSummary>();
   readonly deleteCard = output<{ cardId: string; columnId: string }>();
   readonly updateTitle = output<{ cardId: string; columnId: string; title: string }>();

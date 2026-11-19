@@ -51,6 +51,27 @@ export class SprintItemComponent {
     return s === 'Active' || String(s) === '1';
   });
 
+  get sprintDueStatus(): { isOverdue: boolean; diffDays: number; overdueDays: number } | null {
+    if (!this.sprint?.endDate || !this.isActive()) return null;
+    const end = new Date(this.sprint.endDate);
+    if (isNaN(end.getTime())) return null;
+
+    // Chuẩn hóa về mốc ngày (00:00:00) theo giờ địa phương để so sánh theo lịch
+    const today = new Date();
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const endMidnight = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+
+    const diffDays = Math.round((endMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
+    const isOverdue = diffDays < 0;
+    const overdueDays = Math.abs(diffDays);
+
+    return {
+      isOverdue,
+      diffDays,
+      overdueDays,
+    };
+  }
+
   @HostListener('document:click')
   onDocumentClick(): void {
     if (this.showActionsMenu()) {

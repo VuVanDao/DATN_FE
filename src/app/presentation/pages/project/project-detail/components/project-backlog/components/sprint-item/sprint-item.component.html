@@ -68,10 +68,34 @@
         <!-- Left group on mobile / inline on desktop: Dates & Points -->
         <div class="flex items-center gap-2 flex-wrap">
           @if (sprint.startDate && sprint.endDate) {
-            <div class="text-slate-500 dark:text-slate-400 text-xs hidden sm:block">
+            <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs hidden sm:flex">
               <span class="font-medium text-slate-700 dark:text-slate-300">
                 {{ formatDate(sprint.startDate) }} – {{ formatDate(sprint.endDate) }}
               </span>
+              @if (sprintDueStatus; as ds) {
+                <span
+                  class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                  [class]="
+                    ds.isOverdue
+                      ? 'bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 animate-pulse'
+                      : ds.diffDays <= 1
+                        ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                        : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+                  "
+                >
+                  <mat-icon
+                    [fontIcon]="ds.isOverdue ? 'warning' : 'schedule'"
+                    class="text-[10px]! w-2.5! h-2.5!"
+                  ></mat-icon>
+                  @if (ds.isOverdue) {
+                    Quá hạn {{ ds.overdueDays > 0 ? ds.overdueDays + ' ngày' : '' }}
+                  } @else if (ds.diffDays === 0) {
+                    Hôm nay kết thúc
+                  } @else {
+                    Còn {{ ds.diffDays }} ngày
+                  }
+                </span>
+              }
             </div>
           }
 
