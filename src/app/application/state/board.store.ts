@@ -447,6 +447,23 @@ export class BoardStore {
                 };
               });
             }
+          } else if (sourceCol.isDoneColumn) {
+            const wasCompleted = !!movedCard.isCompleted;
+            movedCard.isCompleted = false;
+            // Trừ thống kê activeSprint trên header nếu thẻ trước đó đã hoàn thành
+            if (wasCompleted) {
+              this.boardSignal.update((b) => {
+                if (!b?.activeSprint) return b;
+                return {
+                  ...b,
+                  activeSprint: {
+                    ...b.activeSprint,
+                    completedCards: Math.max(0, (b.activeSprint.completedCards || 0) - 1),
+                    completedStoryPoints: Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts),
+                  },
+                };
+              });
+            }
           }
         }
       }
@@ -461,6 +478,8 @@ export class BoardStore {
         let newIsCompleted = d.isCompleted;
         if (targetCol?.isDoneColumn) {
           newIsCompleted = true;
+        } else if (sourceCol?.isDoneColumn) {
+          newIsCompleted = false;
         }
         return {
           ...d,
