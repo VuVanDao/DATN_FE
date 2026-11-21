@@ -63,8 +63,7 @@ export interface MoveCardToSprintRequest {
 }
 
 export interface CreateBacklogCardRequest {
-  projectId: string;
-  boardId?: string | null;
+  boardId: string;
   title: string;
   description?: string;
   sprintId?: string | null;

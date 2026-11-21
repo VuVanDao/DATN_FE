@@ -116,7 +116,7 @@ export class SprintStore {
   }
 
   loadBacklog(projectId: string, boardId?: string | null): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
     this.currentBoardIdSignal.set(targetBoardId);
     this.cancel$.next();
@@ -145,7 +145,7 @@ export class SprintStore {
   }
 
   loadSprints(projectId: string, boardId?: string | null, onSuccess?: () => void): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
     this.currentBoardIdSignal.set(targetBoardId);
     this.requests.run({
@@ -160,7 +160,7 @@ export class SprintStore {
   }
 
   loadBacklogCards(projectId: string, boardId?: string | null, onSuccess?: () => void): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.currentProjectIdSignal.set(projectId);
     this.currentBoardIdSignal.set(targetBoardId);
     this.requests.run({
@@ -196,7 +196,7 @@ export class SprintStore {
     boardId?: string | null,
     onSuccess?: () => void,
   ): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.updatingSprintSignal,
       request$: this.updateSprintUseCase.execute(sprintId, request),
@@ -217,7 +217,7 @@ export class SprintStore {
     boardId?: string | null,
     onSuccess?: () => void,
   ): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.deletingSprintSignal,
       request$: this.deleteSprintUseCase.execute(sprintId),
@@ -239,7 +239,7 @@ export class SprintStore {
     boardId?: string | null,
     onSuccess?: () => void,
   ): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.startingSprintSignal,
       request$: this.startSprintUseCase.execute(sprintId, request),
@@ -261,7 +261,7 @@ export class SprintStore {
     boardId?: string | null,
     onSuccess?: () => void,
   ): void {
-    const targetBoardId = boardId !== undefined ? (boardId || null) : this.currentBoardIdSignal();
+    const targetBoardId = boardId !== undefined ? boardId || null : this.currentBoardIdSignal();
     this.requests.run({
       loading: this.completingSprintSignal,
       request$: this.completeSprintUseCase.execute(sprintId, request),
@@ -291,7 +291,9 @@ export class SprintStore {
           this.notifications.warning('Đã thêm thẻ vào Sprint đang chạy (Thay đổi phạm vi Sprint).');
         } else if (options?.isSourceActive) {
           const targetName = sprintId ? 'Sprint khác' : 'Backlog';
-          this.notifications.info(`Đã rút thẻ từ Sprint đang chạy về ${targetName} (Thay đổi phạm vi Sprint).`);
+          this.notifications.info(
+            `Đã rút thẻ từ Sprint đang chạy về ${targetName} (Thay đổi phạm vi Sprint).`,
+          );
         } else {
           const targetName = sprintId ? 'Sprint' : 'Backlog';
           this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
@@ -314,7 +316,10 @@ export class SprintStore {
     this.createBacklogCardUseCase.execute(request).subscribe({
       next: (card) => {
         this.notifications.success(`Đã tạo thành công "${card.title}"`);
-        this.loadBacklog(request.projectId, request.boardId || this.currentBoardIdSignal());
+        this.loadBacklog(
+          this.currentProjectIdSignal(),
+          request.boardId || this.currentBoardIdSignal(),
+        );
         if (onSuccess) {
           onSuccess();
         }
@@ -340,25 +345,36 @@ export class SprintStore {
   private setupRealtimeListeners(): void {
     this.boardRealtimeService?.sprintCreated$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
-        this.notifications.info(`Sprint "${message.sprint.name}" vừa được tạo bởi thành viên khác.`);
+        this.notifications.info(
+          `Sprint "${message.sprint.name}" vừa được tạo bởi thành viên khác.`,
+        );
       },
     });
 
     this.boardRealtimeService?.sprintStarted$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
-        this.notifications.info(`Sprint "${message.sprint.name}" vừa được bắt đầu bởi thành viên khác.`);
+        this.notifications.info(
+          `Sprint "${message.sprint.name}" vừa được bắt đầu bởi thành viên khác.`,
+        );
       },
     });
 
     this.boardRealtimeService?.sprintUpdated$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.sprintsSignal.update((list) =>
-          list.map((s) => (s.id.toLowerCase() === message.sprint.id.toLowerCase() ? { ...s, ...message.sprint } : s)),
+          list.map((s) =>
+            s.id.toLowerCase() === message.sprint.id.toLowerCase()
+              ? { ...s, ...message.sprint }
+              : s,
+          ),
         );
         this.notifications.info(`Thông tin Sprint "${message.sprint.name}" vừa được cập nhật.`);
       },
@@ -366,7 +382,8 @@ export class SprintStore {
 
     this.boardRealtimeService?.sprintCompleted$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
         this.notifications.info('Sprint vừa được hoàn thành bởi thành viên khác.');
       },
@@ -374,7 +391,8 @@ export class SprintStore {
 
     this.boardRealtimeService?.sprintDeleted$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.sprintsSignal.update((list) =>
           list.filter((s) => s.id.toLowerCase() !== message.sprintId.toLowerCase()),
         );
@@ -384,30 +402,36 @@ export class SprintStore {
 
     this.boardRealtimeService?.cardSprintChanged$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
       },
     });
 
     this.boardRealtimeService?.cardCreated$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
         const dest = message.card.sprintId ? 'Sprint' : 'Backlog';
-        this.notifications.info(`Công việc "${message.card.title}" vừa được thêm vào ${dest} bởi thành viên khác.`);
+        this.notifications.info(
+          `Công việc "${message.card.title}" vừa được thêm vào ${dest} bởi thành viên khác.`,
+        );
       },
     });
 
     this.boardRealtimeService?.cardUpdated$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
       },
     });
 
     this.boardRealtimeService?.cardDeleted$?.subscribe({
       next: (message) => {
-        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId)) return;
+        if (!this.matchesCurrentBoard(message.boardId) || this.isSelf(message.changedByUserId))
+          return;
         this.reloadBacklogSilently();
         this.notifications.warning('Một công việc vừa bị xoá bởi thành viên khác.');
       },

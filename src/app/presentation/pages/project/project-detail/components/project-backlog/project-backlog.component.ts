@@ -74,7 +74,9 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   readonly selectedBoardId = signal<string>('');
 
   readonly scrumBoards = computed(() => {
-    return this.projectStore.boards().filter((b) => b.type?.toLowerCase() === 'scrum' || String(b.type) === '1');
+    return this.projectStore
+      .boards()
+      .filter((b) => b.type?.toLowerCase() === 'scrum' || String(b.type) === '1');
   });
 
   readonly selectedBoard = computed(() => {
@@ -143,11 +145,11 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
 
   confirmAddCardToBacklog(inputEl?: HTMLInputElement): void {
     const title = this.newBacklogCardTitle.trim();
-    if (!title) return;
+    const boardId = this.activeBoardId();
+    if (!title || !boardId) return;
     this.sprintStore.createBacklogCard(
       {
-        projectId: this.projectId,
-        boardId: this.activeBoardId() || undefined,
+        boardId,
         title,
         sprintId: null,
         storyPoints: this.newBacklogCardStoryPoints ?? undefined,
@@ -164,9 +166,10 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
   }
 
   onAddCardToSprint(sprintId: string, event: { title: string; storyPoints?: number }): void {
+    const boardId = this.activeBoardId();
+    if (!boardId) return;
     this.sprintStore.createBacklogCard({
-      projectId: this.projectId,
-      boardId: this.activeBoardId() || undefined,
+      boardId,
       title: event.title,
       sprintId,
       storyPoints: event.storyPoints,
