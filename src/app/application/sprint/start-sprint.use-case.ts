@@ -9,7 +9,7 @@ import { SprintRepository } from '../../domain/repositories/sprint.repository';
 export class StartSprintUseCase {
   private readonly repository = inject(SprintRepository);
 
-  execute(sprintId: string, request: StartSprintRequest): Observable<SprintSummary> {
+  execute(sprintId: string, request: StartSprintRequest = {}): Observable<SprintSummary> {
     return this.repository.startSprint(sprintId, request);
   }
 }

@@ -32,15 +32,11 @@ export class StartSprintModalComponent {
       return;
     }
 
-    // Gửi yêu cầu bắt đầu Sprint, giữ nguyên ngày giờ và mục tiêu đã thiết lập từ trước
+    // Gửi yêu cầu bắt đầu Sprint, backend tự động kích hoạt và giữ nguyên ngày giờ đã định từ trước
     this.sprintStore.startSprint(
       this.sprint.id,
       this.projectId,
-      {
-        goal: this.sprint.goal || undefined,
-        startDate: this.sprint.startDate || undefined,
-        endDate: this.sprint.endDate || undefined,
-      },
+      {},
       this.sprint.boardId,
       () => {
         this.sprintStarted.emit();

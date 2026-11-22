@@ -235,7 +235,7 @@ export class SprintStore {
   startSprint(
     sprintId: string,
     projectId: string,
-    request: StartSprintRequest,
+    request: StartSprintRequest = {},
     boardId?: string | null,
     onSuccess?: () => void,
   ): void {
