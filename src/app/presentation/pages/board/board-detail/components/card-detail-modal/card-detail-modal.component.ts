@@ -306,6 +306,7 @@ export class CardDetailModalComponent implements OnInit {
       case 'Created':
         actionText = 'đã tạo thẻ này';
         break;
+      case 'MovedToColumn':
       case 'MovedColumn':
         if (details?.fromColumnTitle && details?.toColumnTitle) {
           actionText = `đã chuyển thẻ từ cột "${details.fromColumnTitle}" sang "${details.toColumnTitle}"`;
