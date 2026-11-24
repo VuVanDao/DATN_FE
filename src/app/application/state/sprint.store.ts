@@ -280,36 +280,47 @@ export class SprintStore {
     cardId: string,
     sprintId: string | null,
     projectId: string,
-    options?: { isSourceActive?: boolean; isTargetActive?: boolean },
+    options?: {
+      isSourceActive?: boolean;
+      isTargetActive?: boolean;
+      newPosition?: number | null;
+      isReorderOnly?: boolean;
+    },
     onSuccess?: () => void,
   ): void {
     this.movingCardSignal.set(true);
-    this.moveCardToSprintUseCase.execute({ cardId, sprintId }).subscribe({
-      next: () => {
-        this.movingCardSignal.set(false);
-        if (options?.isTargetActive) {
-          this.notifications.warning('Đã thêm thẻ vào Sprint đang chạy (Thay đổi phạm vi Sprint).');
-        } else if (options?.isSourceActive) {
-          const targetName = sprintId ? 'Sprint khác' : 'Backlog';
-          this.notifications.info(
-            `Đã rút thẻ từ Sprint đang chạy về ${targetName} (Thay đổi phạm vi Sprint).`,
-          );
-        } else {
-          const targetName = sprintId ? 'Sprint' : 'Backlog';
-          this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
-        }
-        this.loadBacklog(projectId, this.currentBoardIdSignal());
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (err) => {
-        this.movingCardSignal.set(false);
-        const msg = err?.error?.message || err?.message || 'Không thể chuyển thẻ vào Sprint.';
-        this.notifications.error(msg);
-        this.loadBacklog(projectId, this.currentBoardIdSignal());
-      },
-    });
+    this.moveCardToSprintUseCase
+      .execute({ cardId, sprintId, newPosition: options?.newPosition })
+      .subscribe({
+        next: () => {
+          this.movingCardSignal.set(false);
+          if (options?.isReorderOnly) {
+            // Cập nhật thứ tự ưu tiên thành công
+          } else if (options?.isTargetActive) {
+            this.notifications.warning(
+              'Đã thêm thẻ vào Sprint đang chạy (Thay đổi phạm vi Sprint).',
+            );
+          } else if (options?.isSourceActive) {
+            const targetName = sprintId ? 'Sprint khác' : 'Backlog';
+            this.notifications.info(
+              `Đã rút thẻ từ Sprint đang chạy về ${targetName} (Thay đổi phạm vi Sprint).`,
+            );
+          } else {
+            const targetName = sprintId ? 'Sprint' : 'Backlog';
+            this.notifications.success(`Đã chuyển thẻ sang ${targetName}.`);
+          }
+          this.loadBacklog(projectId, this.currentBoardIdSignal());
+          if (onSuccess) {
+            onSuccess();
+          }
+        },
+        error: (err) => {
+          this.movingCardSignal.set(false);
+          const msg = err?.error?.message || err?.message || 'Không thể chuyển thẻ vào Sprint.';
+          this.notifications.error(msg);
+          this.loadBacklog(projectId, this.currentBoardIdSignal());
+        },
+      });
   }
 
   createBacklogCard(request: CreateBacklogCardRequest, onSuccess?: () => void): void {

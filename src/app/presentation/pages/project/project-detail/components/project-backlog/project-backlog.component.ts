@@ -319,7 +319,17 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
 
   onCardDrop(event: CdkDragDrop<CardSummary[]>, targetSprintId: string | null): void {
     if (event.previousContainer === event.container) {
+      if (event.previousIndex === event.currentIndex) {
+        return;
+      }
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      const card = event.item.data as CardSummary;
+      if (!card) return;
+
+      this.sprintStore.moveCardToSprint(card.id, targetSprintId, this.projectId, {
+        newPosition: event.currentIndex,
+        isReorderOnly: true,
+      });
       return;
     }
 
@@ -351,6 +361,7 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
     this.sprintStore.moveCardToSprint(card.id, targetSprintId, this.projectId, {
       isSourceActive,
       isTargetActive,
+      newPosition: event.currentIndex,
     });
   }
 

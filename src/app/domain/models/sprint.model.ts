@@ -60,6 +60,7 @@ export interface CompleteSprintRequest {
 export interface MoveCardToSprintRequest {
   cardId: string;
   sprintId?: string | null;
+  newPosition?: number | null;
 }
 
 export interface CreateBacklogCardRequest {
