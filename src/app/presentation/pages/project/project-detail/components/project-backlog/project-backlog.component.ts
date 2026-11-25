@@ -322,9 +322,20 @@ export class ProjectBacklogComponent implements OnInit, OnChanges {
       if (event.previousIndex === event.currentIndex) {
         return;
       }
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       const card = event.item.data as CardSummary;
       if (!card) return;
+
+      const activeSprint = this.sprintStore.activeSprint();
+      const isReorderInActiveSprint = targetSprintId === activeSprint?.id;
+
+      if (isReorderInActiveSprint && !this.canManageSprint) {
+        this.notifications.warning(
+          'Chỉ Trưởng dự án hoặc Chủ Workspace mới có quyền thay đổi thứ tự công việc trong Sprint đang chạy.',
+        );
+        return;
+      }
+
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
 
       this.sprintStore.moveCardToSprint(card.id, targetSprintId, this.projectId, {
         newPosition: event.currentIndex,
