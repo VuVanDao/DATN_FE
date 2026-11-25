@@ -1,12 +1,22 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
 import { CardSummary } from '../../../../../../domain/models/board-detail.model';
 import { CardActionsMenuComponent } from './card-actions-menu/card-actions-menu.component';
 import { CardCoverPickerComponent } from './card-cover-picker/card-cover-picker.component';
+import { computeDueDateStatus } from '../../../../../../shared/utils/due-date.util';
 
 @Component({
   selector: 'app-board-card',
@@ -26,39 +36,12 @@ export class BoardCardComponent {
 
   readonly card = input.required<CardSummary>();
   readonly isDoneColumn = input<boolean>(false);
-  readonly isCompleted = computed(
-    () => !!this.card().isCompleted,
-  );
+  readonly isCompleted = computed(() => !!this.card().isCompleted);
 
   readonly dueDateStatus = computed(() => {
     const raw = this.card().dueDate;
     if (!raw) return null;
-    const due = new Date(raw);
-    if (isNaN(due.getTime())) return null;
-
-    // Chuẩn hóa về mốc ngày (00:00:00) theo giờ địa phương
-    const today = new Date();
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    const dueMidnight = new Date(due.getFullYear(), due.getMonth(), due.getDate()).getTime();
-
-    const diffDays = Math.round((dueMidnight - todayMidnight) / (1000 * 60 * 60 * 24));
-    const isCompleted = this.isCompleted();
-
-    const isOverdue = !isCompleted && diffDays < 0;
-    const isDueSoon = !isCompleted && !isOverdue && (diffDays === 0 || diffDays === 1);
-
-    const day = due.getDate().toString().padStart(2, '0');
-    const month = (due.getMonth() + 1).toString().padStart(2, '0');
-    const formatted = `${day}/${month}`;
-
-    return {
-      formatted,
-      isOverdue,
-      isDueSoon,
-      diffDays,
-      isCompleted,
-      raw,
-    };
+    return computeDueDateStatus(raw, this.isCompleted());
   });
 
   readonly cardClick = output<CardSummary>();

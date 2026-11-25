@@ -9,9 +9,6 @@
       class="relative w-full max-w-4xl bg-white dark:bg-[#1d2125] text-slate-900 dark:text-[#b6c2cf] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#38414a] overflow-hidden flex flex-col my-auto max-h-[92vh] animate-in zoom-in-95 duration-150"
       (click)="$event.stopPropagation()"
     >
-      <!-- ========================================================== -->
-      <!-- HEADER BANNER & ACTIONS (Sub-component)                    -->
-      <!-- ========================================================== -->
       <app-card-detail-header
         [card]="card()"
         [currentColumnId]="currentColumnId()"
@@ -28,8 +25,13 @@
       <div class="px-5 sm:px-8 pt-3 pb-6 sm:pt-4 sm:pb-8 overflow-y-auto space-y-5 flex-1 min-h-0">
         <!-- Dependency Conflict Alert Banner (Tiên quyết chưa xong) -->
         @if (hasUnfinishedBlockersWhileCompleted()) {
-          <div class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs shadow-2xs">
-            <mat-icon fontIcon="warning" class="text-base! w-4! h-4! text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></mat-icon>
+          <div
+            class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs shadow-2xs"
+          >
+            <mat-icon
+              fontIcon="warning"
+              class="text-base! w-4! h-4! text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"
+            ></mat-icon>
             <div class="flex-1 leading-relaxed">
               <span class="font-bold">Xung đột phụ thuộc:</span>
               Thẻ này đã hoàn thành, nhưng có công việc tiên quyết

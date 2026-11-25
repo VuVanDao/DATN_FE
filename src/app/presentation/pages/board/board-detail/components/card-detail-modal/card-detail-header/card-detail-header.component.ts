@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../../../../../application/shared/notification.service';
 import { CardSummary, ColumnSummary } from '../../../../../../../domain/models/board-detail.model';
+import { computeDueDateStatus } from '../../../../../../../shared/utils/due-date.util';
 
 @Component({
   selector: 'app-card-detail-header',
@@ -38,6 +39,12 @@ export class CardDetailHeaderComponent {
   readonly coverUrlInput = signal<string>('');
   readonly previewCoverUrl = signal<string | null>(null);
   readonly selectedFile = signal<File | null>(null);
+
+  readonly dueDateStatus = computed(() => {
+    const card = this.card();
+    if (!card) return null;
+    return computeDueDateStatus(card.dueDate, card.isCompleted);
+  });
 
   constructor() {
     effect(() => {
