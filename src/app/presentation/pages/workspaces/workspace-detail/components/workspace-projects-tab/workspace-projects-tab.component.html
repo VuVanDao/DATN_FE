@@ -1,0 +1,141 @@
+@if (state.loading()) {
+  <p role="status" class="py-4 text-sm text-slate-400">Đang tải danh sách…</p>
+}
+@if (state.error()) {
+  <div role="alert" class="py-4 text-sm text-rose-400">
+    {{ state.error() }}
+    <button
+      type="button"
+      class="ml-3 underline cursor-pointer"
+      (click)="state.loaded() ? loadMore.emit() : retry.emit()"
+    >
+      Thử lại
+    </button>
+  </div>
+}
+<div class="pt-4">
+  <div class="flex items-center justify-between pb-1">
+    <div class="flex items-center gap-2.5">
+      <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">Danh sách dự án</span>
+      <span
+        class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium border border-slate-200 dark:border-slate-700/60"
+      >
+        {{ state.totalCount() }}
+      </span>
+    </div>
+    @if (isOwner) {
+      <button
+        type="button"
+        (click)="openModalForCreateProject()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 cursor-pointer shadow-sm"
+      >
+        <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+        <span>Tạo dự án mới</span>
+      </button>
+    }
+  </div>
+
+  @if (workspace.projects.length > 0) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-3">
+      @for (project of workspace.projects; track project.id) {
+        <div
+          (click)="onProjectClick(project)"
+          class="bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-slate-800/80 hover:border-indigo-500/50 rounded-2xl p-4 flex flex-col justify-between transition cursor-pointer group shadow-xs hover:shadow-md dark:shadow-sm dark:hover:shadow-indigo-500/5"
+        >
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div
+                [class]="project.color"
+                class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-xs shrink-0"
+              >
+                {{ project.initial }}
+              </div>
+              @if (!isOwner && !project.isMember) {
+                <span
+                  class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20"
+                  title="Bạn chưa tham gia dự án này"
+                >
+                  <mat-icon fontIcon="lock" class="icon-xxs !w-3 !h-3"></mat-icon>
+                  Chưa tham gia
+                </span>
+              }
+            </div>
+            <h3
+              class="text-[15px] font-semibold text-slate-900 dark:text-white mt-3 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition"
+              [title]="project.name"
+            >
+              {{ project.name }}
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 min-h-8">
+              {{ project.description || 'Chưa có mô tả cho dự án này.' }}
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/60"
+          >
+            <div class="flex items-center -space-x-1.5 overflow-hidden">
+              @for (member of project.members.slice(0, 3); track member.userId) {
+                @if (member.avatarUrl) {
+                  <img
+                    [src]="member.avatarUrl"
+                    [alt]="member.username"
+                    class="h-6 w-6 rounded-full ring-2 ring-white dark:ring-[#131b2e] object-cover"
+                  />
+                } @else {
+                  <div
+                    class="h-6 w-6 rounded-full ring-2 ring-white dark:ring-[#131b2e] bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] text-slate-700 dark:text-white"
+                  >
+                    {{ member.username.charAt(0).toUpperCase() }}
+                  </div>
+                }
+              }
+            </div>
+            <span class="text-xs text-slate-500 font-medium">{{ project.tasksCount }} task</span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (state.loaded() && !state.error()) {
+    <div
+      class="bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-12 text-center mt-4 space-y-3 shadow-xs"
+    >
+      <mat-icon fontIcon="folder_open" class="icon-lg text-slate-400"></mat-icon>
+      <h3 class="text-base font-semibold text-slate-900 dark:text-slate-200">Chưa có dự án nào</h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Không gian làm việc này hiện chưa có dự án nào được tạo.
+      </p>
+      @if (isOwner) {
+        <button
+          type="button"
+          (click)="openModalForCreateProject()"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 cursor-pointer shadow-sm"
+        >
+          <mat-icon fontIcon="add" class="icon-sm"></mat-icon>
+          <span>Tạo dự án đầu tiên</span>
+        </button>
+      }
+    </div>
+  }
+</div>
+
+@if (state.loaded()) {
+  <div class="flex items-center gap-4 py-4 text-sm text-slate-500 dark:text-slate-400">
+    <span>Đã hiển thị {{ state.items().length }} / {{ state.totalCount() }}</span>
+    @if (state.hasMore()) {
+      <button
+        type="button"
+        class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white disabled:opacity-50 cursor-pointer transition"
+        [disabled]="state.loading()"
+        (click)="loadMore.emit()"
+      >
+        Xem thêm
+      </button>
+    }
+  </div>
+}
+
+<app-project-info-modal
+  [isOpen]="showProjectInfoModal()"
+  [project]="selectedProjectForInfo()"
+  (closed)="closeProjectInfoModal()"
+/>

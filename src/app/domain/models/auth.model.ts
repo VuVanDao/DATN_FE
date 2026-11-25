@@ -1,21 +1,29 @@
 import { User } from './user.model';
 
 export interface LoginRequest {
-  Email: string;
-  Password: string;
+  email: string;
+  password: string;
 }
 export interface LoginResponse {
-  User: User;
-  Tokens: AuthTokens;
+  user: User;
+  tokens: AuthTokens;
 }
 export interface AuthTokens {
-  AccessToken: string;
-  RefreshToken: string;
-  RefreshTokenExpiresAt?: number;
+  accessToken: string;
+  refreshToken?: string;
+  refreshTokenExpiresAt?: number;
 }
 export interface RegisterRequest {
-  Email: string;
-  Password: string;
-  Username: string;
+  email: string;
+  password: string;
+  username: string;
 }
 export interface RegisterResponse extends LoginResponse {}
+export interface ForgotPasswordRequest {
+  email: string;
+}
+export interface ResetPasswordRequest extends ForgotPasswordRequest {
+  token: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}

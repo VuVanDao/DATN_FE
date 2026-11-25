@@ -1,0 +1,250 @@
+<div class="max-w-7xl mx-auto space-y-6 pb-12 w-full min-w-0">
+  @if (projectStore.isLoading()) {
+    <!-- Skeleton Loading -->
+    <div class="animate-pulse space-y-6">
+      <div class="h-6 w-36 bg-slate-800 rounded"></div>
+      <div class="h-44 w-full rounded-2xl bg-slate-800"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="h-24 rounded-2xl bg-slate-800"></div>
+        }
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 h-72 rounded-2xl bg-slate-800"></div>
+        <div class="h-72 rounded-2xl bg-slate-800"></div>
+      </div>
+    </div>
+  } @else if (detailError(); as error) {
+    <div
+      role="alert"
+      class="my-12 p-8 max-w-lg mx-auto text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-xl space-y-4"
+    >
+      <div
+        class="w-16 h-16 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-sm"
+      >
+        <mat-icon fontIcon="folder_off" class="text-3xl! w-8! h-8!"></mat-icon>
+      </div>
+      <div class="space-y-1.5">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Không tìm thấy dự án</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+          {{ error }}
+        </p>
+      </div>
+      <div class="pt-3 flex flex-wrap items-center justify-center gap-3">
+        <button
+          type="button"
+          (click)="goToHome()"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs md:text-sm font-semibold shadow-sm transition cursor-pointer"
+        >
+          <mat-icon fontIcon="home" class="icon-sm"></mat-icon>
+          <span>Quay về trang chủ</span>
+        </button>
+        <button
+          type="button"
+          (click)="goBack()"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs md:text-sm font-semibold transition cursor-pointer"
+        >
+          <mat-icon fontIcon="arrow_back" class="icon-sm"></mat-icon>
+          <span>Quay lại Không gian làm việc</span>
+        </button>
+        @if (!routeError()) {
+          <button
+            type="button"
+            (click)="loadProjectDetail()"
+            class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition cursor-pointer"
+          >
+            <mat-icon fontIcon="refresh" class="icon-xs"></mat-icon>
+            <span>Thử lại</span>
+          </button>
+        }
+      </div>
+    </div>
+  } @else if (projectView(); as proj) {
+    <!-- 1. Top Navigation & Hero Banner with Stats -->
+    <app-project-hero-header
+      class="block"
+      [project]="proj"
+      (back)="goBack()"
+      (addMember)="openAddMemberModal()"
+      (openSettings)="openSettingsModal()"
+      (selectTab)="activeMainTab.set($event)"
+    />
+
+    <!-- 2. Main Navigation Tabs (Bảng công việc & Thành viên dự án) -->
+    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
+      <!-- Tab: Bảng công việc -->
+      <button
+        type="button"
+        (click)="activeMainTab.set('boards')"
+        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition cursor-pointer -mb-px select-none"
+        [class.border-indigo-600]="activeMainTab() === 'boards'"
+        [class.text-indigo-600]="activeMainTab() === 'boards'"
+        [class.dark:text-indigo-400]="activeMainTab() === 'boards'"
+        [class.dark:border-indigo-400]="activeMainTab() === 'boards'"
+        [class.border-transparent]="activeMainTab() !== 'boards'"
+        [class.text-slate-500]="activeMainTab() !== 'boards'"
+        [class.dark:text-slate-400]="activeMainTab() !== 'boards'"
+        [class.hover:text-slate-900]="activeMainTab() !== 'boards'"
+        [class.dark:hover:text-white]="activeMainTab() !== 'boards'"
+      >
+        <mat-icon fontIcon="dashboard" class="text-base! w-auto! h-auto!"></mat-icon>
+        <span>Bảng công việc</span>
+        <span
+          class="text-xs px-2 py-0.5 rounded-full font-medium"
+          [class.bg-indigo-100]="activeMainTab() === 'boards'"
+          [class.dark:bg-indigo-500/20]="activeMainTab() === 'boards'"
+          [class.text-indigo-700]="activeMainTab() === 'boards'"
+          [class.dark:text-indigo-300]="activeMainTab() === 'boards'"
+          [class.bg-slate-100]="activeMainTab() !== 'boards'"
+          [class.dark:bg-slate-800]="activeMainTab() !== 'boards'"
+          [class.text-slate-600]="activeMainTab() !== 'boards'"
+          [class.dark:text-slate-400]="activeMainTab() !== 'boards'"
+        >
+          {{ boards().length }}
+        </span>
+      </button>
+
+      <!-- Tab: Kế hoạch & Backlog -->
+      <button
+        type="button"
+        (click)="activeMainTab.set('backlog')"
+        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition cursor-pointer -mb-px select-none"
+        [class.border-indigo-600]="activeMainTab() === 'backlog'"
+        [class.text-indigo-600]="activeMainTab() === 'backlog'"
+        [class.dark:text-indigo-400]="activeMainTab() === 'backlog'"
+        [class.dark:border-indigo-400]="activeMainTab() === 'backlog'"
+        [class.border-transparent]="activeMainTab() !== 'backlog'"
+        [class.text-slate-500]="activeMainTab() !== 'backlog'"
+        [class.dark:text-slate-400]="activeMainTab() !== 'backlog'"
+        [class.hover:text-slate-900]="activeMainTab() !== 'backlog'"
+        [class.dark:hover:text-white]="activeMainTab() !== 'backlog'"
+      >
+        <mat-icon fontIcon="format_list_bulleted" class="text-base! w-auto! h-auto!"></mat-icon>
+        <span>Kế hoạch & Backlog</span>
+      </button>
+
+      <!-- Tab: Thành viên dự án -->
+      <button
+        type="button"
+        (click)="activeMainTab.set('members')"
+        class="inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition cursor-pointer -mb-px select-none"
+        [class.border-indigo-600]="activeMainTab() === 'members'"
+        [class.text-indigo-600]="activeMainTab() === 'members'"
+        [class.dark:text-indigo-400]="activeMainTab() === 'members'"
+        [class.dark:border-indigo-400]="activeMainTab() === 'members'"
+        [class.border-transparent]="activeMainTab() !== 'members'"
+        [class.text-slate-500]="activeMainTab() !== 'members'"
+        [class.dark:text-slate-400]="activeMainTab() !== 'members'"
+        [class.hover:text-slate-900]="activeMainTab() !== 'members'"
+        [class.dark:hover:text-white]="activeMainTab() !== 'members'"
+      >
+        <mat-icon fontIcon="group" class="text-base! w-auto! h-auto!"></mat-icon>
+        <span>Thành viên dự án</span>
+        <span
+          class="text-xs px-2 py-0.5 rounded-full font-medium"
+          [class.bg-indigo-100]="activeMainTab() === 'members'"
+          [class.dark:bg-indigo-500/20]="activeMainTab() === 'members'"
+          [class.text-indigo-700]="activeMainTab() === 'members'"
+          [class.dark:text-indigo-300]="activeMainTab() === 'members'"
+          [class.bg-slate-100]="activeMainTab() !== 'members'"
+          [class.dark:bg-slate-800]="activeMainTab() !== 'members'"
+          [class.text-slate-600]="activeMainTab() !== 'members'"
+          [class.dark:text-slate-400]="activeMainTab() !== 'members'"
+        >
+          {{ proj.membersCount || members().length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- 3. Tab Content Panels -->
+    <!-- PANEL 1: QUẢN LÝ BẢNG CÔNG VIỆC -->
+    <app-project-boards
+      class="block"
+      [class.hidden]="activeMainTab() !== 'boards'"
+      [boards]="boards()"
+      [isLoading]="projectStore.isLoadingBoards()"
+      [canCreateBoard]="canManageRoles()"
+      (createBoard)="openCreateBoardModal()"
+      (boardClick)="onBoardClick($event)"
+      (togglePin)="onTogglePin($event)"
+    />
+
+    <!-- PANEL 2: KẾ HOẠCH & BACKLOG (API 1: GET /api/sprint/project/{projectId}/backlog) -->
+    <app-project-backlog
+      class="block"
+      [class.hidden]="activeMainTab() !== 'backlog'"
+      [projectId]="proj.id"
+      [targetBoardId]="targetBoardId()"
+      [canManageSprint]="canManageRoles()"
+      [canMoveCard]="isCurrentMember()"
+      (createBoard)="openCreateBoardModal()"
+    />
+
+    <!-- PANEL 2: DANH SÁCH THÀNH VIÊN -->
+    <app-project-members
+      class="block"
+      [class.hidden]="activeMainTab() !== 'members'"
+      [members]="members()"
+      [totalCount]="proj.membersCount"
+      [currentUserId]="currentUserId()"
+      [isWorkspaceOwner]="isWorkspaceOwner()"
+      [isCurrentLeader]="isCurrentLeader()"
+      [canManageRoles]="canManageRoles()"
+      [isBusy]="isMemberActionBusy()"
+      [canRemoveMemberFn]="canRemoveMemberBound"
+      [canChangeRoleFn]="canChangeRoleBound"
+      (addMember)="openAddMemberModal()"
+      (changeRole)="openChangeRoleModal($event)"
+      (removeMember)="openRemoveMember($event)"
+    />
+
+    <!-- Modals -->
+    <!-- Modal đổi vai trò / chức danh thành viên -->
+    <app-change-project-member-modal
+      [isOpen]="!!memberToChangeRole()"
+      [member]="memberToChangeRole()"
+      [projectName]="proj.name"
+      [roles]="projectStore.roles()"
+      [isUpdating]="projectStore.isUpdatingMemberRole() || projectStore.isUpdatingMemberJobTitle()"
+      [errorMessage]="changeRoleError()"
+      (closed)="closeChangeRoleModal()"
+      (confirmed)="confirmChangeRole($event)"
+    />
+
+    <!-- Modal xác nhận xóa / rời dự án -->
+    <app-remove-project-member-modal
+      [isOpen]="!!memberToRemove()"
+      [member]="memberToRemove()"
+      [projectName]="proj.name"
+      [isSelf]="memberToRemove() ? isSelf(memberToRemove()!) : false"
+      [isRemoving]="projectStore.isRemovingMember()"
+      [errorMessage]="memberRemovalError()"
+      (closed)="closeRemoveMember()"
+      (confirmed)="confirmRemoveMember()"
+    />
+
+    <!-- Modal Cài đặt chi tiết dự án -->
+    <app-project-settings-modal
+      [isOpen]="showSettingsModal()"
+      [project]="project()"
+      (closed)="closeSettingsModal()"
+      (saved)="onProjectUpdated($event)"
+      (deleted)="onProjectDeleted($event)"
+    />
+
+    <!-- Modal Thêm thành viên -->
+    <app-add-project-member-modal
+      [isOpen]="showAddMemberModal()"
+      [projectId]="proj.id"
+      [workspaceId]="proj.workspaceId"
+      (closed)="closeAddMemberModal()"
+    />
+
+    <!-- Modal Tạo Board mới -->
+    <app-create-board-modal
+      [isOpen]="showCreateBoardModal()"
+      [projectId]="proj.id"
+      (closed)="closeCreateBoardModal()"
+    />
+  }
+</div>

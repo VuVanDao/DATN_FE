@@ -1,0 +1,205 @@
+@if (isOpen && sprint) {
+  <div
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+    (click)="close()"
+  >
+    <div
+      class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-150"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Modal Header -->
+      <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
+          <div
+            class="w-11 h-11 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0"
+          >
+            <mat-icon fontIcon="check_circle" class="text-2xl"></mat-icon>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+              Hoàn thành Sprint
+            </h3>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+              {{ sprint.name }}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="close()"
+          class="w-8 h-8 rounded-xl inline-flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="close" class="icon-xs"></mat-icon>
+        </button>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div class="p-6 space-y-5">
+        <!-- Summary Stats Cards -->
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Card: Hoàn thành -->
+          <div
+            class="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 space-y-1.5"
+          >
+            <div class="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+              <mat-icon fontIcon="task_alt" class="icon-sm text-emerald-600 dark:text-emerald-400"></mat-icon>
+              <span class="text-xs font-bold leading-none">Đã xong</span>
+            </div>
+            <div class="text-base font-extrabold text-emerald-950 dark:text-emerald-200">
+              {{ completedCards() }} <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400">việc</span>
+            </div>
+            <div class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400/90">
+              {{ completedStoryPoints() }} pts
+            </div>
+          </div>
+
+          <!-- Card: Chưa hoàn thành -->
+          <div
+            class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5"
+          >
+            <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+              <mat-icon fontIcon="pending_actions" class="icon-sm text-amber-500"></mat-icon>
+              <span class="text-xs font-bold leading-none">Chưa xong</span>
+            </div>
+            <div class="text-base font-extrabold text-slate-900 dark:text-white">
+              {{ uncompletedCards() }} <span class="text-xs font-medium text-slate-500">việc</span>
+            </div>
+            <div class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              {{ uncompletedStoryPoints() }} pts
+            </div>
+          </div>
+        </div>
+
+        <!-- Case 1: Tất cả việc đã hoàn thành -->
+        @if (uncompletedCards() === 0) {
+          <div
+            class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300 flex items-start gap-3"
+          >
+            <mat-icon fontIcon="celebration" class="icon-sm text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5"></mat-icon>
+            <p class="leading-relaxed">
+              Tuyệt vời! Toàn bộ <strong>{{ totalCards() }} công việc</strong> trong Sprint này đã hoàn thành xuất sắc. Nhấn xác nhận để chính thức đóng Sprint.
+            </p>
+          </div>
+        } @else {
+          <!-- Case 2: Còn công việc dở dang -> Cho phép chọn điểm đến -->
+          <div class="space-y-3">
+            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200">
+              Chuyển {{ uncompletedCards() }} công việc chưa hoàn thành tới:
+            </label>
+
+            <!-- Option 1: Product Backlog -->
+            <div
+              (click)="setDestination('backlog')"
+              class="p-3.5 rounded-2xl border transition cursor-pointer flex items-start gap-3"
+              [class.border-indigo-600]="targetDestination() === 'backlog'"
+              [class.bg-indigo-50/50]="targetDestination() === 'backlog'"
+              [class.dark:border-indigo-500]="targetDestination() === 'backlog'"
+              [class.dark:bg-indigo-950/20]="targetDestination() === 'backlog'"
+              [class.border-slate-200]="targetDestination() !== 'backlog'"
+              [class.dark:border-slate-800]="targetDestination() !== 'backlog'"
+            >
+              <input
+                type="radio"
+                name="destination"
+                [checked]="targetDestination() === 'backlog'"
+                class="mt-1 text-indigo-600 focus:ring-indigo-500"
+              />
+              <div class="space-y-0.5 flex-1">
+                <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <mat-icon fontIcon="inbox" class="icon-xs text-indigo-500"></mat-icon>
+                  <span class="leading-none">Product Backlog</span>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                  Đưa về kho việc tồn đọng để đánh giá và lên kế hoạch lại sau.
+                </p>
+              </div>
+            </div>
+
+            <!-- Option 2: Sprint tiếp theo -->
+            <div
+              (click)="setDestination('future_sprint')"
+              class="p-3.5 rounded-2xl border transition cursor-pointer space-y-2.5"
+              [class.border-indigo-600]="targetDestination() === 'future_sprint'"
+              [class.bg-indigo-50/50]="targetDestination() === 'future_sprint'"
+              [class.dark:border-indigo-500]="targetDestination() === 'future_sprint'"
+              [class.dark:bg-indigo-950/20]="targetDestination() === 'future_sprint'"
+              [class.border-slate-200]="targetDestination() !== 'future_sprint'"
+              [class.dark:border-slate-800]="targetDestination() !== 'future_sprint'"
+            >
+              <div class="flex items-start gap-3">
+                <input
+                  type="radio"
+                  name="destination"
+                  [checked]="targetDestination() === 'future_sprint'"
+                  [disabled]="futureSprints.length === 0"
+                  class="mt-1 text-indigo-600 focus:ring-indigo-500 disabled:opacity-40"
+                />
+                <div class="space-y-0.5 flex-1">
+                  <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <mat-icon fontIcon="bolt" class="icon-xs text-amber-500"></mat-icon>
+                    <span class="leading-none">Sprint kế tiếp</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                    Chuyển các việc dở dang sang một đợt chạy Sprint tiếp theo.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Dropdown chọn Future Sprint -->
+              @if (targetDestination() === 'future_sprint') {
+                @if (futureSprints.length > 0) {
+                  <div class="pl-7 pt-1" (click)="$event.stopPropagation()">
+                    <select
+                      [value]="selectedFutureSprintId()"
+                      (change)="onSelectFutureSprint($event)"
+                      class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition cursor-pointer"
+                    >
+                      @for (fs of futureSprints; track fs.id) {
+                        <option [value]="fs.id">{{ fs.name }}</option>
+                      }
+                    </select>
+                  </div>
+                } @else {
+                  <p class="pl-7 text-[11px] text-amber-600 dark:text-amber-400 italic">
+                    Dự án chưa có Sprint tương lai nào sẵn sàng. Vui lòng chọn Product Backlog hoặc tạo Sprint mới trước.
+                  </p>
+                }
+              }
+            </div>
+          </div>
+        }
+
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          Sau khi hoàn thành, Sprint này sẽ được đánh dấu <strong>Closed</strong> và lưu vào lịch sử báo cáo đợt chạy.
+        </p>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-6 pt-0 flex items-center justify-end gap-2.5">
+        <button
+          type="button"
+          (click)="close()"
+          class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        >
+          Hủy
+        </button>
+
+        <button
+          type="button"
+          (click)="onConfirmComplete()"
+          [disabled]="sprintStore.isCompletingSprint()"
+          class="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition cursor-pointer shadow-md shadow-emerald-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          @if (sprintStore.isCompletingSprint()) {
+            <mat-icon fontIcon="refresh" class="icon-xs animate-spin"></mat-icon>
+            <span class="leading-none">Đang đóng Sprint...</span>
+          } @else {
+            <mat-icon fontIcon="check_circle" class="icon-xs"></mat-icon>
+            <span class="leading-none">Hoàn thành Sprint</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

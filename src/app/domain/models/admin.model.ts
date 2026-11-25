@@ -1,0 +1,33 @@
+import { User } from './user.model';
+
+export interface UserManagement extends User {
+  isDeleted: boolean;
+}
+export interface GetUserManagementParams {
+  search?: string; // Từ khóa tìm kiếm (email hoặc username)
+  isActive?: boolean; // Lọc theo trạng thái tài khoản: true (hoạt động), false (bị khóa), undefined (tất cả)
+  pageIndex?: number; // Trang cần lấy
+  pageSize?: number; // Kích thước trang
+}
+export interface UpdateUserStatusRequest {
+  userId: string;
+  isActive: boolean;
+  reason?: string;
+}
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  scope: string;
+  isSystemRole: boolean;
+}
+export interface CreateUserRequest {
+  email: string;
+  username: string;
+  password: string;
+  bio?: string;
+}
+export interface AdminUpdateUserRequest {
+  username: string;
+  bio?: string;
+}

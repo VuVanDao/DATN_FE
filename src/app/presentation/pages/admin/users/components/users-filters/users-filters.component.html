@@ -1,0 +1,65 @@
+<!-- 3. TOOLBAR: TÌM KIẾM & BỘ LỌC -->
+<div
+  class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3"
+>
+  <!-- Ô Tìm kiếm -->
+  <div class="relative flex-1 max-w-md">
+    <mat-icon
+      fontIcon="search"
+      class="icon-sm text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+    ></mat-icon>
+    <input
+      type="text"
+      #search
+      [value]="query()"
+      (input)="queryChange.emit(search.value)"
+      placeholder="Tìm kiếm theo email, username..."
+      class="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl pl-10 pr-9 py-2 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+    />
+    @if (query()) {
+      <button
+        type="button"
+        (click)="queryChange.emit('')"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+      >
+        <mat-icon fontIcon="close" class="icon-xs"></mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Lọc Trạng thái -->
+  <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+    <button
+      type="button"
+      (click)="statusChange.emit('all')"
+      [class.bg-white]="status() === 'all'"
+      [class.dark:bg-slate-900]="status() === 'all'"
+      [class.shadow-xs]="status() === 'all'"
+      class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+    >
+      Tất cả
+    </button>
+    <button
+      type="button"
+      (click)="statusChange.emit('active')"
+      [class.bg-white]="status() === 'active'"
+      [class.dark:bg-slate-900]="status() === 'active'"
+      [class.text-emerald-600]="status() === 'active'"
+      [class.shadow-xs]="status() === 'active'"
+      class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+    >
+      Hoạt động
+    </button>
+    <button
+      type="button"
+      (click)="statusChange.emit('inactive')"
+      [class.bg-white]="status() === 'inactive'"
+      [class.dark:bg-slate-900]="status() === 'inactive'"
+      [class.text-rose-600]="status() === 'inactive'"
+      [class.shadow-xs]="status() === 'inactive'"
+      class="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+    >
+      Đã khóa
+    </button>
+  </div>
+</div>

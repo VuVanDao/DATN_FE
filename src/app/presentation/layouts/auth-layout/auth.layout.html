@@ -1,0 +1,320 @@
+<div
+  class="min-h-screen w-full flex"
+  style="
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  "
+>
+  <!-- ===== LEFT: Illustration ===== -->
+  <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden" style="background: #0b1022">
+    <!-- Gradient overlays -->
+    <div
+      class="absolute inset-0"
+      style="
+        background:
+          radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.35), transparent 45%),
+          radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.28), transparent 45%),
+          linear-gradient(160deg, #0b1022 0%, #131a35 60%, #191033 100%);
+      "
+    ></div>
+
+    <div class="relative z-10 flex flex-col justify-between p-12 w-full">
+      <!-- Logo -->
+      <div class="flex items-center gap-2">
+        <div
+          class="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg"
+          style="
+            background: linear-gradient(135deg, #818cf8, #a78bfa);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+          "
+        >
+          <mat-icon
+            fontIcon="bolt"
+            class="icon-xs text-white flex items-center justify-center"
+          ></mat-icon>
+        </div>
+        <span class="font-semibold tracking-tight text-white">TaskFlow AI</span>
+      </div>
+
+      <!-- Center Illustration & Tagline -->
+      @if (isRecoveryMode()) {
+        <!-- Glowing Lock Illustration (Quên mật khẩu / Đặt lại mật khẩu) -->
+        <div class="flex-1 flex items-center justify-center py-10">
+          <div class="relative flex items-center justify-center">
+            <!-- Ripple ring 3 (Outer) -->
+            <div
+              class="w-80 h-80 rounded-full border border-indigo-500/15 flex items-center justify-center absolute animate-pulse"
+              style="animation-duration: 4s"
+            ></div>
+            <!-- Ripple ring 2 (Middle) -->
+            <div
+              class="w-64 h-64 rounded-full border border-indigo-500/25 flex items-center justify-center absolute"
+            ></div>
+            <!-- Ripple ring 1 (Inner) -->
+            <div
+              class="w-48 h-48 rounded-full border border-indigo-500/35 flex items-center justify-center absolute"
+            ></div>
+
+            <!-- Floating glowing dots -->
+            <div
+              class="absolute -top-14 left-12 w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_10px_#818cf8]"
+            ></div>
+            <div
+              class="absolute bottom-6 -right-6 w-1.5 h-1.5 rounded-full bg-indigo-300 shadow-[0_0_8px_#818cf8]"
+            ></div>
+            <div
+              class="absolute top-1/2 -right-16 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]"
+            ></div>
+            <div
+              class="absolute -bottom-10 -left-6 w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_#818cf8]"
+            ></div>
+
+            <!-- Center Lock Box -->
+            <div
+              class="w-20 h-20 rounded-2xl flex items-center justify-center relative z-10"
+              style="
+                backdrop-filter: blur(16px);
+                background: rgba(30, 41, 59, 0.75);
+                border: 1px solid rgba(129, 140, 248, 0.4);
+                box-shadow: 0 0 40px rgba(99, 102, 241, 0.3);
+              "
+            >
+              <mat-icon
+                fontIcon="lock"
+                class="icon-2xl text-indigo-300 flex items-center justify-center"
+              ></mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tagline for Recovery -->
+        <div class="max-w-md">
+          <h1 class="text-3xl font-bold text-white leading-tight" style="letter-spacing: -0.02em">
+            Quên mật khẩu không sao,<br />vài bước là quay lại làm việc.
+          </h1>
+          <p class="mt-3 text-sm leading-relaxed" style="color: rgba(165, 180, 252, 0.65)">
+            Chúng tôi sẽ gửi một liên kết bảo mật đến email của bạn để đặt lại mật khẩu một cách an
+            toàn.
+          </p>
+        </div>
+      } @else {
+        <!-- Floating Kanban Cards (Login / Register) -->
+        <div class="flex-1 flex items-center justify-center py-10">
+          <div class="relative w-full max-w-md" style="height: 320px">
+            <!-- Card 1: Cần làm -->
+            <div
+              class="absolute left-0 top-2 w-44 rounded-xl p-3 auth-float-1"
+              style="
+                backdrop-filter: blur(12px);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+              "
+            >
+              <p style="font-size: 11px; color: #a5b4fc; font-weight: 600" class="mb-2">
+                Cần làm · 4
+              </p>
+              <div class="space-y-2 mb-3">
+                <div class="h-2.5 rounded" style="background: rgba(255, 255, 255, 0.2)"></div>
+                <div
+                  class="h-2.5 rounded w-3/4"
+                  style="background: rgba(255, 255, 255, 0.12)"
+                ></div>
+              </div>
+              <div
+                class="h-10 rounded-lg flex items-center px-2 gap-2"
+                style="
+                  background: rgba(255, 255, 255, 0.07);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                "
+              >
+                <span
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 2px 8px;
+                    border-radius: 6px;
+                    background: rgba(239, 68, 68, 0.75);
+                    color: white;
+                  "
+                  >Bug</span
+                >
+                <div class="h-2 rounded flex-1" style="background: rgba(255, 255, 255, 0.18)"></div>
+              </div>
+            </div>
+
+            <!-- Card 2: Đang làm -->
+            <div
+              class="absolute right-2 top-24 w-48 rounded-xl p-3 auth-float-2"
+              style="
+                backdrop-filter: blur(12px);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+              "
+            >
+              <p style="font-size: 11px; color: #a5b4fc; font-weight: 600" class="mb-2">
+                Đang làm · 3
+              </p>
+              <div
+                class="h-10 rounded-lg flex items-center px-2 gap-2 mb-2"
+                style="
+                  background: rgba(255, 255, 255, 0.07);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                "
+              >
+                <span
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 2px 8px;
+                    border-radius: 6px;
+                    background: rgba(59, 130, 246, 0.75);
+                    color: white;
+                  "
+                  >Task</span
+                >
+                <div class="h-2 rounded flex-1" style="background: rgba(255, 255, 255, 0.18)"></div>
+              </div>
+              <div
+                class="h-10 rounded-lg flex items-center px-2 gap-2"
+                style="
+                  background: rgba(255, 255, 255, 0.07);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                "
+              >
+                <span
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 2px 8px;
+                    border-radius: 6px;
+                    background: rgba(16, 185, 129, 0.75);
+                    color: white;
+                  "
+                  >Story</span
+                >
+                <div class="h-2 rounded flex-1" style="background: rgba(255, 255, 255, 0.18)"></div>
+              </div>
+            </div>
+
+            <!-- Card 3: Hoàn thành -->
+            <div
+              class="absolute left-10 bottom-0 w-44 rounded-xl p-3 auth-float-3"
+              style="
+                backdrop-filter: blur(12px);
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+              "
+            >
+              <p style="font-size: 11px; color: #a5b4fc; font-weight: 600" class="mb-2">
+                Hoàn thành · 8
+              </p>
+              <div
+                class="h-10 rounded-lg flex items-center px-2 gap-2"
+                style="
+                  background: rgba(255, 255, 255, 0.07);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                "
+              >
+                <span
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    padding: 2px 8px;
+                    border-radius: 6px;
+                    background: rgba(168, 85, 247, 0.75);
+                    color: white;
+                  "
+                  >Epic</span
+                >
+                <div class="h-2 rounded flex-1" style="background: rgba(255, 255, 255, 0.18)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tagline for Login/Register -->
+        <div class="max-w-md">
+          <h1 class="text-3xl font-bold text-white leading-tight" style="letter-spacing: -0.02em">
+            Điều phối cả đội,<br />không cần đoán việc kế tiếp.
+          </h1>
+          <p class="mt-3 text-sm leading-relaxed" style="color: rgba(165, 180, 252, 0.65)">
+            Kanban kéo thả, Sprint kiểu Scrum, phụ thuộc task rõ ràng.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ===== RIGHT: Form (router-outlet) ===== -->
+  <div
+    class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10"
+    style="background: #0f172a"
+  >
+    <div class="w-full max-w-sm">
+      <!-- Mobile logo (shown only on small screens) -->
+      <div class="lg:hidden flex items-center gap-2 mb-10 justify-center">
+        <div
+          class="w-8 h-8 rounded-lg flex items-center justify-center"
+          style="background: linear-gradient(135deg, #818cf8, #a78bfa)"
+        >
+          <mat-icon
+            fontIcon="bolt"
+            class="icon-xs text-white flex items-center justify-center"
+          ></mat-icon>
+        </div>
+        <span class="font-semibold tracking-tight text-white">TaskFlow AI</span>
+      </div>
+
+      <!-- Angular Router renders LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage here -->
+      <router-outlet></router-outlet>
+
+      <!-- Footer note -->
+      <p class="mt-10 text-xs text-center" style="color: #475569">
+        Đồ Án Tốt Nghiệp &bull; Hệ Thống Quản Lý Dự Án Và Công Việc
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes authFloat1 {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes authFloat2 {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes authFloat3 {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  .auth-float-1 {
+    animation: authFloat1 6s ease-in-out infinite;
+  }
+  .auth-float-2 {
+    animation: authFloat2 7s ease-in-out infinite 0.5s;
+  }
+  .auth-float-3 {
+    animation: authFloat3 5.5s ease-in-out infinite 1s;
+  }
+</style>

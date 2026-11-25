@@ -1,0 +1,73 @@
+<!-- ===== LEFT SIDEBAR NAVIGATION ===== -->
+<aside
+  class="h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-all duration-200 z-30 select-none overflow-hidden"
+  [class.w-60]="!layoutService.isSidebarCollapsed()"
+  [class.w-18]="layoutService.isSidebarCollapsed()"
+>
+  <!-- Top Section: Menu Navigation & Workspaces -->
+  <div class="p-3 space-y-4 overflow-y-auto overflow-x-hidden flex-1 slim-scrollbar pr-1.5">
+    <!-- 1. Primary Navigation Links -->
+    <nav class="space-y-1">
+      <!-- Trang chủ -->
+      <a
+        routerLink="/home-page"
+        routerLinkActive="bg-blue-50 dark:bg-blue-600/15 text-blue-600 dark:text-blue-400 font-semibold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        [matTooltip]="layoutService.isSidebarCollapsed() ? 'Trang chủ' : ''"
+        matTooltipPosition="right"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 hover:text-slate-900 dark:hover:text-white transition group cursor-pointer"
+        [class.justify-center]="layoutService.isSidebarCollapsed()"
+      >
+        <mat-icon fontIcon="dashboard"></mat-icon>
+        @if (!layoutService.isSidebarCollapsed()) {
+          <span class="text-sm truncate">Trang chủ</span>
+        }
+      </a>
+
+      <app-sidebar-recent
+        [collapsed]="layoutService.isSidebarCollapsed()"
+        [workspaces]="workspaces()"
+      />
+    </nav>
+
+    <!-- Divider -->
+    <div class="border-t border-slate-200 dark:border-slate-800 my-2"></div>
+
+    <app-sidebar-workspaces
+      [collapsed]="layoutService.isSidebarCollapsed()"
+      [loading]="workspaceStore.isLoading()"
+      [workspaces]="displayedWorkspaces()"
+      [totalCount]="workspaceStore.totalCount()"
+      (create)="openCreateModal()"
+    />
+  </div>
+
+  <div class="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
+    @if (!layoutService.isSidebarCollapsed()) {
+      <!-- <button
+        type="button"
+        (click)="layoutService.toggleAiDrawer()"
+        class="w-full flex items-center justify-center gap-2.5 px-3.5 py-3 rounded-2xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/35 hover:scale-[1.01] active:scale-[0.98] transition cursor-pointer"
+      >
+        <mat-icon
+          fontIcon="auto_awesome"
+          class="icon-md text-white animate-pulse shrink-0"
+        ></mat-icon>
+        <span class="text-sm font-semibold tracking-tight">Trợ lý AI</span>
+      </button> -->
+    } @else {
+      <!-- <button
+        type="button"
+        (click)="layoutService.toggleAiDrawer()"
+        matTooltip="Trợ lý AI TrelloClone"
+        matTooltipPosition="right"
+        class="w-10 h-10 mx-auto rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-500/25 hover:scale-105 active:scale-95 transition cursor-pointer"
+      >
+        <mat-icon fontIcon="auto_awesome" class="icon-md"></mat-icon>
+      </button> -->
+    }
+  </div>
+</aside>
+
+<!-- Modal Tạo Không gian làm việc mới -->
+<app-workspace-create-modal [isOpen]="isCreateModalOpen()" (closed)="closeCreateModal()" />

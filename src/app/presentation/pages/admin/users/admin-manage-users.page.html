@@ -1,0 +1,169 @@
+<div class="max-w-7xl mx-auto space-y-6 pb-10">
+  <!-- 1. HEADER SECTION -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Quản trị người dùng
+        </h1>
+        <span
+          class="px-2.5 py-0.5 text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full border border-indigo-200 dark:border-indigo-800/60"
+        >
+          Root Admin
+        </span>
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Giám sát, phân quyền vai trò và quản lý trạng thái tài khoản trên toàn bộ hệ thống.
+      </p>
+    </div>
+
+    <!-- Quick Actions: Nút Làm mới + Tạo người dùng -->
+    <div class="flex items-center gap-2.5">
+      <button
+        type="button"
+        (click)="store.loadUsers()"
+        [disabled]="store.isLoading()"
+        class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-xs transition cursor-pointer disabled:opacity-50"
+      >
+        <mat-icon
+          fontIcon="sync"
+          class="icon-sm"
+          [class.animate-spin]="store.isLoading()"
+        ></mat-icon>
+        <span>Làm mới</span>
+      </button>
+      <button
+        type="button"
+        (click)="openCreateModal()"
+        class="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition cursor-pointer"
+      >
+        <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
+        <span>Tạo người dùng</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. THỐNG KÊ (STAT CARDS) -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <!-- Thẻ 1: Tổng người dùng -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="people" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Tổng theo bộ lọc</p>
+        <p class="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
+          {{ store.stats().total }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Thẻ 2: Đang hoạt động -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="check_circle" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Hoạt động trên trang</p>
+        <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+          {{ store.stats().activeCount }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Thẻ 3: Tài khoản bị khóa -->
+    <div
+      class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-4"
+    >
+      <div
+        class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0"
+      >
+        <mat-icon fontIcon="lock" class="icon-md"></mat-icon>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Bị khóa trên trang</p>
+        <p class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+          {{ store.stats().inactiveCount }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <app-users-filters
+    [query]="searchInput()"
+    [status]="store.statusFilter()"
+    (queryChange)="onSearchChange($event)"
+    (statusChange)="onStatusFilterChange($event)"
+  />
+  <div
+    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden"
+  >
+    <app-users-table
+      [users]="store.users()"
+      [loading]="store.isLoading()"
+      [error]="store.errorMessage()"
+      [currentUserId]="authStore.currentUser()?.id"
+      (view)="openDetailModal($event)"
+      (edit)="openUpdateModal($event)"
+      (assignRole)="openRoleModal($event)"
+      (remove)="openDeleteModal($event)"
+      (statusChange)="openStatusModal($event.user, $event.active)"
+      (retry)="store.loadUsers()"
+    />
+    <app-users-pagination
+      [pageIndex]="store.pageIndex()"
+      [pageSize]="store.pageSize()"
+      [totalPages]="store.totalPages()"
+      [totalCount]="store.totalCount()"
+      (pageChange)="store.setPage($event)"
+      (sizeChange)="store.setPageSize($event)"
+    />
+  </div>
+  <app-user-role-modal
+    [user]="isRoleModalOpen() ? selectedUserForRoles() : null"
+    [allRoles]="store.roles()"
+    [submitting]="store.isSubmitting()"
+    (closed)="closeRoleModal()"
+    (confirmed)="saveRoles($event)"
+  />
+  <!-- 7. MODAL KHÓA / MỞ KHÓA TÀI KHOẢN (Component riêng) -->
+  <app-user-status-modal
+    [user]="selectedUserForStatus()"
+    [isOpen]="isStatusModalOpen()"
+    [targetStatus]="targetStatus()"
+    (closed)="closeStatusModal()"
+  />
+
+  <!-- 8. MODAL XEM CHI TIẾT TÀI KHOẢN (Component riêng) -->
+  <app-user-detail-modal
+    [user]="selectedUserForDetail()"
+    [isOpen]="isDetailModalOpen()"
+    (closed)="closeDetailModal()"
+    (edit)="openUpdateModal($event)"
+  />
+
+  <!-- 9. MODAL TẠO NGƯỜI DÙNG MỚI (Component riêng) -->
+  <app-user-create-modal [isOpen]="isCreateModalOpen()" (closed)="closeCreateModal()" />
+
+  <!-- 10. MODAL XÁC NHẬN XÓA NGƯỜI DÙNG (Component riêng) -->
+  <app-user-delete-modal
+    [user]="selectedUserForDelete()"
+    [isOpen]="isDeleteModalOpen()"
+    (closed)="closeDeleteModal()"
+  />
+
+  <!-- 11. MODAL CẬP NHẬT NGƯỜI DÙNG (Component riêng) -->
+  <app-user-update-modal
+    [user]="selectedUserForUpdate()"
+    [isOpen]="isUpdateModalOpen()"
+    (closed)="closeUpdateModal()"
+  />
+</div>

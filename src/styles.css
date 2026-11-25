@@ -1,3 +1,410 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+@import '@angular/cdk/overlay-prebuilt.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== BASE THEME BACKGROUNDS (Anti-FOUC) ===== */
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html.dark,
+html.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+  color-scheme: dark;
+}
+
+html.light,
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+  color-scheme: light;
+}
+
+/* ===== CUSTOM SLEEK SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.65);
+}
+
+/* Firefox thin scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+}
+
+/* Extra slim scrollbar for sidebar and compact panels */
+.slim-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.slim-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
+}
+
+.slim-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+/* ===== CUSTOM MATERIAL USER MENU ===== */
+.custom-user-menu.mat-mdc-menu-panel {
+  border-radius: 1rem !important; /* rounded-2xl */
+  padding: 0.375rem !important; /* 6px padding quanh panel */
+  min-width: 14.5rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Loại bỏ padding-top/bottom mặc định (8px) của Material để cân đối padding X và Y */
+.custom-user-menu .mat-mdc-menu-content {
+  padding: 0 !important;
+}
+
+html.dark .custom-user-menu.mat-mdc-menu-panel {
+  background-color: #0f172a !important; /* bg-slate-900 */
+  border-color: #1e293b !important; /* border-slate-800 */
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5) !important;
+}
+
+.custom-user-menu .mat-mdc-menu-item {
+  min-height: 36px !important;
+  height: 36px !important;
+  border-radius: 0.625rem !important; /* rounded-lg */
+  padding: 0 0.625rem !important;
+  font-size: 0.8125rem !important; /* text-[13px] tinh tế */
+  display: flex !important;
+  align-items: center !important;
+  color: #334155 !important; /* text-slate-700 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item {
+  color: #cbd5e1 !important; /* dark:text-slate-300 */
+}
+
+.custom-user-menu .mat-mdc-menu-item:hover {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* text-slate-900 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item:hover {
+  background-color: rgba(30, 41, 59, 0.7) !important; /* dark:bg-slate-800/70 */
+  color: #ffffff !important;
+}
+
+.custom-user-menu .mat-mdc-menu-item.logout-item {
+  color: #dc2626 !important; /* text-red-600 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.logout-item {
+  color: #f87171 !important; /* dark:text-red-400 */
+}
+
+.custom-user-menu .mat-mdc-menu-item.logout-item:hover {
+  background-color: #fef2f2 !important; /* bg-red-50 */
+  color: #b91c1c !important;
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.logout-item:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important; /* dark:bg-red-500/10 */
+  color: #fca5a5 !important;
+}
+
+.custom-user-menu .mat-mdc-menu-item.admin-item {
+  color: #4f46e5 !important; /* text-indigo-600 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.admin-item {
+  color: #818cf8 !important; /* dark:text-indigo-400 */
+}
+
+.custom-user-menu .mat-mdc-menu-item.admin-item:hover {
+  background-color: #eef2ff !important;
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item.admin-item:hover {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* ===== ICON SIZE & COLOR FOR USER MENU ===== */
+.custom-user-menu mat-icon {
+  font-size: 1.125rem !important; /* 18px nhỏ gọn tinh tế */
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  line-height: 1.125rem !important;
+  color: #94a3b8 !important; /* text-slate-400 */
+  margin-right: 0.625rem !important; /* khoảng cách với chữ */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  transition: color 0.15s ease;
+}
+
+html.dark .custom-user-menu mat-icon {
+  color: #64748b !important; /* dark:text-slate-500 */
+}
+
+.custom-user-menu .mat-mdc-menu-item:hover mat-icon {
+  color: #475569 !important; /* slate-600 */
+}
+
+html.dark .custom-user-menu .mat-mdc-menu-item:hover mat-icon {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+/* Icon Đăng xuất (màu đỏ) */
+.custom-user-menu .logout-item mat-icon {
+  color: #dc2626 !important; /* red-600 */
+}
+
+html.dark .custom-user-menu .logout-item mat-icon {
+  color: #f87171 !important; /* dark:text-red-400 */
+}
+
+.custom-user-menu .logout-item:hover mat-icon {
+  color: #b91c1c !important; /* red-700 */
+}
+
+html.dark .custom-user-menu .logout-item:hover mat-icon {
+  color: #fca5a5 !important;
+}
+
+/* Icon Quản trị (màu tím) */
+.custom-user-menu .admin-item mat-icon {
+  color: #6366f1 !important;
+}
+
+html.dark .custom-user-menu .admin-item mat-icon {
+  color: #818cf8 !important;
+}
+
+/* ===== TIỆN ÍCH CUSTOM KÍCH THƯỚC MAT-ICON TOÀN DỰ ÁN ===== */
+mat-icon.icon-xxs,
+mat-icon.icon-xs,
+mat-icon.icon-sm,
+mat-icon.icon-md,
+mat-icon.icon-lg,
+mat-icon.icon-xl,
+mat-icon.icon-2xl {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle;
+}
+
+mat-icon.icon-xxs {
+  width: 0.875rem !important; /* 14px */
+  height: 0.875rem !important;
+  font-size: 0.875rem !important;
+  line-height: 0.875rem !important;
+}
+
+mat-icon.icon-xs {
+  width: 1rem !important; /* 16px */
+  height: 1rem !important;
+  font-size: 1rem !important;
+  line-height: 1rem !important;
+}
+
+mat-icon.icon-sm {
+  width: 1.125rem !important; /* 18px */
+  height: 1.125rem !important;
+  font-size: 1.125rem !important;
+  line-height: 1.125rem !important;
+}
+
+mat-icon.icon-md {
+  width: 1.25rem !important; /* 20px */
+  height: 1.25rem !important;
+  font-size: 1.25rem !important;
+  line-height: 1.25rem !important;
+}
+
+mat-icon.icon-lg {
+  width: 1.5rem !important; /* 24px */
+  height: 1.5rem !important;
+  font-size: 1.5rem !important;
+  line-height: 1.5rem !important;
+}
+
+mat-icon.icon-xl {
+  width: 2rem !important; /* 32px */
+  height: 2rem !important;
+  font-size: 2rem !important;
+  line-height: 2rem !important;
+}
+
+mat-icon.icon-2xl {
+  width: 2.25rem !important; /* 36px */
+  height: 2.25rem !important;
+  font-size: 2.25rem !important;
+  line-height: 2.25rem !important;
+}
+
+/* ===== CUSTOM MATERIAL DROPDOWN / FILTER MENU ===== */
+.custom-dropdown-menu.mat-mdc-menu-panel {
+  border-radius: 1rem !important; /* rounded-2xl */
+  padding: 0.375rem !important;
+  min-width: 11rem !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+.custom-dropdown-menu .mat-mdc-menu-content {
+  padding: 0 !important;
+}
+
+html.dark .custom-dropdown-menu.mat-mdc-menu-panel {
+  background-color: #0f172a !important; /* bg-slate-900 */
+  border-color: #1e293b !important; /* border-slate-800 */
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5) !important;
+}
+
+.custom-dropdown-menu .mat-mdc-menu-item {
+  min-height: 36px !important;
+  height: 36px !important;
+  border-radius: 0.625rem !important; /* rounded-lg */
+  padding: 0 0.75rem !important;
+  font-size: 0.8125rem !important; /* text-[13px] */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  color: #334155 !important; /* text-slate-700 */
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+html.dark .custom-dropdown-menu .mat-mdc-menu-item {
+  color: #cbd5e1 !important; /* dark:text-slate-300 */
+}
+
+.custom-dropdown-menu .mat-mdc-menu-item:hover {
+  background-color: #f1f5f9 !important; /* slate-100 */
+  color: #0f172a !important; /* text-slate-900 */
+}
+
+html.dark .custom-dropdown-menu .mat-mdc-menu-item:hover {
+  background-color: rgba(30, 41, 59, 0.7) !important; /* dark:bg-slate-800/70 */
+  color: #ffffff !important;
+}
+
+.custom-dropdown-menu .mat-mdc-menu-item.active-item {
+  background-color: #eef2ff !important;
+  color: #4f46e5 !important;
+  font-weight: 600 !important;
+}
+
+html.dark .custom-dropdown-menu .mat-mdc-menu-item.active-item {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #818cf8 !important;
+}
+
+.custom-dropdown-menu mat-icon.check-icon {
+  font-size: 1rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+  line-height: 1rem !important;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* ===== GLOBAL NATIVE SELECT STYLING ===== */
+/* Remove ugly native OS dropdown/scroll button and use modern SVG chevron */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3e%3c/path%3e%3c/svg%3e");
+  background-position: right 0.65rem center;
+  background-repeat: no-repeat;
+  background-size: 1rem 1rem;
+  padding-right: 2.25rem !important;
+}
+
+select::-ms-expand {
+  display: none !important;
+}
+
+select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+html.dark select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+/* ===== CDK DRAG & DROP STYLING ===== */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  opacity: 0.95;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+  border-radius: 1rem;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .cdk-drag {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

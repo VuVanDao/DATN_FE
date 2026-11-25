@@ -1,0 +1,58 @@
+<div
+  class="h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col transition-colors duration-200 overflow-hidden"
+>
+  <!-- Top Navigation Bar -->
+  <app-main-header />
+
+  <!-- Body: Dynamic Left Sidebar + Main Content + Right AI Drawer -->
+  <div class="flex-1 flex overflow-hidden relative min-h-0">
+    <!-- Dynamic Left Sidebar: Chuyển đổi linh hoạt giữa các loại Sidebar -->
+    @switch (layoutService.activeSidebar()) {
+      @case ('main') {
+        <app-main-sidebar />
+      }
+      @case ('settings') {
+        <app-settings-sidebar />
+      }
+      @case ('admin') {
+        <app-admin-sidebar></app-admin-sidebar>
+      }
+      <!-- Mai sau khi phát triển thêm Board / Workspace Sidebar, chỉ cần thêm case tại đây: -->
+      <!-- @case ('board') { <app-board-sidebar /> } -->
+      <!-- @case ('workspace') { <app-workspace-sidebar /> } -->
+    }
+
+    <!-- Main Content Area -->
+    <main
+      class="flex-1 transition-all duration-200 min-h-0 min-w-0"
+      [class.p-5]="!layoutService.isFullBleed()"
+      [class.overflow-y-auto]="!layoutService.isFullBleed()"
+      [class.p-0]="layoutService.isFullBleed()"
+      [class.overflow-hidden]="layoutService.isFullBleed()"
+      [class.flex]="layoutService.isFullBleed()"
+      [class.flex-col]="layoutService.isFullBleed()"
+      [class.h-full]="layoutService.isFullBleed()"
+      [style.height]="layoutService.isFullBleed() ? '100%' : 'auto'"
+    >
+      <div
+        class="w-full min-w-0"
+        [class.h-full]="layoutService.isFullBleed()"
+        [class.flex]="layoutService.isFullBleed()"
+        [class.flex-col]="layoutService.isFullBleed()"
+        [class.flex-1]="layoutService.isFullBleed()"
+        [class.min-h-0]="layoutService.isFullBleed()"
+        [style.display]="layoutService.isFullBleed() ? 'flex' : 'block'"
+        [style.flex-direction]="layoutService.isFullBleed() ? 'column' : 'initial'"
+        [style.flex]="layoutService.isFullBleed() ? '1' : 'initial'"
+        [style.height]="layoutService.isFullBleed() ? '100%' : 'auto'"
+      >
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+
+    <!-- Right AI Assistant Drawer -->
+    @if (layoutService.isAiDrawerOpen()) {
+      <app-ai-drawer />
+    }
+  </div>
+</div>

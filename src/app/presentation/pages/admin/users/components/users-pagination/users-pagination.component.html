@@ -1,0 +1,46 @@
+<!-- 5. PHÂN TRANG (PAGINATION) -->
+<div
+  class="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400"
+>
+  <div>
+    Hiển thị trang
+    <span class="font-semibold text-slate-800 dark:text-slate-200">{{ pageIndex() }}</span>
+    /
+    <span class="font-semibold text-slate-800 dark:text-slate-200">{{ totalPages() }}</span>
+    <span> (Tổng cộng {{ totalCount() }} người dùng)</span>
+    <select
+      [value]="pageSize()"
+      (change)="sizeChange.emit(+$any($event.target).value)"
+      class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer transition ml-3"
+    >
+      <option value="5">5 dòng / trang</option>
+      <option value="10">10 dòng / trang</option>
+      <option value="20">20 dòng / trang</option>
+      <option value="50">50 dòng / trang</option>
+    </select>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <!-- Nút Trang trước -->
+    <button
+      type="button"
+      (mousedown)="$event.preventDefault()"
+      (click)="pageChange.emit(pageIndex() - 1)"
+      [disabled]="pageIndex() <= 1"
+      class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+    >
+      Trước
+    </button>
+
+    <!-- Nút Trang kế -->
+    <button
+      type="button"
+      (mousedown)="$event.preventDefault()"
+      (click)="pageChange.emit(pageIndex() + 1)"
+      [disabled]="pageIndex() >= totalPages()"
+      class="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+    >
+      Sau
+    </button>
+  </div>
+</div>

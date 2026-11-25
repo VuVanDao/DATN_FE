@@ -1,0 +1,237 @@
+<div
+  (click)="cardClick.emit(card())"
+  class="group relative bg-white dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/70 hover:border-indigo-400/80 dark:hover:border-indigo-500/60 rounded-xl shadow-2xs hover:shadow-md transition-all duration-150 cursor-pointer overflow-hidden flex flex-col"
+>
+  <!-- Card Cover Image (if available) -->
+  @if (card().coverUrl) {
+    <div class="w-full h-32 overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <img
+        [src]="card().coverUrl"
+        [alt]="card().title"
+        class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+      />
+    </div>
+  }
+
+  <div class="px-3 py-2 flex flex-col justify-center">
+    <!-- Inline Title Editor vs Normal Title + 3-dots Menu Button -->
+    @if (isEditingTitle()) {
+      <div class="space-y-1.5" (click)="$event.stopPropagation()">
+        <textarea
+          #titleInput
+          [ngModel]="editingTitleValue()"
+          (ngModelChange)="editingTitleValue.set($event)"
+          (keydown.enter)="$event.preventDefault(); saveTitle()"
+          (keydown.escape)="cancelEditingTitle()"
+          rows="2"
+          class="w-full bg-white dark:bg-slate-900 border-2 border-indigo-500 rounded-lg p-1.5 text-xs font-medium text-slate-900 dark:text-white outline-hidden shadow-xs resize-none transition"
+        ></textarea>
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            (click)="saveTitle()"
+            class="px-2.5 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-[11px] font-semibold cursor-pointer shadow-xs transition"
+          >
+            Lưu
+          </button>
+          <button
+            type="button"
+            (click)="cancelEditingTitle()"
+            class="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60 transition cursor-pointer"
+            title="Huỷ"
+            aria-label="Huỷ"
+          >
+            <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Card Title & 3-Dots Action Button -->
+      <div class="flex items-start justify-between gap-1.5">
+        <div class="flex items-start gap-1.5 flex-1 min-w-0">
+          @if (isCompleted()) {
+            <mat-icon fontIcon="check_circle" class="text-xs! w-3.5! h-3.5! text-emerald-500 shrink-0 mt-0.5"></mat-icon>
+          }
+          <p
+            class="text-xs sm:text-[13px] font-medium text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors leading-snug wrap-break-word flex-1 select-none"
+            [class.line-through]="isCompleted()"
+            [class.opacity-60]="isCompleted()"
+          >
+            {{ card().title }}
+          </p>
+        </div>
+
+        <button
+          #cardMenuTrigger="cdkOverlayOrigin"
+          cdkOverlayOrigin
+          type="button"
+          (mousedown)="$event.stopPropagation()"
+          (click)="toggleMenu($event)"
+          class="opacity-0 group-hover:opacity-100 w-5 h-5 -mr-1 -mt-0.5 flex items-center justify-center rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-200/80 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/70 transition-all cursor-pointer shrink-0"
+          [class.opacity-100]="isMenuOpen()"
+          [class.bg-slate-200/80]="isMenuOpen()"
+          [class.dark:bg-slate-700/70]="isMenuOpen()"
+          title="Tùy chọn thẻ"
+          aria-label="Tùy chọn thẻ"
+        >
+          <mat-icon fontIcon="more_horiz" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+        </button>
+
+        <!-- Card Actions Menu Component -->
+        <app-card-actions-menu
+          [origin]="cardMenuTrigger"
+          [isOpen]="isMenuOpen()"
+          [card]="card()"
+          (openDetail)="onOpenCard()"
+          (editTitle)="startEditingTitle()"
+          (changeCover)="openCoverPicker()"
+          (changeMembers)="onPlaceholderAction('Thay đổi thành viên')"
+          (changeDueDate)="onPlaceholderAction('Thay đổi ngày hết hạn')"
+          (moveCard)="onPlaceholderAction('Di chuyển thẻ')"
+          (copyCard)="onPlaceholderAction('Sao chép thẻ')"
+          (deleteCard)="onDeleteCard()"
+          (closed)="closeMenu()"
+        />
+
+        <!-- Card Cover Picker Component -->
+        <app-card-cover-picker
+          [origin]="cardMenuTrigger"
+          [isOpen]="isCoverMenuOpen()"
+          [currentCoverUrl]="card().coverUrl"
+          (saveCover)="onSaveCover($event)"
+          (removeCover)="onRemoveCover()"
+          (closed)="closeCoverPicker()"
+        />
+      </div>
+
+      <!-- Card Footer Metadata (Story Points, Blocked Badge, Comments & Assignee) -->
+      @if (
+        (card().storyPoints !== null && card().storyPoints !== undefined) ||
+        card().isBlocked ||
+        card().dueDate ||
+        (card().commentsCount || 0) > 0 ||
+        card().assigneeName
+      ) {
+        <div
+          class="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-700/50"
+        >
+          <div class="flex items-center gap-1.5 flex-wrap">
+            @if (card().isBlocked) {
+              @if (isCompleted()) {
+                <span
+                  class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60"
+                  [title]="'Cảnh báo: Thẻ này đã hoàn thành nhưng có ' + (card().blockedByCount || 1) + ' công việc tiên quyết chưa hoàn thành'"
+                >
+                  <mat-icon
+                    fontIcon="warning"
+                    class="text-[10px]! w-2.5! h-2.5! text-amber-500"
+                  ></mat-icon>
+                  <span>Tiên quyết chưa xong</span>
+                </span>
+              } @else {
+                <span
+                  class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60"
+                  [title]="'Thẻ này đang bị chặn bởi ' + (card().blockedByCount || 1) + ' công việc chưa hoàn thành'"
+                >
+                  <mat-icon
+                    fontIcon="block"
+                    class="text-[10px]! w-2.5! h-2.5! text-rose-500"
+                  ></mat-icon>
+                  <span>Bị chặn ({{ card().blockedByCount || 1 }})</span>
+                </span>
+              }
+            }
+
+            @if (dueDateStatus(); as ds) {
+              <span
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border select-none transition-colors"
+                [class]="
+                  ds.isCompleted
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    : ds.isOverdue
+                      ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800 font-bold'
+                      : ds.isDueSoon
+                        ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 font-semibold'
+                        : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 border-slate-200/70 dark:border-slate-600/50'
+                "
+                [title]="
+                  ds.isCompleted
+                    ? 'Đã hoàn thành'
+                    : ds.isOverdue
+                      ? 'Đã quá hạn chót (' + ds.formatted + ')'
+                      : ds.diffDays === 0
+                        ? 'Hôm nay là hạn chót (' + ds.formatted + ')'
+                        : ds.isDueSoon
+                          ? 'Sắp đến hạn (' + ds.formatted + ')'
+                          : 'Hạn chót: ' + ds.formatted
+                "
+              >
+                <mat-icon
+                  [fontIcon]="ds.isCompleted ? 'check_circle' : ds.isOverdue ? 'alarm' : 'schedule'"
+                  class="text-[10px]! w-2.5! h-2.5!"
+                  [class]="
+                    ds.isCompleted
+                      ? 'text-emerald-500'
+                      : ds.isOverdue
+                        ? 'text-rose-500'
+                        : ds.isDueSoon
+                          ? 'text-amber-500'
+                          : 'text-slate-400'
+                  "
+                ></mat-icon>
+                <span>{{ ds.formatted }}</span>
+              </span>
+            }
+
+            @if (card().storyPoints !== null && card().storyPoints !== undefined) {
+              <span
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60"
+                title="Story Points"
+              >
+                <mat-icon
+                  fontIcon="bolt"
+                  class="text-[10px]! w-2.5! h-2.5! text-amber-500"
+                ></mat-icon>
+                <span>{{ card().storyPoints }} pts</span>
+              </span>
+            }
+
+            @if ((card().commentsCount || 0) > 0) {
+              <span
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-slate-600/50"
+                [title]="card().commentsCount + ' bình luận'"
+              >
+                <mat-icon
+                  fontIcon="chat_bubble_outline"
+                  class="text-[10px]! w-2.5! h-2.5! text-slate-400 dark:text-slate-400"
+                ></mat-icon>
+                <span>{{ card().commentsCount }}</span>
+              </span>
+            }
+          </div>
+
+          @if (card().assigneeName) {
+            <div
+              class="flex items-center gap-1 ml-auto"
+              [title]="'Người thực hiện: ' + card().assigneeName"
+            >
+              @if (card().assigneeAvatarUrl) {
+                <img
+                  [src]="card().assigneeAvatarUrl"
+                  [alt]="card().assigneeName"
+                  class="w-4 h-4 rounded-full object-cover border border-slate-200 dark:border-slate-600"
+                />
+              } @else {
+                <span
+                  class="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 text-[9px] font-bold flex items-center justify-center uppercase"
+                >
+                  {{ card().assigneeName?.charAt(0) }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

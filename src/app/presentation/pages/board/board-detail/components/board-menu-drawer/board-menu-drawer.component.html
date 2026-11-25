@@ -1,0 +1,143 @@
+@if (isOpen) {
+  <!-- Backdrop Blur Overlay -->
+  <div
+    class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs transition-opacity duration-200"
+    (click)="onClose()"
+  ></div>
+
+  <!-- Board Menu Right-Side Drawer Panel -->
+  <aside
+    class="fixed top-0 right-0 h-full w-84 sm:w-92 max-w-full z-50 bg-white dark:bg-[#111827] border-l border-slate-200/90 dark:border-slate-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Drawer Header -->
+    <div
+      class="h-13 px-4.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0"
+    >
+      <div class="flex items-center gap-2">
+        <h2 class="text-base font-bold text-slate-900 dark:text-white">Menu</h2>
+      </div>
+      <button
+        type="button"
+        (click)="onClose()"
+        class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        aria-label="Đóng menu"
+      >
+        <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+      </button>
+    </div>
+
+    <!-- Drawer Content Items -->
+    <div class="p-3.5 space-y-1.5 flex-1 overflow-y-auto">
+      <!-- Item 1: Cập nhật thông tin board -->
+      <button
+        type="button"
+        (click)="onOpenEditBoard()"
+        class="w-full flex items-start gap-3 p-3 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800/60 transition cursor-pointer group"
+      >
+        <div
+          class="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
+        >
+          <mat-icon fontIcon="tune" class="icon-sm"></mat-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div
+            class="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+          >
+            Cập nhật thông tin bảng
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+            Đổi tiêu đề, đường dẫn định danh (slug) hoặc loại bảng
+          </p>
+        </div>
+        <mat-icon
+          fontIcon="chevron_right"
+          class="text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0 mt-1"
+        ></mat-icon>
+      </button>
+
+      <!-- Item 2: Xoá board (Chỉ cho ProjectLeader thao tác) -->
+      @if (isProjectLeader) {
+        <button
+          type="button"
+          (click)="onOpenDeleteBoard()"
+          class="w-full flex items-start gap-3 p-3 rounded-xl text-left hover:bg-rose-50/80 dark:hover:bg-rose-500/10 transition cursor-pointer group"
+        >
+          <div
+            class="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
+          >
+            <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div
+              class="text-sm font-semibold text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors"
+            >
+              Xóa bảng
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+              Xóa bảng công việc cùng toàn bộ cột và thẻ trực thuộc
+            </p>
+          </div>
+          <mat-icon
+            fontIcon="chevron_right"
+            class="text-rose-400 group-hover:translate-x-0.5 transition-transform shrink-0 mt-1"
+          ></mat-icon>
+        </button>
+      } @else {
+        <div
+          class="w-full flex items-start gap-3 p-3 rounded-xl text-left opacity-50 cursor-not-allowed select-none bg-slate-50/60 dark:bg-slate-800/20"
+          title="Chỉ Trưởng dự án mới có quyền xoá bảng này"
+        >
+          <div
+            class="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0"
+          >
+            <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">Xóa bảng</span>
+              <span
+                class="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20"
+              >
+                Trưởng dự án
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+              Chỉ Trưởng dự án mới có quyền xoá bảng này
+            </p>
+          </div>
+        </div>
+      }
+
+      <!-- Divider -->
+      <div class="h-px bg-slate-200/80 dark:bg-slate-800/80 my-2"></div>
+
+      <!-- Item 3: Thoát khỏi bảng -->
+      <button
+        type="button"
+        (click)="onLeaveBoard()"
+        class="w-full flex items-start gap-3 p-3 rounded-xl text-left hover:bg-rose-50/80 dark:hover:bg-rose-500/10 transition cursor-pointer group"
+      >
+        <div
+          class="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
+        >
+          <mat-icon fontIcon="logout" class="icon-sm"></mat-icon>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div
+            class="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors"
+          >
+            Thoát khỏi bảng
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+            Rời khỏi màn hình bảng và quay trở về trang chi tiết dự án
+          </p>
+        </div>
+        <mat-icon
+          fontIcon="chevron_right"
+          class="text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0 mt-1"
+        ></mat-icon>
+      </button>
+    </div>
+  </aside>
+}

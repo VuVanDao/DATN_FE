@@ -1,0 +1,196 @@
+@if (isOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
+    (click)="close()"
+  >
+    <div
+      class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div
+        class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between shrink-0"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0 mt-0.5"
+          >
+            <mat-icon fontIcon="tune" class="text-xl"></mat-icon>
+          </div>
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white text-base">
+              Cập nhật thông tin bảng
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Chỉnh sửa tiêu đề, đường dẫn slug và loại hiển thị của bảng.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-5 space-y-4">
+        @if (submitError()) {
+          <div
+            class="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs"
+          >
+            {{ submitError() }}
+          </div>
+        }
+
+        <!-- Tiêu đề bảng -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Tiêu đề bảng <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="title"
+            (input)="onTitleChange()"
+            placeholder="Ví dụ: Bảng phát triển tính năng"
+            class="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+          />
+          @if (form.controls.title.touched && form.controls.title.errors) {
+            <p class="text-[11px] mt-1 text-rose-500">Tiêu đề phải từ 2 đến 100 ký tự.</p>
+          }
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Slug (Đường dẫn định danh) <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            formControlName="slug"
+            placeholder="Ví dụ: bang-phat-trien-tinh-nang"
+            class="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+          />
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Chỉ chấp nhận chữ thường, số và dấu gạch ngang (-)
+          </p>
+          @if (form.controls.slug.touched && form.controls.slug.errors) {
+            <p class="text-[11px] mt-1 text-rose-500">
+              Slug không hợp lệ (ít nhất 2 ký tự, chỉ gồm a-z, 0-9 và -).
+            </p>
+          }
+        </div>
+
+        <!-- Loại bảng: Kanban vs Scrum -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+            Phương thức làm việc
+          </label>
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Kanban Option -->
+            <button
+              type="button"
+              (click)="setType('Kanban')"
+              class="p-3 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between"
+              [class]="
+                form.controls.type.value === 'Kanban'
+                  ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-600/20'
+                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+              "
+            >
+              <div class="flex items-center justify-between w-full mb-1.5">
+                <div class="flex items-center gap-2">
+                  <mat-icon
+                    fontIcon="view_kanban"
+                    [class]="
+                      form.controls.type.value === 'Kanban'
+                        ? 'text-indigo-600 dark:text-indigo-400'
+                        : 'text-slate-400'
+                    "
+                    class="icon-sm"
+                  ></mat-icon>
+                  <span class="text-xs font-bold">Kanban</span>
+                </div>
+                @if (form.controls.type.value === 'Kanban') {
+                  <mat-icon
+                    fontIcon="check_circle"
+                    class="text-indigo-600 dark:text-indigo-400 icon-xs"
+                  ></mat-icon>
+                }
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Quy trình làm việc trực quan, tối ưu cho dòng chảy công việc liên tục.
+              </p>
+            </button>
+
+            <!-- Scrum Option -->
+            <button
+              type="button"
+              (click)="setType('Scrum')"
+              class="p-3 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between"
+              [class]="
+                form.controls.type.value === 'Scrum'
+                  ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-500/10 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-600/20'
+                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+              "
+            >
+              <div class="flex items-center justify-between w-full mb-1.5">
+                <div class="flex items-center gap-2">
+                  <mat-icon
+                    fontIcon="speed"
+                    [class]="
+                      form.controls.type.value === 'Scrum'
+                        ? 'text-indigo-600 dark:text-indigo-400'
+                        : 'text-slate-400'
+                    "
+                    class="icon-sm"
+                  ></mat-icon>
+                  <span class="text-xs font-bold">Scrum</span>
+                </div>
+                @if (form.controls.type.value === 'Scrum') {
+                  <mat-icon
+                    fontIcon="check_circle"
+                    class="text-indigo-600 dark:text-indigo-400 icon-xs"
+                  ></mat-icon>
+                }
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Chu kỳ Sprint có thời hạn, lập kế hoạch Backlog & ước tính điểm nỗ lực.
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div
+          class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2.5"
+        >
+          <button
+            type="button"
+            (click)="close()"
+            [disabled]="boardStore.isUpdatingBoard()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            [disabled]="form.invalid || boardStore.isUpdatingBoard()"
+            class="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition cursor-pointer shadow-sm shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            @if (boardStore.isUpdatingBoard()) {
+              <div
+                class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+              ></div>
+              <span>Đang lưu...</span>
+            } @else {
+              <span>Lưu thay đổi</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,339 @@
+<div class="space-y-5">
+  <!-- Top Section: Header, Search & Filters, Add Button -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Left: Title & Count & Avatar stack -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Thành viên dự án</h2>
+        <span
+          class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700/60"
+        >
+          {{ members().length || totalCount() }}
+        </span>
+      </div>
+
+      <!-- Quick Avatars preview on desktop -->
+      @if (members().length > 0) {
+        <div class="hidden sm:flex items-center -space-x-2 overflow-hidden pl-2 border-l border-slate-200 dark:border-slate-800">
+          @for (member of members().slice(0, 5); track member.userId) {
+            @if (member.avatarUrl) {
+              <img
+                [src]="member.avatarUrl"
+                [alt]="member.username"
+                class="h-7 w-7 rounded-full ring-2 ring-white dark:ring-[#111827] object-cover"
+                [title]="member.username"
+              />
+            } @else {
+              <div
+                class="h-7 w-7 rounded-full ring-2 ring-white dark:ring-[#111827] flex items-center justify-center text-[10px] font-bold text-white shadow-xs"
+                [class]="
+                  member.roleName === 'ProjectLeader'
+                    ? 'bg-linear-to-br from-amber-500 to-orange-600'
+                    : 'bg-linear-to-br from-indigo-500 to-purple-600'
+                "
+                [title]="member.username"
+              >
+                {{ member.username.charAt(0).toUpperCase() }}
+              </div>
+            }
+          }
+          @if (members().length > 5) {
+            <div
+              class="inline-flex h-7 w-7 rounded-full ring-2 ring-white dark:ring-[#111827] bg-slate-100 dark:bg-slate-800 items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300"
+            >
+              +{{ members().length - 5 }}
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Right: Search Input & Add Member Button -->
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <div class="relative flex-1 md:w-72">
+        <mat-icon
+          fontIcon="search"
+          class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+        ></mat-icon>
+        <input
+          type="text"
+          [ngModel]="memberSearch()"
+          (ngModelChange)="memberSearch.set($event)"
+          placeholder="Tìm theo tên, email, chức danh..."
+          class="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:border-indigo-500 transition shadow-2xs"
+        />
+        @if (memberSearch()) {
+          <button
+            type="button"
+            (click)="memberSearch.set('')"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 cursor-pointer"
+          >
+            <mat-icon fontIcon="close" class="text-xs! w-auto! h-auto!"></mat-icon>
+          </button>
+        }
+      </div>
+
+      <button
+        type="button"
+        (click)="addMember.emit()"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition cursor-pointer shadow-sm shadow-indigo-600/20 border border-indigo-400/20 shrink-0"
+      >
+        <mat-icon fontIcon="person_add" class="text-sm! w-auto! h-auto!"></mat-icon>
+        <span>Thêm thành viên</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Role Filter Tabs -->
+  <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+    <button
+      type="button"
+      (click)="setRoleFilter('all')"
+      class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+      [class.bg-indigo-600]="roleFilter() === 'all'"
+      [class.text-white]="roleFilter() === 'all'"
+      [class.shadow-2xs]="roleFilter() === 'all'"
+      [class.text-slate-600]="roleFilter() !== 'all'"
+      [class.dark:text-slate-400]="roleFilter() !== 'all'"
+      [class.hover:text-slate-900]="roleFilter() !== 'all'"
+      [class.dark:hover:text-white]="roleFilter() !== 'all'"
+      [class.bg-slate-100]="roleFilter() !== 'all'"
+      [class.hover:bg-slate-200/70]="roleFilter() !== 'all'"
+      [class.dark:bg-slate-800/40]="roleFilter() !== 'all'"
+      [class.dark:hover:bg-slate-800/80]="roleFilter() !== 'all'"
+    >
+      <span>Tất cả</span>
+      <span
+        class="text-[10px] px-1.5 py-0.2 rounded-md font-medium"
+        [class.bg-white/20]="roleFilter() === 'all'"
+        [class.bg-slate-200]="roleFilter() !== 'all'"
+        [class.dark:bg-slate-700]="roleFilter() !== 'all'"
+        [class.text-slate-700]="roleFilter() !== 'all'"
+        [class.dark:text-slate-300]="roleFilter() !== 'all'"
+      >
+        {{ members().length }}
+      </span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setRoleFilter('ProjectLeader')"
+      class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+      [class.bg-indigo-600]="roleFilter() === 'ProjectLeader'"
+      [class.text-white]="roleFilter() === 'ProjectLeader'"
+      [class.shadow-2xs]="roleFilter() === 'ProjectLeader'"
+      [class.text-slate-600]="roleFilter() !== 'ProjectLeader'"
+      [class.dark:text-slate-400]="roleFilter() !== 'ProjectLeader'"
+      [class.hover:text-slate-900]="roleFilter() !== 'ProjectLeader'"
+      [class.dark:hover:text-white]="roleFilter() !== 'ProjectLeader'"
+      [class.bg-slate-100]="roleFilter() !== 'ProjectLeader'"
+      [class.hover:bg-slate-200/70]="roleFilter() !== 'ProjectLeader'"
+      [class.dark:bg-slate-800/40]="roleFilter() !== 'ProjectLeader'"
+      [class.dark:hover:bg-slate-800/80]="roleFilter() !== 'ProjectLeader'"
+    >
+      <mat-icon fontIcon="stars" class="text-xs! w-auto! h-auto! text-amber-400"></mat-icon>
+      <span>Trưởng dự án</span>
+      <span
+        class="text-[10px] px-1.5 py-0.2 rounded-md font-medium"
+        [class.bg-white/20]="roleFilter() === 'ProjectLeader'"
+        [class.bg-slate-200]="roleFilter() !== 'ProjectLeader'"
+        [class.dark:bg-slate-700]="roleFilter() !== 'ProjectLeader'"
+        [class.text-slate-700]="roleFilter() !== 'ProjectLeader'"
+        [class.dark:text-slate-300]="roleFilter() !== 'ProjectLeader'"
+      >
+        {{ leaderCount() }}
+      </span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setRoleFilter('ProjectMember')"
+      class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5"
+      [class.bg-indigo-600]="roleFilter() === 'ProjectMember'"
+      [class.text-white]="roleFilter() === 'ProjectMember'"
+      [class.shadow-2xs]="roleFilter() === 'ProjectMember'"
+      [class.text-slate-600]="roleFilter() !== 'ProjectMember'"
+      [class.dark:text-slate-400]="roleFilter() !== 'ProjectMember'"
+      [class.hover:text-slate-900]="roleFilter() !== 'ProjectMember'"
+      [class.dark:hover:text-white]="roleFilter() !== 'ProjectMember'"
+      [class.bg-slate-100]="roleFilter() !== 'ProjectMember'"
+      [class.hover:bg-slate-200/70]="roleFilter() !== 'ProjectMember'"
+      [class.dark:bg-slate-800/40]="roleFilter() !== 'ProjectMember'"
+      [class.dark:hover:bg-slate-800/80]="roleFilter() !== 'ProjectMember'"
+    >
+      <span>Thành viên thường</span>
+      <span
+        class="text-[10px] px-1.5 py-0.2 rounded-md font-medium"
+        [class.bg-white/20]="roleFilter() === 'ProjectMember'"
+        [class.bg-slate-200]="roleFilter() !== 'ProjectMember'"
+        [class.dark:bg-slate-700]="roleFilter() !== 'ProjectMember'"
+        [class.text-slate-700]="roleFilter() !== 'ProjectMember'"
+        [class.dark:text-slate-300]="roleFilter() !== 'ProjectMember'"
+      >
+        {{ regularMemberCount() }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Members Full-Width List / Card Container -->
+  <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/90 rounded-2xl overflow-hidden shadow-xs dark:shadow-md">
+    <!-- Desktop Table Header -->
+    <div class="hidden md:grid md:grid-cols-12 gap-4 px-6 py-3.5 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+      <div class="md:col-span-5">Thành viên</div>
+      <div class="md:col-span-3">Chức danh (Job title)</div>
+      <div class="md:col-span-2">Vai trò</div>
+      <div class="md:col-span-2 text-right">Thao tác</div>
+    </div>
+
+    <!-- Rows -->
+    <div class="divide-y divide-slate-100 dark:divide-slate-800/60">
+      @for (member of filteredMembers(); track member.userId) {
+        <div class="flex flex-col md:grid md:grid-cols-12 gap-4 items-start md:items-center px-5 py-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition duration-150">
+          <!-- Col 1: Avatar, Name, You tag, Email -->
+          <div class="md:col-span-5 flex items-center gap-3.5 min-w-0 w-full">
+            <!-- Avatar with Leader crown indicator -->
+            <div class="relative shrink-0">
+              @if (member.avatarUrl) {
+                <img
+                  [src]="member.avatarUrl"
+                  [alt]="member.username"
+                  class="w-10 h-10 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700"
+                />
+              } @else {
+                <div
+                  class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-xs select-none"
+                  [class]="
+                    member.roleName === 'ProjectLeader'
+                      ? 'bg-linear-to-br from-amber-500 to-orange-600 ring-2 ring-amber-500/30'
+                      : 'bg-linear-to-br from-indigo-500 to-purple-600 ring-2 ring-indigo-500/30'
+                  "
+                >
+                  {{ member.username.charAt(0).toUpperCase() }}
+                </div>
+              }
+              @if (member.roleName === 'ProjectLeader') {
+                <span
+                  class="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center shadow-xs"
+                  title="Trưởng dự án"
+                >
+                  <mat-icon fontIcon="stars" class="text-[12px]! w-auto! h-auto!"></mat-icon>
+                </span>
+              }
+            </div>
+
+            <!-- Username & Email -->
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                  {{ member.username }}
+                </span>
+                @if (isSelf(member)) {
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
+                    Bạn
+                  </span>
+                }
+              </div>
+              <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5" [title]="member.email">
+                {{ member.email }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Col 2: Job Title -->
+          <div class="md:col-span-3 flex items-center w-full">
+            @if (member.jobTitle) {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
+                <mat-icon fontIcon="badge" class="text-xs! w-auto! h-auto! text-indigo-500"></mat-icon>
+                <span>{{ member.jobTitle }}</span>
+              </span>
+            } @else {
+              <span class="text-xs text-slate-400 dark:text-slate-500 italic">
+                Chưa đặt chức danh
+              </span>
+            }
+          </div>
+
+          <!-- Col 3: Project Role -->
+          <div class="md:col-span-2 flex items-center w-full">
+            @if (member.roleName === 'ProjectLeader') {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                <mat-icon fontIcon="shield" class="text-xs! w-auto! h-auto!"></mat-icon>
+                <span>Trưởng dự án</span>
+              </span>
+            } @else {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
+                <mat-icon fontIcon="person" class="text-xs! w-auto! h-auto!"></mat-icon>
+                <span>Thành viên</span>
+              </span>
+            }
+          </div>
+
+          <!-- Col 4: Actions -->
+          <div class="md:col-span-2 flex items-center justify-start md:justify-end gap-2 w-full pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
+            @if (canChange(member)) {
+              <button
+                type="button"
+                (click)="changeRole.emit(member)"
+                [disabled]="isBusy()"
+                title="Thiết lập vai trò & chức danh thành viên"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition cursor-pointer shadow-2xs disabled:opacity-50"
+              >
+                <mat-icon fontIcon="tune" class="text-sm! w-auto! h-auto!"></mat-icon>
+                <span>Vai trò</span>
+              </button>
+            }
+
+            @if (canRemove(member)) {
+              <button
+                type="button"
+                (click)="removeMember.emit(member)"
+                [disabled]="isBusy()"
+                [attr.aria-label]="
+                  isSelf(member) ? 'Rời dự án' : 'Xóa ' + member.username + ' khỏi dự án'
+                "
+                [title]="isSelf(member) ? 'Rời khỏi dự án' : 'Xóa ' + member.username + ' khỏi dự án'"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 dark:hover:bg-rose-600 border border-rose-200 dark:border-rose-500/20 hover:border-transparent transition cursor-pointer shadow-2xs disabled:opacity-50"
+              >
+                <mat-icon
+                  [fontIcon]="isSelf(member) ? 'logout' : 'delete_outline'"
+                  class="text-sm! w-auto! h-auto!"
+                ></mat-icon>
+                <span>{{ isSelf(member) ? 'Rời' : 'Xóa' }}</span>
+              </button>
+            } @else if (member.roleName === 'ProjectLeader' && isSelf(member)) {
+              <span
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 cursor-help"
+                title="Bạn là Trưởng dự án: Cần chuyển giao vai trò trước khi rời dự án"
+              >
+                <mat-icon fontIcon="shield" class="text-xs! w-auto! h-auto!"></mat-icon>
+                <span>Trưởng nhóm</span>
+              </span>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="py-12 text-center">
+          <mat-icon fontIcon="group_off" class="text-3xl! w-auto! h-auto! text-slate-400 mb-2"></mat-icon>
+          <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Không tìm thấy thành viên</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Hãy thử tìm với từ khóa khác hoặc xóa bộ lọc.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Bottom Notice for Leader -->
+  @if (isCurrentLeader()) {
+    <div
+      class="flex items-start gap-2.5 text-slate-600 dark:text-slate-400 bg-amber-50/80 dark:bg-amber-500/5 p-4 rounded-xl border border-amber-200/80 dark:border-amber-500/10"
+    >
+      <mat-icon
+        fontIcon="info"
+        class="text-amber-600 dark:text-amber-400 text-base! shrink-0 mt-0.5"
+      ></mat-icon>
+      <div class="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+        <span class="font-semibold text-amber-800 dark:text-amber-300">Lưu ý Trưởng dự án:</span>
+        Để rời dự án, bạn cần chuyển giao vai trò Trưởng dự án cho thành viên khác trước khi thực hiện thao tác rời.
+      </div>
+    </div>
+  }
+</div>

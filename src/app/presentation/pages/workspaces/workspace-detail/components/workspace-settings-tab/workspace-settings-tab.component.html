@@ -1,0 +1,121 @@
+<div
+  class="bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 max-w-4xl mx-auto mt-4 space-y-6 shadow-xs"
+>
+  <form [formGroup]="form" (ngSubmit)="submitUpdateForm()" class="space-y-5">
+    <div class="flex flex-col sm:flex-row gap-6">
+      <div class="flex-1 space-y-4">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+            >Tên không gian làm việc</label
+          >
+          <input
+            type="text"
+            formControlName="name"
+            [readonly]="!isOwner"
+            class="w-full bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:border-indigo-500 read-only:opacity-60"
+          />
+        </div>
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+            >Mô tả</label
+          >
+          <textarea
+            formControlName="description"
+            rows="3"
+            [readonly]="!isOwner"
+            class="w-full bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-hidden focus:border-indigo-500 resize-none read-only:opacity-60"
+          ></textarea>
+        </div>
+      </div>
+      <div class="shrink-0 space-y-2.5">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Logo</label>
+        <div
+          class="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center"
+        >
+          @if (logoPreview()) {
+            <img [src]="logoPreview()" class="w-full h-full object-cover" alt="Preview" />
+          } @else if (workspace.logoUrl) {
+            <img [src]="workspace.logoUrl" class="w-full h-full object-cover" alt="Logo" />
+          } @else {
+            <span class="text-2xl font-bold text-slate-700 dark:text-white">{{
+              workspace.initial
+            }}</span>
+          }
+        </div>
+        @if (isOwner) {
+          <input
+            #logoInput
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp"
+            (change)="selectImage($event, 'logo')"
+            class="hidden"
+          />
+          <button
+            type="button"
+            (click)="logoInput.click()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer w-full justify-center transition"
+          >
+            <mat-icon fontIcon="upload" class="icon-xs"></mat-icon>Đổi logo
+          </button>
+        }
+      </div>
+    </div>
+    <div class="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+      <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Ảnh bìa</label>
+      <div
+        class="w-full h-28 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center"
+      >
+        @if (coverPreview()) {
+          <img [src]="coverPreview()" class="w-full h-full object-cover" alt="Preview" />
+        } @else if (workspace.coverImageUrl) {
+          <img [src]="workspace.coverImageUrl" class="w-full h-full object-cover" alt="Cover" />
+        } @else {
+          <span class="text-xs text-slate-500 dark:text-slate-300">Ảnh bìa mặc định</span>
+        }
+      </div>
+      @if (isOwner) {
+        <input
+          #coverInput
+          type="file"
+          accept=".jpg,.jpeg,.png,.webp"
+          (change)="selectImage($event, 'cover')"
+          class="hidden"
+        />
+        <button
+          type="button"
+          (click)="coverInput.click()"
+          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 cursor-pointer transition"
+        >
+          <mat-icon fontIcon="image" class="icon-xs"></mat-icon>Thay đổi ảnh bìa
+        </button>
+      }
+    </div>
+    <div class="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
+      @if (isOwner) {
+        <button
+          type="submit"
+          [disabled]="isSaving"
+          class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 cursor-pointer disabled:opacity-50 shadow-sm transition"
+        >
+          {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+        </button>
+        <button
+          type="button"
+          (click)="deleteWorkspace.emit()"
+          [disabled]="isSaving"
+          class="px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-200 dark:border-rose-500/20 cursor-pointer flex items-center gap-1.5 transition"
+        >
+          <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>Xóa workspace
+        </button>
+      } @else {
+        <button
+          type="button"
+          (click)="leaveWorkspace.emit()"
+          class="px-4 py-2.5 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-200 dark:border-rose-500/20 cursor-pointer flex items-center gap-1.5 transition"
+        >
+          <mat-icon fontIcon="delete_outline" class="icon-sm"></mat-icon>Rời khỏi workspace
+        </button>
+      }
+    </div>
+  </form>
+</div>

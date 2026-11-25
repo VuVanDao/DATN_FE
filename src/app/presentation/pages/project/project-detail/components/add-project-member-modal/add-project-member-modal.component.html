@@ -1,0 +1,261 @@
+@if (isOpen) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150"
+    (click)="close()"
+  >
+    <div
+      class="bg-white dark:bg-[#111827] rounded-2xl border border-slate-200 dark:border-slate-800 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-150 flex flex-col"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-project-member-title"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div
+        class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between shrink-0"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 mt-0.5"
+          >
+            <mat-icon fontIcon="person_add" class="text-xl"></mat-icon>
+          </div>
+          <div>
+            <h3
+              id="add-project-member-title"
+              class="font-bold text-slate-900 dark:text-white text-base"
+            >
+              Thêm thành viên vào dự án
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Chọn các thành viên trong workspace để thêm vào dự án. Vị trí & chức danh có thể thiết lập sau trong cài đặt.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          [disabled]="projectStore.isAddingMember()"
+          aria-label="Đóng"
+          class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+        >
+          <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-5 space-y-4">
+        <fieldset [disabled]="projectStore.isAddingMember()">
+          <!-- Section 1: Danh sách workspace members (checkbox) -->
+          <div>
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <span
+                id="project-member-list-label"
+                class="text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
+                Thành viên workspace <span class="text-rose-500">*</span>
+              </span>
+              <span aria-live="polite" class="text-xs text-indigo-600 dark:text-indigo-300">
+                Đã chọn {{ selectedMembers().length }} thành viên
+              </span>
+            </div>
+            <div
+              role="group"
+              aria-labelledby="project-member-list-label"
+              class="max-h-55 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700/60"
+            >
+              @for (member of candidates.items(); track member.userId) {
+                <label
+                  class="flex items-center gap-3 px-3.5 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer has-disabled:opacity-50 has-disabled:cursor-not-allowed transition"
+                  [class.bg-indigo-50/70]="isSelected(member.userId)"
+                  [class.dark:bg-indigo-500/10]="isSelected(member.userId)"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(member.userId)"
+                    [disabled]="isProjectMember(member.userId) || projectStore.isAddingMember()"
+                    (change)="toggleMember(member)"
+                    class="w-4 h-4 shrink-0 accent-indigo-500"
+                  />
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-sm text-slate-900 dark:text-white break-words">{{
+                      member.username
+                    }}</span>
+                    <span class="block text-xs text-slate-500 dark:text-slate-400 break-all">{{
+                      member.email
+                    }}</span>
+                  </span>
+                  @if (isProjectMember(member.userId)) {
+                    <span class="text-[11px] text-slate-400 shrink-0">Đã tham gia</span>
+                  }
+                </label>
+              }
+            </div>
+            @if (candidates.loading()) {
+              <p role="status" class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                Đang tải thành viên…
+              </p>
+            }
+            @if (candidates.error(); as error) {
+              <p role="alert" class="text-xs text-rose-500 dark:text-rose-400 mt-2">
+                {{ error }}
+                <button
+                  type="button"
+                  (click)="loadCandidates(candidates.loaded())"
+                  class="ml-2 underline cursor-pointer"
+                >
+                  Thử lại
+                </button>
+              </p>
+            }
+            @if (candidates.loaded() && !candidates.loading()) {
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                Đã tải {{ candidates.items().length }} / {{ candidates.totalCount() }} thành viên.
+              </p>
+              @if (candidates.items().length === 0) {
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Workspace chưa có thành viên để thêm vào dự án.
+                </p>
+              }
+              @if (candidates.hasMore() && !candidates.error()) {
+                <button
+                  type="button"
+                  (click)="loadCandidates(true)"
+                  class="text-xs text-indigo-600 dark:text-indigo-400 underline mt-2 cursor-pointer"
+                >
+                  Tải thêm thành viên
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Section 2: Thành viên đã chọn -->
+          <div class="mt-4">
+            <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
+              Thành viên đã chọn ({{ selectedMembers().length }})
+            </span>
+
+            @if (selectedMembers().length === 0) {
+              <!-- Empty state -->
+              <div
+                class="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-4 text-center"
+              >
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                  Chọn thành viên từ danh sách phía trên để thêm vào dự án.
+                </p>
+              </div>
+            } @else {
+              <div
+                class="max-h-44 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700/60"
+              >
+                @for (member of selectedMembers(); track member.userId) {
+                  <div class="flex items-center gap-3 px-3.5 py-2.5">
+                    <!-- Avatar / Initials -->
+                    <div class="shrink-0">
+                      @if (member.avatarUrl) {
+                        <img
+                          [src]="member.avatarUrl"
+                          [alt]="member.username"
+                          class="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+                        />
+                      } @else {
+                        <div
+                          class="w-7 h-7 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[11px] font-bold text-white shadow-xs"
+                        >
+                          {{ member.username.charAt(0).toUpperCase() }}
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Thông tin thành viên -->
+                    <div class="min-w-0 flex-1">
+                      <span class="block text-sm text-slate-900 dark:text-white truncate">
+                        {{ member.username }}
+                      </span>
+                      <span class="block text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {{ member.email }}
+                      </span>
+                    </div>
+
+                    <!-- Badge mặc định -->
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 shrink-0"
+                    >
+                      Thành viên
+                    </span>
+
+                    <!-- Nút bỏ chọn -->
+                    <button
+                      type="button"
+                      (click)="removeMember(member.userId)"
+                      [disabled]="projectStore.isAddingMember()"
+                      [attr.aria-label]="'Bỏ chọn ' + member.username"
+                      class="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
+                    >
+                      <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (touched() && selectedMembers().length === 0) {
+              <p class="text-[11px] mt-1 text-rose-500">Vui lòng chọn ít nhất một thành viên.</p>
+            }
+          </div>
+
+          <!-- Lỗi submit -->
+          @if (submitError(); as error) {
+            <p role="alert" class="text-sm text-rose-500 dark:text-rose-400 mt-3">{{ error }}</p>
+          }
+
+          <!-- Ghi chú thông tin -->
+          <div
+            class="p-3 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-900/40 flex items-start gap-2.5 text-xs text-indigo-900 dark:text-indigo-300 mt-4"
+          >
+            <mat-icon
+              fontIcon="info"
+              class="text-indigo-600 dark:text-indigo-400 text-sm mt-0.5"
+            ></mat-icon>
+            <span>
+              Thành viên được thêm vào sẽ có vai trò là Thành viên dự án. Bạn có thể thiết lập Chức danh chuyên môn (Job Title) hoặc phân quyền trong danh sách thành viên.
+            </span>
+          </div>
+
+          <!-- Footer Actions -->
+          <div
+            class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3 mt-4"
+          >
+            <button
+              type="button"
+              (click)="close()"
+              [disabled]="projectStore.isAddingMember()"
+              class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              (click)="onSubmit()"
+              [disabled]="
+                projectStore.isAddingMember() ||
+                selectedMembers().length === 0
+              "
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 transition cursor-pointer shadow-md shadow-indigo-600/20"
+            >
+              @if (projectStore.isAddingMember()) {
+                <div
+                  class="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin"
+                ></div>
+                <span>Đang thêm...</span>
+              } @else {
+                <mat-icon fontIcon="person_add" class="icon-sm"></mat-icon>
+                <span>Thêm {{ selectedMembers().length }} thành viên</span>
+              }
+            </button>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+  </div>
+}

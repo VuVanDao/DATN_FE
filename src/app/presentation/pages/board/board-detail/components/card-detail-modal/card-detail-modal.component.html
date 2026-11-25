@@ -1,0 +1,168 @@
+@if (isOpen()) {
+  <!-- Modal Backdrop Overlay -->
+  <div
+    class="fixed inset-0 bg-black/65 backdrop-blur-xs z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-150"
+    (click)="closeModal()"
+  >
+    <!-- Modal Card Container -->
+    <div
+      class="relative w-full max-w-4xl bg-white dark:bg-[#1d2125] text-slate-900 dark:text-[#b6c2cf] rounded-2xl shadow-2xl border border-slate-200 dark:border-[#38414a] overflow-hidden flex flex-col my-auto max-h-[92vh] animate-in zoom-in-95 duration-150"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- ========================================================== -->
+      <!-- HEADER BANNER & ACTIONS (Sub-component)                    -->
+      <!-- ========================================================== -->
+      <app-card-detail-header
+        [card]="card()"
+        [currentColumnId]="currentColumnId()"
+        [columns]="columns()"
+        [coverUrl]="currentCoverUrl()"
+        (columnSelected)="onColumnSelected($event)"
+        (coverSaved)="onCoverSaved($event)"
+        (coverRemoved)="onCoverRemoved()"
+        (deleteCard)="onDeleteCardFromModal()"
+        (moreAction)="onMoreAction($event)"
+        (closed)="closeModal()"
+      ></app-card-detail-header>
+
+      <div class="px-5 sm:px-8 pt-3 pb-6 sm:pt-4 sm:pb-8 overflow-y-auto space-y-5 flex-1 min-h-0">
+        <!-- Dependency Conflict Alert Banner (Tiên quyết chưa xong) -->
+        @if (hasUnfinishedBlockersWhileCompleted()) {
+          <div class="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs shadow-2xs">
+            <mat-icon fontIcon="warning" class="text-base! w-4! h-4! text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></mat-icon>
+            <div class="flex-1 leading-relaxed">
+              <span class="font-bold">Xung đột phụ thuộc:</span>
+              Thẻ này đã hoàn thành, nhưng có công việc tiên quyết
+              <span class="font-semibold underline">{{ unfinishedBlockerNames() }}</span>
+              chưa hoàn thành. Vui lòng kiểm tra lại nếu cần mở lại thẻ này.
+            </div>
+          </div>
+        }
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+          <!-- LEFT COLUMN (TITLE, CHIPS, DESC, DEPENDENCIES)     -->
+          <div class="md:col-span-7 space-y-5">
+            <!-- Title & Checkbox Section -->
+            <div class="flex items-start gap-2.5">
+              <button
+                type="button"
+                (click)="toggleCompletion()"
+                class="mt-0.5 sm:mt-1 w-5 h-5 rounded-md border flex items-center justify-center transition cursor-pointer shrink-0"
+                [class.bg-emerald-500]="isCompleted()"
+                [class.border-emerald-500]="isCompleted()"
+                [class.text-white]="isCompleted()"
+                [class.border-slate-300]="!isCompleted()"
+                [class.dark:border-[#38414a]]="!isCompleted()"
+                [class.hover:border-indigo-500]="!isCompleted()"
+                [title]="isCompleted() ? 'Bỏ đánh dấu hoàn thành' : 'Đánh dấu đã hoàn thành'"
+              >
+                @if (isCompleted()) {
+                  <svg
+                    class="w-3.5 h-3.5 text-white"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                }
+              </button>
+
+              <div class="flex-1 min-w-0">
+                @if (isEditingTitle()) {
+                  <div class="space-y-2">
+                    <textarea
+                      #titleInput
+                      [ngModel]="currentTitle()"
+                      (ngModelChange)="currentTitle.set($event)"
+                      (keydown.enter)="$event.preventDefault(); saveTitle()"
+                      (keydown.escape)="cancelEditingTitle()"
+                      rows="2"
+                      class="w-full bg-white dark:bg-[#22272b] border border-indigo-500 rounded-lg p-2 text-base sm:text-lg font-bold text-slate-900 dark:text-white outline-hidden resize-none leading-snug shadow-xs"
+                    ></textarea>
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        (click)="saveTitle()"
+                        class="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer shadow-xs transition"
+                      >
+                        Lưu
+                      </button>
+                      <button
+                        type="button"
+                        (click)="cancelEditingTitle()"
+                        class="px-3 py-1 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#282e33] text-xs cursor-pointer transition"
+                      >
+                        Huỷ
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <h2
+                    (click)="startEditingTitle()"
+                    class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug cursor-pointer hover:bg-slate-100 dark:hover:bg-[#22272b] px-2 py-0.5 -ml-2 rounded-lg transition wrap-break-word"
+                    [class.line-through]="isCompleted()"
+                    [class.opacity-60]="isCompleted()"
+                    title="Nhấn để sửa tiêu đề"
+                  >
+                    {{ currentTitle() }}
+                  </h2>
+                }
+              </div>
+            </div>
+
+            <!-- Action Chips: Priority, Type, Dates, Members, Story Points -->
+            <app-card-action-chips
+              [priority]="currentPriority()"
+              [type]="currentType()"
+              [startDate]="currentStartDate()"
+              [dueDate]="currentDueDate()"
+              [assigneeId]="currentAssigneeId()"
+              [assigneeName]="currentAssigneeName()"
+              [reporterName]="currentReporterName()"
+              [members]="members()"
+              [storyPoints]="currentStoryPoints()"
+              (priorityChanged)="onPriorityChanged($event)"
+              (typeChanged)="onTypeChanged($event)"
+              (datesChanged)="onDatesChanged($event)"
+              (assigneeChanged)="onAssigneeChanged($event)"
+              (storyPointsChanged)="onStoryPointsChanged($event)"
+            ></app-card-action-chips>
+
+            <!-- Description -->
+            <app-card-description
+              [description]="currentDescription()"
+              (descriptionSaved)="onDescriptionSaved($event)"
+            ></app-card-description>
+
+            <!-- Card Dependencies (BlockedBy & Blocking) -->
+            <app-card-dependencies
+              [cardId]="card().id"
+              [blockedBy]="blockedBy()"
+              [blocking]="blocking()"
+              (dependencyAdded)="onDependencyAdded($event)"
+              (dependencyRemoved)="onDependencyRemoved($event)"
+              (cardSelected)="onDependencyCardSelected($event)"
+            ></app-card-dependencies>
+          </div>
+
+          <!-- ================================================== -->
+          <!-- RIGHT COLUMN (COMMENTS AND ACTIVITY FEED)          -->
+          <!-- ================================================== -->
+          <div class="md:col-span-5 space-y-4">
+            <app-card-activity-feed
+              [activities]="activities()"
+              [currentUserAvatar]="currentUserAvatar()"
+              [currentUserName]="currentUserName()"
+              [isLoading]="isLoadingActivities()"
+              (commentAdded)="onCommentAdded($event)"
+            ></app-card-activity-feed>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

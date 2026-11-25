@@ -1,13 +1,51 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>DATNFE</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <!-- Chặn nhấp nháy giao diện khi tải trang (Anti-FOUC Theme Script) -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var isDark = saved !== 'light';
+          var el = document.documentElement;
+          if (isDark) {
+            el.classList.add('dark');
+            el.classList.remove('light');
+            el.style.colorScheme = 'dark';
+          } else {
+            el.classList.add('light');
+            el.classList.remove('dark');
+            el.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      html.dark,
+      html.dark body {
+        background-color: #020617 !important;
+        color: #f8fafc;
+      }
+      html.light,
+      html.light body {
+        background-color: #f8fafc !important;
+        color: #0f172a;
+      }
+    </style>
+    <title>DATNFE</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
 </html>

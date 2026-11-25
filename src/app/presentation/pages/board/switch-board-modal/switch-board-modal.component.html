@@ -1,0 +1,263 @@
+<!-- Modal Backdrop -->
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-200"
+  (click)="close.emit()"
+>
+  <!-- Modal Card (Modern Switch Boards Popover) -->
+  <div
+    class="relative w-full max-w-[540px] max-h-[88vh] bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-900 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Modal Header / Search Bar -->
+    <div class="p-4 border-b border-slate-200 dark:border-slate-800/80 space-y-3">
+      <div class="flex items-center gap-2">
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <mat-icon
+            fontIcon="search"
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm! w-4! h-4!"
+          ></mat-icon>
+          <input
+            type="text"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Tìm kiếm bảng công việc..."
+            class="w-full bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 focus:border-indigo-500 rounded-lg pl-9 pr-3.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-hidden transition"
+          />
+        </div>
+
+        <!-- Quick View Mode & Close Actions -->
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition cursor-pointer"
+            title="Dạng danh sách"
+          >
+            <mat-icon fontIcon="view_list" class="text-sm! w-4! h-4!"></mat-icon>
+          </button>
+          <button
+            type="button"
+            (click)="close.emit()"
+            class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition cursor-pointer"
+            title="Đóng (Esc)"
+          >
+            <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+        <button
+          type="button"
+          (click)="activeFilterTab.set('all')"
+          class="px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer shrink-0"
+          [class.bg-indigo-600]="activeFilterTab() === 'all'"
+          [class.text-white]="activeFilterTab() === 'all'"
+          [class.shadow-2xs]="activeFilterTab() === 'all'"
+          [class.bg-slate-100]="activeFilterTab() !== 'all'"
+          [class.dark:bg-slate-800]="activeFilterTab() !== 'all'"
+          [class.text-slate-600]="activeFilterTab() !== 'all'"
+          [class.dark:text-slate-300]="activeFilterTab() !== 'all'"
+          [class.hover:bg-slate-200/70]="activeFilterTab() !== 'all'"
+          [class.dark:hover:bg-slate-700]="activeFilterTab() !== 'all'"
+        >
+          Tất cả
+        </button>
+
+        @if (currentWorkspaceName() || currentProjectName()) {
+          <button
+            type="button"
+            (click)="activeFilterTab.set('workspace')"
+            class="px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer shrink-0"
+            [class.bg-indigo-600]="activeFilterTab() === 'workspace'"
+            [class.text-white]="activeFilterTab() === 'workspace'"
+            [class.shadow-2xs]="activeFilterTab() === 'workspace'"
+            [class.bg-slate-100]="activeFilterTab() !== 'workspace'"
+            [class.dark:bg-slate-800]="activeFilterTab() !== 'workspace'"
+            [class.text-slate-600]="activeFilterTab() !== 'workspace'"
+            [class.dark:text-slate-300]="activeFilterTab() !== 'workspace'"
+            [class.hover:bg-slate-200/70]="activeFilterTab() !== 'workspace'"
+            [class.dark:hover:bg-slate-700]="activeFilterTab() !== 'workspace'"
+          >
+            {{ currentWorkspaceName() || currentProjectName() }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Modal Body: Scrollable Board Sections -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-6 min-h-0">
+      <!-- Section 1: Starred (Pinned) -->
+      @if (starredBoards().length > 0) {
+        <div>
+          <div
+            class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-300 mb-2.5"
+          >
+            <mat-icon
+              fontIcon="star"
+              class="text-amber-500 dark:text-amber-400 text-sm! w-4! h-4!"
+            ></mat-icon>
+            <span>Đã ghim</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            @for (board of starredBoards(); track board.id) {
+              <div
+                (click)="onSelectBoard(board)"
+                class="group relative h-20 rounded-lg overflow-hidden bg-gradient-to-br {{
+                  getBoardGradient(board)
+                }} p-2.5 flex flex-col justify-between cursor-pointer border transition shadow-sm hover:shadow-md hover:brightness-105"
+                [class.ring-2]="board.slug === activeBoardSlug()"
+                [class.ring-indigo-500]="board.slug === activeBoardSlug()"
+                [class.border-slate-700/60]="board.slug !== activeBoardSlug()"
+              >
+                <!-- Star Action Icon -->
+                <div class="flex justify-end">
+                  <button
+                    type="button"
+                    (click)="onTogglePin($event, board)"
+                    class="p-1 rounded-md bg-black/40 hover:bg-black/60 text-amber-300 transition cursor-pointer"
+                    title="Bỏ ghim bảng"
+                  >
+                    <mat-icon fontIcon="star" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+                  </button>
+                </div>
+
+                <!-- Board Title Bottom Strip -->
+                <div class="mt-auto">
+                  <p class="text-xs font-bold text-white drop-shadow-md truncate">
+                    {{ board.title }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Section 2: Recent -->
+      <div>
+        <div
+          class="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-300 mb-2.5"
+        >
+          <mat-icon fontIcon="schedule" class="text-slate-400 text-sm! w-4! h-4!"></mat-icon>
+          <span>Gần đây</span>
+        </div>
+
+        @if (recentBoards().length > 0) {
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            @for (board of recentBoards(); track board.id) {
+              <div
+                (click)="onSelectBoard(board)"
+                class="group relative h-20 rounded-lg overflow-hidden bg-gradient-to-br {{
+                  getBoardGradient(board)
+                }} p-2.5 flex flex-col justify-between cursor-pointer border transition shadow-sm hover:shadow-md hover:brightness-105"
+                [class.ring-2]="board.slug === activeBoardSlug()"
+                [class.ring-indigo-500]="board.slug === activeBoardSlug()"
+                [class.border-slate-700/60]="board.slug !== activeBoardSlug()"
+              >
+                <!-- Star Icon Button -->
+                <div class="flex justify-end">
+                  <button
+                    type="button"
+                    (click)="onTogglePin($event, board)"
+                    class="p-1 rounded-md bg-black/40 hover:bg-black/60 transition cursor-pointer"
+                    [class.text-amber-300]="board.isPinned"
+                    [class.text-slate-200]="!board.isPinned"
+                    [class.opacity-0]="!board.isPinned"
+                    [class.group-hover:opacity-100]="!board.isPinned"
+                    [title]="board.isPinned ? 'Bỏ ghim bảng' : 'Ghim bảng'"
+                  >
+                    <mat-icon
+                      [fontIcon]="board.isPinned ? 'star' : 'star_border'"
+                      class="text-xs! w-3.5! h-3.5!"
+                    ></mat-icon>
+                  </button>
+                </div>
+
+                <!-- Board Title Bottom Strip -->
+                <div class="mt-auto">
+                  <p class="text-xs font-bold text-white drop-shadow-md truncate">
+                    {{ board.title }}
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center py-6 text-slate-500 text-xs">
+            Không tìm thấy bảng nào phù hợp.
+          </div>
+        }
+      </div>
+
+      <!-- Section 3: Workspace / Project Accordion Group -->
+      <div class="border-t border-slate-200 dark:border-slate-800/80 pt-3">
+        <button
+          type="button"
+          (click)="isWorkspaceAccordionOpen.set(!isWorkspaceAccordionOpen())"
+          class="w-full flex items-center justify-between text-left py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition cursor-pointer"
+        >
+          <div class="flex items-center gap-1.5 truncate">
+            <mat-icon
+              [fontIcon]="
+                isWorkspaceAccordionOpen() ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
+              "
+              class="text-slate-400 text-sm! w-4! h-4!"
+            ></mat-icon>
+            <span class="truncate">{{
+              currentWorkspaceName() || currentProjectName() || 'Dự án'
+            }}</span>
+          </div>
+          <span class="text-[11px] text-slate-500">
+            {{ filteredWorkspaceBoards().length }} bảng
+          </span>
+        </button>
+
+        @if (isWorkspaceAccordionOpen()) {
+          <div class="space-y-1 mt-1 pl-5">
+            @for (board of filteredWorkspaceBoards(); track board.id) {
+              <div
+                (click)="onSelectBoard(board)"
+                class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition cursor-pointer group"
+                [class.bg-indigo-50]="board.slug === activeBoardSlug()"
+                [class.dark:bg-indigo-600/20]="board.slug === activeBoardSlug()"
+              >
+                <div class="flex items-center gap-2.5 truncate">
+                  <!-- Small board color box -->
+                  <div
+                    class="w-4 h-4 rounded bg-gradient-to-br {{ getBoardGradient(board) }} shrink-0"
+                  ></div>
+                  <span
+                    class="text-xs font-medium truncate"
+                    [class.text-indigo-600]="board.slug === activeBoardSlug()"
+                    [class.dark:text-indigo-400]="board.slug === activeBoardSlug()"
+                    [class.text-slate-700]="board.slug !== activeBoardSlug()"
+                    [class.dark:text-slate-200]="board.slug !== activeBoardSlug()"
+                  >
+                    {{ board.title }}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="onTogglePin($event, board)"
+                  class="p-1 rounded text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 transition cursor-pointer"
+                  [class.text-amber-500]="board.isPinned"
+                  [class.dark:text-amber-400]="board.isPinned"
+                  [title]="board.isPinned ? 'Bỏ ghim bảng' : 'Ghim bảng'"
+                >
+                  <mat-icon
+                    [fontIcon]="board.isPinned ? 'star' : 'star_border'"
+                    class="text-xs! w-3.5! h-3.5!"
+                  ></mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

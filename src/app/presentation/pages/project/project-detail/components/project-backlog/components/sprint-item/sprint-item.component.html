@@ -1,0 +1,308 @@
+<div
+  class="rounded-2xl shadow-xs transition"
+  [class.relative]="showActionsMenu()"
+  [class.z-30]="showActionsMenu()"
+  [ngClass]="{
+    'bg-white dark:bg-slate-900 border-2 border-emerald-500/40 dark:border-emerald-500/30':
+      isActive(),
+    'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800': !isActive(),
+  }"
+>
+  <!-- Sprint Header -->
+  <div
+    class="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 select-none rounded-t-2xl"
+    [class.rounded-b-2xl]="isCollapsed()"
+    [ngClass]="{
+      'bg-emerald-50/40 dark:bg-emerald-950/20 border-b border-emerald-500/20': isActive(),
+      'bg-slate-50/60 dark:bg-slate-800/40': !isActive(),
+      'border-b border-slate-200 dark:border-slate-800': !isActive() && !isCollapsed(),
+    }"
+  >
+    <!-- Left: Collapse toggle + Name + Goal -->
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          (click)="toggleCollapse()"
+          class="w-6 h-6 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition cursor-pointer shrink-0"
+          [title]="isCollapsed() ? 'Mở rộng Sprint' : 'Thu gọn Sprint'"
+        >
+          <mat-icon
+            [fontIcon]="isCollapsed() ? 'chevron_right' : 'expand_more'"
+            class="icon-sm"
+          ></mat-icon>
+        </button>
+
+        @if (isActive()) {
+          <span
+            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-xs"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+            <span class="leading-none">Đang chạy (Active)</span>
+          </span>
+        } @else {
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+          >
+            <span class="leading-none">Kế hoạch</span>
+          </span>
+        }
+
+        <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+          {{ sprint.name }}
+        </h4>
+      </div>
+
+      @if (sprint.goal) {
+        <p class="text-xs text-slate-500 dark:text-slate-400 italic truncate pl-8 mt-1">
+          Mục tiêu: {{ sprint.goal }}
+        </p>
+      }
+    </div>
+
+    <!-- Right: Dates / Points / Actions (Responsive balanced layout) -->
+    <div
+      class="flex items-center justify-between md:justify-end gap-2.5 sm:gap-3 text-xs w-full md:w-auto pt-2.5 md:pt-0 border-t md:border-t-0 border-slate-200/60 dark:border-slate-800/80 flex-wrap shrink-0"
+    >
+      @if (isActive()) {
+        <!-- Left group on mobile / inline on desktop: Dates & Points -->
+        <div class="flex items-center gap-2 flex-wrap">
+          @if (sprint.startDate && sprint.endDate) {
+            <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs hidden sm:flex">
+              <span class="font-medium text-slate-700 dark:text-slate-300">
+                {{ formatDate(sprint.startDate) }} – {{ formatDate(sprint.endDate) }}
+              </span>
+              @if (sprintDueStatus; as ds) {
+                <span
+                  class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                  [class]="
+                    ds.isOverdue
+                      ? 'bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 animate-pulse'
+                      : ds.diffDays <= 1
+                        ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                        : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
+                  "
+                >
+                  <mat-icon
+                    [fontIcon]="ds.isOverdue ? 'warning' : 'schedule'"
+                    class="text-[10px]! w-2.5! h-2.5!"
+                  ></mat-icon>
+                  @if (ds.isOverdue) {
+                    Quá hạn {{ ds.overdueDays > 0 ? ds.overdueDays + ' ngày' : '' }}
+                  } @else if (ds.diffDays === 0) {
+                    Hôm nay kết thúc
+                  } @else {
+                    Còn {{ ds.diffDays }} ngày
+                  }
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Story points pill -->
+          <div
+            class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
+          >
+            <mat-icon fontIcon="bolt" class="icon-xs text-emerald-600 dark:text-emerald-400"></mat-icon>
+            <span class="leading-none">{{ sprint.completedStoryPoints }}/{{ sprint.totalStoryPoints }} pts</span>
+          </div>
+        </div>
+
+        <!-- Right group: Actions -->
+        <div class="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
+          @if (canManageSprint) {
+            <button
+              type="button"
+              (click)="onCompleteSprint($event)"
+              class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/60 hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 border border-emerald-300 dark:border-emerald-800 transition cursor-pointer"
+            >
+              <mat-icon fontIcon="check_circle" class="icon-xs"></mat-icon>
+              <span class="leading-none">Hoàn thành Sprint</span>
+            </button>
+          }
+
+          <!-- 3-Dots Action Menu -->
+          @if (canManageSprint) {
+            <div class="relative">
+              <button
+                type="button"
+                (click)="toggleActionsMenu($event)"
+                class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+                title="Tùy chọn Sprint"
+              >
+                <mat-icon fontIcon="more_horiz" class="icon-sm"></mat-icon>
+              </button>
+
+              @if (showActionsMenu()) {
+                <div
+                  class="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+                  (click)="$event.stopPropagation()"
+                >
+                  <button
+                    type="button"
+                    (click)="openEdit($event)"
+                    class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                  >
+                    <mat-icon fontIcon="edit" class="icon-xs text-slate-400"></mat-icon>
+                    <span class="leading-none">Sửa Sprint</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="openDelete($event)"
+                    class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
+                  >
+                    <mat-icon fontIcon="delete" class="icon-xs text-rose-500"></mat-icon>
+                    <span class="leading-none">Xóa Sprint</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Future Sprint Stats (left side on mobile) -->
+        <span class="text-slate-500 dark:text-slate-400 font-medium">
+          {{ sprint.totalCards }} việc • {{ sprint.totalStoryPoints }} pts
+        </span>
+
+        <!-- Right group: Start Button & 3-Dots Menu -->
+        <div class="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
+          @if (canManageSprint) {
+            <button
+              type="button"
+              (click)="onStartSprint($event)"
+              class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition cursor-pointer"
+            >
+              <mat-icon fontIcon="play_arrow" class="icon-xs"></mat-icon>
+              <span class="leading-none">Bắt đầu Sprint</span>
+            </button>
+          }
+
+          <!-- 3-Dots Action Menu -->
+          @if (canManageSprint) {
+            <div class="relative">
+              <button
+                type="button"
+                (click)="toggleActionsMenu($event)"
+                class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200/80 dark:border-slate-700/80 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shadow-2xs"
+                title="Tùy chọn Sprint"
+              >
+                <mat-icon fontIcon="more_horiz" class="icon-sm"></mat-icon>
+              </button>
+
+              @if (showActionsMenu()) {
+                <div
+                  class="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+                  (click)="$event.stopPropagation()"
+                >
+                  <button
+                    type="button"
+                    (click)="openEdit($event)"
+                    class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                  >
+                    <mat-icon fontIcon="edit" class="icon-xs text-slate-400"></mat-icon>
+                    <span class="leading-none">Sửa Sprint</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="openDelete($event)"
+                    class="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer border-t border-slate-100 dark:border-slate-800/80"
+                  >
+                    <mat-icon fontIcon="delete" class="icon-xs text-rose-500"></mat-icon>
+                    <span class="leading-none">Xóa Sprint</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Sprint Drop List (Hidden if collapsed) -->
+  @if (!isCollapsed()) {
+    <div
+      cdkDropList
+      [id]="sprint.id"
+      [cdkDropListData]="sprint.cards || []"
+      (cdkDropListDropped)="onDrop($event)"
+      class="p-4 flex flex-col gap-2.5 min-h-20"
+    >
+      @if (sprint.cards && sprint.cards.length > 0) {
+        @for (card of sprint.cards; track card.id) {
+          <app-backlog-card-item
+            class="block"
+            [card]="card"
+            [currentSprintId]="sprint.id"
+            [availableSprints]="availableSprints"
+            [canMoveCard]="canMoveCard"
+            (cardClick)="cardClick.emit($event)"
+            (quickMove)="quickMove.emit($event)"
+          />
+        }
+      } @else {
+        <div
+          class="text-center py-6 text-xs text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl"
+        >
+          Chưa có công việc nào trong Sprint này. Kéo thả thẻ từ Backlog vào đây hoặc dùng menu
+          Chuyển nhanh.
+        </div>
+      }
+      @if (canMoveCard || canManageSprint) {
+        @if (!isAddingCard()) {
+          <button
+            type="button"
+            (click)="startAddCard()"
+            class="w-full flex items-center gap-2 py-2 px-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-semibold transition cursor-pointer"
+          >
+            <mat-icon fontIcon="add" class="icon-xs"></mat-icon>
+            <span>Tạo công việc trong Sprint này</span>
+          </button>
+        } @else {
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2.5">
+            <input
+              #sprintCardInput
+              type="text"
+              [(ngModel)]="newCardTitle"
+              (keyup.enter)="confirmAddCard(sprintCardInput)"
+              (keyup.escape)="cancelAddCard()"
+              placeholder="Cần phải làm gì trong Sprint này? (Nhấn Enter để tạo)"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              autofocus
+            />
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                <span>Điểm SP:</span>
+                <input
+                  type="number"
+                  min="0"
+                  [(ngModel)]="newCardStoryPoints"
+                  placeholder="0"
+                  class="w-16 px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  (click)="cancelAddCard()"
+                  class="px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  (click)="confirmAddCard(sprintCardInput)"
+                  [disabled]="!newCardTitle.trim()"
+                  class="px-3 py-1 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md shadow-xs transition cursor-pointer"
+                >
+                  Tạo
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

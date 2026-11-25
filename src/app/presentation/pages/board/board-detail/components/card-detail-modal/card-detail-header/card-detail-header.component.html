@@ -1,0 +1,302 @@
+@if (coverUrl()) {
+  <!-- ========================================== -->
+  <!-- TOP HEADER BANNER (WHEN COVER EXISTS)      -->
+  <!-- ========================================== -->
+  <div
+    class="relative w-full h-40 sm:h-48 bg-[#c4b39b] dark:bg-[#282e33] flex items-center justify-center shrink-0 group z-30"
+  >
+    <!-- Centered Cover Image Container -->
+    <div class="absolute inset-0 overflow-hidden rounded-t-2xl flex items-center justify-center">
+      <img
+        [src]="coverUrl()!"
+        alt="Card Cover"
+        class="h-full max-h-full object-contain mx-auto select-none pointer-events-none"
+      />
+    </div>
+
+    <!-- Top Floating Overlay Bar -->
+    <div
+      class="absolute inset-x-0 top-0 p-3 sm:p-4 flex items-center justify-between pointer-events-auto z-40"
+    >
+      <!-- Column Status Dropdown Pill -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleColumnDropdown($event)"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-black/45 hover:bg-black/60 text-white backdrop-blur-md border border-white/10 transition cursor-pointer shadow-xs"
+          title="Thay đổi danh sách cột"
+        >
+          <span>{{ getCurrentColumnTitle() }}</span>
+          <mat-icon fontIcon="expand_more" class="text-xs! w-3.5! h-3.5! -mr-0.5"></mat-icon>
+        </button>
+
+        @if (isColumnDropdownOpen()) {
+          <div
+            (click)="$event.stopPropagation()"
+            class="absolute left-0 top-full mt-1.5 w-48 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs"
+          >
+            <div
+              class="px-3 py-1.5 font-semibold text-[11px] text-slate-400 dark:text-[#9fadbc] uppercase tracking-wider border-b border-slate-100 dark:border-[#38414a]"
+            >
+              Chuyển sang cột
+            </div>
+            <div class="py-1 max-h-48 overflow-y-auto">
+              @for (col of columns(); track col.id) {
+                <button
+                  type="button"
+                  (click)="selectColumn(col)"
+                  class="w-full text-left px-3 py-2 flex items-center justify-between text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] transition cursor-pointer"
+                  [class.font-semibold]="col.id === currentColumnId()"
+                >
+                  <span class="truncate">{{ col.title }}</span>
+                  @if (col.id === currentColumnId()) {
+                    <mat-icon
+                      fontIcon="check"
+                      class="text-xs! w-3.5! h-3.5! text-indigo-500"
+                    ></mat-icon>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Top-Right Action Controls (Cover, More, Close) -->
+      <div class="flex items-center gap-1.5">
+        <!-- Cover Button -->
+        <div class="relative">
+          <button
+            type="button"
+            (click)="openCoverPicker($event)"
+            class="w-8 h-8 rounded-full flex items-center justify-center bg-black/45 hover:bg-black/60 text-white backdrop-blur-md border border-white/10 transition cursor-pointer shadow-xs"
+            title="Thay đổi ảnh bìa"
+          >
+            <mat-icon fontIcon="image" class="text-sm! w-4! h-4!"></mat-icon>
+          </button>
+
+          @if (isCoverMenuOpen()) {
+            <ng-container *ngTemplateOutlet="coverPickerTemplate"></ng-container>
+          }
+        </div>
+
+        <!-- More Options 3-Dots Button -->
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleMoreMenu($event)"
+            class="w-8 h-8 rounded-full flex items-center justify-center bg-black/45 hover:bg-black/60 text-white backdrop-blur-md border border-white/10 transition cursor-pointer shadow-xs"
+            title="Tùy chọn khác"
+          >
+            <mat-icon fontIcon="more_horiz" class="text-sm! w-4! h-4!"></mat-icon>
+          </button>
+
+          @if (isMoreMenuOpen()) {
+            <ng-container *ngTemplateOutlet="moreMenuTemplate"></ng-container>
+          }
+        </div>
+
+        <!-- Close Dialog Button (✕) -->
+        <button
+          type="button"
+          (click)="closed.emit()"
+          class="w-8 h-8 rounded-full flex items-center justify-center bg-black/45 hover:bg-black/60 text-white backdrop-blur-md border border-white/10 transition cursor-pointer shadow-xs"
+          title="Đóng (Esc)"
+        >
+          <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- ================================================== -->
+  <!-- TOP HEADER BAR (WHEN COVER DOES NOT EXIST)         -->
+  <!-- ================================================== -->
+  <div class="relative z-30 px-5 sm:px-6 pt-4 pb-2 flex items-center justify-between shrink-0">
+    <!-- Column Status Dropdown Pill -->
+    <div class="relative">
+      <button
+        type="button"
+        (click)="toggleColumnDropdown($event)"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-[#282e33] dark:hover:bg-[#333c43] text-slate-700 dark:text-[#b6c2cf] transition cursor-pointer shadow-xs border border-slate-200/60 dark:border-[#38414a]"
+        title="Thay đổi danh sách cột"
+      >
+        <span>{{ getCurrentColumnTitle() }}</span>
+        <mat-icon fontIcon="expand_more" class="text-xs! w-3.5! h-3.5! -mr-0.5 text-slate-400"></mat-icon>
+      </button>
+
+      @if (isColumnDropdownOpen()) {
+        <div
+          (click)="$event.stopPropagation()"
+          class="absolute left-0 top-full mt-1.5 w-48 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs"
+        >
+          <div
+            class="px-3 py-1.5 font-semibold text-[11px] text-slate-400 dark:text-[#9fadbc] uppercase tracking-wider border-b border-slate-100 dark:border-[#38414a]"
+          >
+            Chuyển sang cột
+          </div>
+          <div class="py-1 max-h-48 overflow-y-auto">
+            @for (col of columns(); track col.id) {
+              <button
+                type="button"
+                (click)="selectColumn(col)"
+                class="w-full text-left px-3 py-2 flex items-center justify-between text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] transition cursor-pointer"
+                [class.font-semibold]="col.id === currentColumnId()"
+              >
+                <span class="truncate">{{ col.title }}</span>
+                @if (col.id === currentColumnId()) {
+                  <mat-icon fontIcon="check" class="text-xs! w-3.5! h-3.5! text-indigo-500"></mat-icon>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Top-Right Action Controls -->
+    <div class="flex items-center gap-1.5">
+      <!-- Cover Button -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="openCoverPicker($event)"
+          class="w-8 h-8 rounded-md flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-[#9fadbc] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#282e33] transition cursor-pointer"
+          title="Thay đổi ảnh bìa"
+        >
+          <mat-icon fontIcon="image" class="text-sm! w-4! h-4!"></mat-icon>
+        </button>
+
+        @if (isCoverMenuOpen()) {
+          <ng-container *ngTemplateOutlet="coverPickerTemplate"></ng-container>
+        }
+      </div>
+
+      <!-- More Options Button -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleMoreMenu($event)"
+          class="w-8 h-8 rounded-md flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-[#9fadbc] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#282e33] transition cursor-pointer"
+          title="Tùy chọn khác"
+        >
+          <mat-icon fontIcon="more_horiz" class="text-sm! w-4! h-4!"></mat-icon>
+        </button>
+
+        @if (isMoreMenuOpen()) {
+          <ng-container *ngTemplateOutlet="moreMenuTemplate"></ng-container>
+        }
+      </div>
+
+      <!-- Close Dialog Button (✕) -->
+      <button
+        type="button"
+        (click)="closed.emit()"
+        class="w-8 h-8 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-800 dark:text-[#9fadbc] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#282e33] transition cursor-pointer"
+        title="Đóng (Esc)"
+      >
+        <mat-icon fontIcon="close" class="text-sm! w-4! h-4!"></mat-icon>
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Reusable Cover Picker Popover Template -->
+<ng-template #coverPickerTemplate>
+  <div
+    (click)="$event.stopPropagation()"
+    class="absolute right-0 top-full mt-1.5 w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-3 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-3 max-h-[calc(85vh-100px)] overflow-y-auto"
+  >
+    <div class="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-[#38414a]">
+      <span class="font-semibold text-slate-800 dark:text-[#9fadbc]">Ảnh bìa thẻ (Cover)</span>
+      <button
+        type="button"
+        (click)="closeCoverPicker()"
+        class="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
+      >
+        <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+      </button>
+    </div>
+
+    @if (previewCoverUrl()) {
+      <div class="w-full h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 relative">
+        <img [src]="previewCoverUrl()!" alt="Cover preview" class="w-full h-full object-cover" />
+      </div>
+    }
+
+    <div class="space-y-1">
+      <label class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Đường dẫn ảnh (URL):</label>
+      <input
+        type="url"
+        [ngModel]="coverUrlInput()"
+        (ngModelChange)="onCoverUrlChange($event)"
+        placeholder="https://example.com/image.jpg"
+        class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#38414a] bg-slate-50 dark:bg-[#1d2125] text-slate-800 dark:text-white outline-hidden focus:border-indigo-500 text-xs transition"
+      />
+    </div>
+
+    <div>
+      <label class="w-full py-1.5 px-2.5 rounded-lg border border-dashed border-slate-300 dark:border-[#38414a] hover:border-indigo-500 dark:hover:border-indigo-400 bg-slate-50 dark:bg-[#1d2125]/50 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 hover:text-indigo-600 cursor-pointer transition">
+        <mat-icon fontIcon="upload" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+        <span>Tải ảnh từ máy tính</span>
+        <input type="file" accept="image/*" (change)="onCoverFileSelected($event)" class="hidden" />
+      </label>
+    </div>
+
+    <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#38414a]">
+      @if (coverUrl() || previewCoverUrl()) {
+        <button
+          type="button"
+          (click)="removeCover()"
+          class="text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-medium cursor-pointer"
+        >
+          Gỡ ảnh bìa
+        </button>
+      } @else {
+        <span></span>
+      }
+      <div class="flex items-center gap-1.5">
+        <button
+          type="button"
+          (click)="closeCoverPicker()"
+          class="px-2.5 py-1 rounded-md text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+        >
+          Huỷ
+        </button>
+        <button
+          type="button"
+          (click)="saveCover()"
+          class="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs cursor-pointer shadow-xs transition"
+        >
+          Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Reusable More Menu Popover Template -->
+<ng-template #moreMenuTemplate>
+  <div
+    (click)="$event.stopPropagation()"
+    class="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs"
+  >
+    <button
+      type="button"
+      (click)="openCoverPicker($event)"
+      class="w-full text-left px-3 py-2 flex items-center gap-2 text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] transition cursor-pointer"
+    >
+      <mat-icon fontIcon="image" class="text-xs! w-3.5! h-3.5! text-slate-400"></mat-icon>
+      <span>Thay đổi ảnh bìa</span>
+    </button>
+    <div class="my-1 border-t border-slate-100 dark:border-[#38414a]"></div>
+    <button
+      type="button"
+      (click)="onDeleteCard()"
+      class="w-full text-left px-3 py-2 flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+    >
+      <mat-icon fontIcon="delete_outline" class="text-xs! w-3.5! h-3.5! text-rose-500"></mat-icon>
+      <span>Xoá thẻ này</span>
+    </button>
+  </div>
+</ng-template>
