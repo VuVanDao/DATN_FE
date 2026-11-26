@@ -1,9 +1,10 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, input, output, signal } from '@angular/core';
+import { Component, computed, HostListener, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectMember } from '../../../../../../../domain/models/project.model';
+import { computeDueDateStatus } from '../../../../../../../shared/utils/due-date.util';
 import { CardDueDatePickerComponent } from '../../board-card/card-due-date-picker/card-due-date-picker.component';
 import {
   DEFAULT_PRIORITY_OPTIONS,
@@ -28,6 +29,7 @@ export class CardActionChipsComponent {
   readonly type = input<WorkType>('Task');
   readonly startDate = input<string>('');
   readonly dueDate = input<string>('');
+  readonly isCompleted = input<boolean>(false);
   readonly assigneeId = input<string | null>(null);
   readonly assigneeName = input<string | null>(null);
   readonly reporterName = input<string>('Thành viên');
@@ -39,6 +41,12 @@ export class CardActionChipsComponent {
   readonly datesChanged = output<{ startDate: string | null; dueDate: string | null }>();
   readonly assigneeChanged = output<{ assigneeId: string | null; assigneeName: string | null }>();
   readonly storyPointsChanged = output<number | null>();
+
+  readonly dueDateStatus = computed(() => {
+    const raw = this.dueDate();
+    if (!raw) return null;
+    return computeDueDateStatus(raw, this.isCompleted());
+  });
 
   // Dropdown states
   readonly isPriorityMenuOpen = signal<boolean>(false);
