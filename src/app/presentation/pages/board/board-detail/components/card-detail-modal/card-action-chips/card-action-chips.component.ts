@@ -1,8 +1,10 @@
+import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
-import { Component, effect, HostListener, input, output, signal } from '@angular/core';
+import { Component, HostListener, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectMember } from '../../../../../../../domain/models/project.model';
+import { CardDueDatePickerComponent } from '../../board-card/card-due-date-picker/card-due-date-picker.component';
 import {
   DEFAULT_PRIORITY_OPTIONS,
   DEFAULT_WORK_TYPE_OPTIONS,
@@ -15,7 +17,7 @@ import {
 @Component({
   selector: 'app-card-action-chips',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, OverlayModule, CardDueDatePickerComponent],
   templateUrl: './card-action-chips.component.html',
   host: {
     class: 'block',
@@ -45,23 +47,12 @@ export class CardActionChipsComponent {
   readonly isMembersMenuOpen = signal<boolean>(false);
   readonly isStoryPointsMenuOpen = signal<boolean>(false);
 
-  // Local dates state for popover editing
-  readonly localStartDate = signal<string>('');
-  readonly localDueDate = signal<string>('');
-
   // Story Points options & custom input
   readonly commonPointOptions: number[] = [1, 2, 3, 5, 8, 13, 21];
   readonly customPoints = signal<number | string | null>(null);
 
   readonly priorityOptions: PriorityOption[] = DEFAULT_PRIORITY_OPTIONS;
   readonly typeOptions: WorkTypeOption[] = DEFAULT_WORK_TYPE_OPTIONS;
-
-  constructor() {
-    effect(() => {
-      this.localStartDate.set(this.startDate() || '');
-      this.localDueDate.set(this.dueDate() || '');
-    });
-  }
 
   @HostListener('document:click')
   onDocumentClick(): void {
@@ -117,22 +108,14 @@ export class CardActionChipsComponent {
     this.isTypeMenuOpen.set(false);
     this.isMembersMenuOpen.set(false);
     this.isStoryPointsMenuOpen.set(false);
-    if (this.isDatesMenuOpen()) {
-      this.localStartDate.set(this.startDate() || '');
-      this.localDueDate.set(this.dueDate() || '');
-    }
   }
 
-  saveDates(): void {
-    const s = this.localStartDate() || null;
-    const d = this.localDueDate() || null;
+  onSaveDates(event: { startDate: string | null; dueDate: string | null }): void {
     this.isDatesMenuOpen.set(false);
-    this.datesChanged.emit({ startDate: s, dueDate: d });
+    this.datesChanged.emit(event);
   }
 
-  clearDates(): void {
-    this.localStartDate.set('');
-    this.localDueDate.set('');
+  onClearDates(): void {
     this.isDatesMenuOpen.set(false);
     this.datesChanged.emit({ startDate: null, dueDate: null });
   }

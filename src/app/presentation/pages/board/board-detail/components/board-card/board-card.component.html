@@ -87,7 +87,7 @@
           (editTitle)="startEditingTitle()"
           (changeCover)="openCoverPicker()"
           (changeMembers)="onPlaceholderAction('Thay đổi thành viên')"
-          (changeDueDate)="onPlaceholderAction('Thay đổi ngày hết hạn')"
+          (changeDueDate)="openDueDatePicker()"
           (moveCard)="onPlaceholderAction('Di chuyển thẻ')"
           (copyCard)="onPlaceholderAction('Sao chép thẻ')"
           (deleteCard)="onDeleteCard()"
@@ -102,6 +102,18 @@
           (saveCover)="onSaveCover($event)"
           (removeCover)="onRemoveCover()"
           (closed)="closeCoverPicker()"
+        />
+
+        <!-- Card Due Date Picker Component -->
+        <app-card-due-date-picker
+          [origin]="cardMenuTrigger"
+          [isOpen]="isDueDateMenuOpen()"
+          [startDate]="card().startDate"
+          [dueDate]="card().dueDate"
+          placement="end"
+          (saveDates)="onSaveDates($event)"
+          (clearDates)="onClearDates()"
+          (closed)="closeDueDatePicker()"
         />
       </div>
 
@@ -153,7 +165,11 @@
 
             @if (dueDateStatus(); as ds) {
               <span
-                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border select-none transition-colors"
+                role="button"
+                tabindex="0"
+                (click)="$event.stopPropagation(); openDueDatePicker()"
+                (keydown.enter)="$event.stopPropagation(); openDueDatePicker()"
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border select-none transition-colors hover:opacity-85 cursor-pointer"
                 [class]="
                   ds.state === 'completed'
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
@@ -163,7 +179,7 @@
                         ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 font-semibold'
                         : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800'
                 "
-                [title]="ds.tooltipLabel"
+                [title]="ds.tooltipLabel + ' • Bấm để thay đổi hạn chót'"
               >
                 <span>{{ ds.badgeLabel }}</span>
               </span>

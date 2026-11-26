@@ -3,20 +3,17 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { CardSummary, ColumnSummary, MoveCardEvent } from '../../../../../../domain/models/board-detail.model';
+import {
+  CardSummary,
+  ColumnSummary,
+  MoveCardEvent,
+} from '../../../../../../domain/models/board-detail.model';
 import { BoardColumnComponent } from '../board-column/board-column.component';
 
 @Component({
   selector: 'app-board-canvas',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatIconModule,
-    BoardColumnComponent,
-    CdkDrag,
-    CdkDropList,
-  ],
+  imports: [CommonModule, FormsModule, MatIconModule, BoardColumnComponent, CdkDrag, CdkDropList],
   templateUrl: './board-canvas.component.html',
 })
 export class BoardCanvasComponent {
@@ -44,6 +41,12 @@ export class BoardCanvasComponent {
     columnId: string;
     coverUrl: string | null;
     file?: File | null;
+  }>();
+  readonly updateCardDatesFromBoardCanvas = output<{
+    cardId: string;
+    columnId: string;
+    startDate: string | null;
+    dueDate: string | null;
   }>();
 
   readonly connectedColumnIds = computed(() => this.columns().map((c) => c.id));

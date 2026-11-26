@@ -53,6 +53,12 @@ export class BoardColumnComponent {
     coverUrl: string | null;
     file?: File | null;
   }>();
+  readonly updateCardDatesFromColumn = output<{
+    cardId: string;
+    columnId: string;
+    startDate: string | null;
+    dueDate: string | null;
+  }>();
 
   readonly titleInputRef = viewChild<ElementRef<HTMLInputElement>>('titleInput');
   readonly cardTextareaRef = viewChild<ElementRef<HTMLTextAreaElement>>('cardTextarea');
@@ -185,7 +191,11 @@ export class BoardColumnComponent {
 
   onDeleteColumn(): void {
     this.closeMenu();
-    if (confirm(`Bạn có chắc chắn muốn xoá cột "${this.column().title}" và toàn bộ thẻ thuộc cột này?`)) {
+    if (
+      confirm(
+        `Bạn có chắc chắn muốn xoá cột "${this.column().title}" và toàn bộ thẻ thuộc cột này?`,
+      )
+    ) {
       this.deleteColumn.emit(this.column().id);
     }
   }

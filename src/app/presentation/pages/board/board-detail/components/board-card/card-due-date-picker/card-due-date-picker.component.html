@@ -1,0 +1,84 @@
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin()"
+  [cdkConnectedOverlayOpen]="isOpen()"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPositions]="overlayPositions()"
+  (backdropClick)="closed.emit()"
+>
+  <div
+    (click)="$event.stopPropagation()"
+    class="w-64 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl p-3.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 space-y-3 select-none text-slate-700 dark:text-[#b6c2cf]"
+  >
+    <!-- Header -->
+    <div
+      class="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-[#38414a]"
+    >
+      <span class="font-semibold text-slate-700 dark:text-[#9fadbc]">Thời hạn thẻ (Dates)</span>
+      <button
+        type="button"
+        (click)="closed.emit()"
+        class="text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer p-0.5 rounded"
+        title="Đóng"
+        aria-label="Đóng"
+      >
+        <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+      </button>
+    </div>
+
+    <!-- Date Inputs -->
+    <div class="space-y-2.5">
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+          Ngày bắt đầu (Start Date):
+        </label>
+        <input
+          type="date"
+          [ngModel]="startDateInput()"
+          (ngModelChange)="startDateInput.set($event)"
+          class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-[#38414a] bg-slate-50 dark:bg-[#1d2125] text-slate-800 dark:text-white outline-hidden focus:border-indigo-500 text-xs transition"
+        />
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+          Hạn chót (Due Date):
+        </label>
+        <input
+          type="date"
+          [ngModel]="dueDateInput()"
+          (ngModelChange)="dueDateInput.set($event)"
+          class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-[#38414a] bg-slate-50 dark:bg-[#1d2125] text-slate-800 dark:text-white outline-hidden focus:border-indigo-500 text-xs transition"
+        />
+      </div>
+    </div>
+
+    <!-- Validation Error -->
+    @if (isInvalidRange()) {
+      <div class="text-[11px] text-rose-500 font-medium">
+        Hạn chót phải lớn hơn hoặc bằng ngày bắt đầu.
+      </div>
+    }
+
+    <!-- Footer Actions -->
+    <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#38414a]">
+      <button
+        type="button"
+        (click)="onClear()"
+        class="text-xs text-rose-500 hover:underline cursor-pointer"
+      >
+        Gỡ thời hạn
+      </button>
+
+      <button
+        type="button"
+        (click)="onSave()"
+        [disabled]="isInvalidRange()"
+        class="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold cursor-pointer shadow-xs transition text-xs"
+      >
+        Lưu
+      </button>
+    </div>
+  </div>
+</ng-template>

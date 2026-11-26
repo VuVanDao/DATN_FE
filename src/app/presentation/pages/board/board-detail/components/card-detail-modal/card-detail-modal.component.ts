@@ -529,19 +529,23 @@ export class CardDetailModalComponent implements OnInit {
 
   // Dates Handler
   onDatesChanged(dates: { startDate: string | null; dueDate: string | null }): void {
-    if (dates.dueDate && dates.startDate && dates.startDate < dates.dueDate) {
-      this.currentStartDate.set(dates.startDate || '');
-      this.currentDueDate.set(dates.dueDate || '');
-      this.datesChanged.emit({
-        cardId: this.card().id,
-        startDate: dates.startDate,
-        dueDate: dates.dueDate,
-      });
-      this.notificationService.success('Đã cập nhật thời hạn');
-    } else if (dates.dueDate && dates.startDate && dates.startDate >= dates.dueDate) {
+    if (dates.startDate && dates.dueDate && dates.startDate > dates.dueDate) {
       this.notificationService.warning(
-        'Ngày bắt đầu phải nhỏ hơn ngày kết thúc. Vui lòng kiểm tra lại.',
+        'Hạn chót phải lớn hơn hoặc bằng ngày bắt đầu. Vui lòng kiểm tra lại.',
       );
+      return;
+    }
+
+    this.currentStartDate.set(dates.startDate || '');
+    this.currentDueDate.set(dates.dueDate || '');
+    this.datesChanged.emit({
+      cardId: this.card().id,
+      startDate: dates.startDate,
+      dueDate: dates.dueDate,
+    });
+
+    if (dates.startDate || dates.dueDate) {
+      this.notificationService.success('Đã cập nhật thời hạn');
     } else {
       this.notificationService.warning('Đã xoá thời hạn');
     }

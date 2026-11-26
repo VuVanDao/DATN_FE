@@ -591,6 +591,24 @@ export class BoardDetailPage implements OnInit {
     this.boardStore.updateCardTitle(cardId, columnId, title);
   }
 
+  onUpdateCardDates(event: {
+    cardId: string;
+    columnId: string;
+    startDate: string | null;
+    dueDate: string | null;
+  }): void {
+    this.boardStore.updateCard(
+      event.cardId,
+      {
+        startDate: event.startDate ? new Date(event.startDate).toISOString() : null,
+        dueDate: event.dueDate ? new Date(event.dueDate).toISOString() : null,
+      },
+      (updated) => {
+        this.syncSelectedCard(updated);
+      },
+    );
+  }
+
   // Ghim / Bỏ ghim bảng hiện tại
   onToggleBoardPin(): void {
     const board = this.currentBoard();

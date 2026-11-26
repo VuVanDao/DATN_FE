@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeDueDateStatus, localDateToInputString } from './due-date.util';
+import {
+  computeDueDateStatus,
+  formatIsoForDateInput,
+  localDateToInputString,
+} from './due-date.util';
 
 // "Hôm nay" cố định = 25/11/2026 (thứ Tư) để kết quả test không phụ thuộc ngày thực tế
 const FAKE_TODAY = new Date(2026, 10, 25); // tháng 10 = November (0-indexed)
@@ -181,5 +185,28 @@ describe('localDateToInputString', () => {
   it('xử lý đúng ngày đầu năm', () => {
     const date = new Date(2027, 0, 1); // 01/01/2027
     expect(localDateToInputString(date)).toBe('2027-01-01');
+  });
+});
+
+// ─── formatIsoForDateInput ───────────────────────────────────────────────────
+
+describe('formatIsoForDateInput', () => {
+  it('trả về chuỗi rỗng khi null hoặc undefined hoặc rỗng', () => {
+    expect(formatIsoForDateInput(null)).toBe('');
+    expect(formatIsoForDateInput(undefined)).toBe('');
+    expect(formatIsoForDateInput('')).toBe('');
+  });
+
+  it('trả về chuỗi rỗng khi ngày không hợp lệ', () => {
+    expect(formatIsoForDateInput('invalid-date')).toBe('');
+  });
+
+  it('chuyển đổi chuỗi YYYY-MM-DD chính xác', () => {
+    expect(formatIsoForDateInput('2026-11-25')).toBe('2026-11-25');
+  });
+
+  it('chuyển đổi chuỗi ISO có giờ theo đúng lịch địa phương', () => {
+    const res = formatIsoForDateInput('2026-11-25T12:00:00.000Z');
+    expect(res).toMatch(/^2026-11-2[56]$/);
   });
 });

@@ -110,3 +110,18 @@ export const localDateToInputString = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+/**
+ * Chuyển chuỗi ngày ISO hoặc chuỗi ngày bất kỳ → "YYYY-MM-DD" theo giờ ĐỊA PHƯƠNG,
+ * dùng để gán trực tiếp vào thuộc tính [ngModel] của <input type="date">.
+ * Trả về chuỗi rỗng nếu đầu vào là null, undefined hoặc ngày không hợp lệ.
+ *
+ * @param isoOrDateStr - Chuỗi ISO hoặc chuỗi biểu diễn ngày
+ * @returns Chuỗi dạng "YYYY-MM-DD" hoặc ""
+ */
+export const formatIsoForDateInput = (isoOrDateStr?: string | null): string => {
+  if (!isoOrDateStr) return '';
+  const date = new Date(isoOrDateStr);
+  if (isNaN(date.getTime())) return '';
+  return localDateToInputString(date);
+};

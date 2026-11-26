@@ -16,6 +16,7 @@ import { NotificationService } from '../../../../../../application/shared/notifi
 import { CardSummary } from '../../../../../../domain/models/board-detail.model';
 import { CardActionsMenuComponent } from './card-actions-menu/card-actions-menu.component';
 import { CardCoverPickerComponent } from './card-cover-picker/card-cover-picker.component';
+import { CardDueDatePickerComponent } from './card-due-date-picker/card-due-date-picker.component';
 import { computeDueDateStatus } from '../../../../../../shared/utils/due-date.util';
 
 @Component({
@@ -28,6 +29,7 @@ import { computeDueDateStatus } from '../../../../../../shared/utils/due-date.ut
     OverlayModule,
     CardActionsMenuComponent,
     CardCoverPickerComponent,
+    CardDueDatePickerComponent,
   ],
   templateUrl: './board-card.component.html',
 })
@@ -53,6 +55,12 @@ export class BoardCardComponent {
     coverUrl: string | null;
     file?: File | null;
   }>();
+  readonly updateDatesFromCard = output<{
+    cardId: string;
+    columnId: string;
+    startDate: string | null;
+    dueDate: string | null;
+  }>();
 
   readonly titleInputRef = viewChild<ElementRef<HTMLTextAreaElement>>('titleInput');
 
@@ -60,10 +68,12 @@ export class BoardCardComponent {
   readonly isEditingTitle = signal<boolean>(false);
   readonly editingTitleValue = signal<string>('');
   readonly isCoverMenuOpen = signal<boolean>(false);
+  readonly isDueDateMenuOpen = signal<boolean>(false);
 
   toggleMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.isCoverMenuOpen.set(false);
+    this.isDueDateMenuOpen.set(false);
     this.isMenuOpen.update((open) => !open);
   }
 
@@ -126,6 +136,36 @@ export class BoardCardComponent {
 
   closeCoverPicker(): void {
     this.isCoverMenuOpen.set(false);
+  }
+
+  openDueDatePicker(): void {
+    this.closeMenu();
+    this.isCoverMenuOpen.set(false);
+    this.isDueDateMenuOpen.set(true);
+  }
+
+  closeDueDatePicker(): void {
+    this.isDueDateMenuOpen.set(false);
+  }
+
+  onSaveDates(event: { startDate: string | null; dueDate: string | null }): void {
+    this.closeDueDatePicker();
+    this.updateDatesFromCard.emit({
+      cardId: this.card().id,
+      columnId: this.card().columnId,
+      startDate: event.startDate,
+      dueDate: event.dueDate,
+    });
+  }
+
+  onClearDates(): void {
+    this.closeDueDatePicker();
+    this.updateDatesFromCard.emit({
+      cardId: this.card().id,
+      columnId: this.card().columnId,
+      startDate: null,
+      dueDate: null,
+    });
   }
 
   onSaveCover(event: { coverUrl: string | null; file?: File | null }): void {
