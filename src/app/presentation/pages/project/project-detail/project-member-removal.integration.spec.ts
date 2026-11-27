@@ -6,7 +6,7 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { environment } from '../../../../../environments/environment';
-import { SessionService } from '../../../../application/auth/session.service';
+import { AuthStore } from '../../../../application/state/auth.store';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
@@ -84,7 +84,7 @@ describe('Remove project members', () => {
         { provide: BoardRepository, useClass: BoardHttpRepository },
         { provide: WorkspaceRepository, useClass: WorkspaceHttpRepository },
         { provide: WorkspaceStore, useValue: workspace },
-        { provide: SessionService, useValue: { currentUser: user } },
+        { provide: AuthStore, useValue: { currentUser: user } },
         { provide: NotificationService, useValue: notifications },
         { provide: LayoutService, useValue: { setSidebar() {} } },
         { provide: Router, useValue: router },

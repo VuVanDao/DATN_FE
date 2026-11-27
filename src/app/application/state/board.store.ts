@@ -33,7 +33,7 @@ import {
   UpdateBoardRequest,
 } from '../../domain/models/project.model';
 import { BoardRealtimeService } from '../../infrastructure/realtime/board-realtime.service';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { AddCardCommentUseCase } from '../board/add-card-comment.use-case';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
@@ -75,7 +75,7 @@ export class BoardStore {
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
   private readonly boardRealtimeService = inject(BoardRealtimeService);
-  private readonly sessionService = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
 
   private readonly cancel$ = new Subject<void>();
   private readonly processedCommentIds = new Set<string>();
@@ -1119,7 +1119,7 @@ export class BoardStore {
       },
     });
 
-    this.sessionService?.ended$?.subscribe({
+    this.authStore?.ended$?.subscribe({
       next: () => {
         this.boardRealtimeService?.stopConnection();
       },
@@ -1132,7 +1132,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1167,7 +1167,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1214,7 +1214,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1253,7 +1253,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1341,7 +1341,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1467,7 +1467,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1534,7 +1534,7 @@ export class BoardStore {
     }
 
     // Echo suppression: bỏ qua sự kiện nếu do chính user hiện tại thao tác (đã được cập nhật optimistic)
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1581,7 +1581,7 @@ export class BoardStore {
     }
 
     // Echo suppression: bỏ qua sự kiện nếu do chính user hiện tại thao tác (đã được cập nhật optimistic)
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1728,7 +1728,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1747,7 +1747,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1781,7 +1781,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1800,7 +1800,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1821,7 +1821,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     if (
       message.changedByUserId &&
       currentUserId &&
@@ -1919,7 +1919,7 @@ export class BoardStore {
       return;
     }
 
-    const currentUserId = this.sessionService?.currentUser?.()?.id;
+    const currentUserId = this.authStore?.currentUser?.()?.id;
     const isOwnAction =
       Boolean(message.changedByUserId) &&
       Boolean(currentUserId) &&

@@ -5,7 +5,7 @@ import { merge, Subject } from 'rxjs';
 import { UserNotification } from '../../domain/models/user-notification.model';
 import { UserNotificationRepository } from '../../domain/repositories/user-notification.repository';
 import { NotificationRealtimeService } from '../../infrastructure/realtime/notification-realtime.service';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
 import { WorkspaceStore } from './workspace.store';
@@ -16,7 +16,7 @@ import { WorkspaceStore } from './workspace.store';
 export class UserNotificationStore {
   private readonly repository = inject(UserNotificationRepository);
   private readonly realtime = inject(NotificationRealtimeService);
-  private readonly session = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
   private readonly toast = inject(NotificationService);
   private readonly workspaceStore = inject(WorkspaceStore);
   private readonly requests = inject(StoreRequestRunner);
@@ -49,7 +49,7 @@ export class UserNotificationStore {
   readonly isMarkingAll = this.isMarkingAllSignal.asReadonly();
 
   constructor() {
-    this.session.ended$.pipe(takeUntilDestroyed()).subscribe(() => {
+    this.authStore.ended$.pipe(takeUntilDestroyed()).subscribe(() => {
       this.reset();
     });
 
@@ -66,14 +66,14 @@ export class UserNotificationStore {
       .subscribe((msg) => this.applyMarkedAllRead(msg.readAt));
 
     this.realtime.reconnected$.pipe(takeUntilDestroyed()).subscribe(() => {
-      if (this.hasInitialized && this.session.isAuthenticated()) {
+      if (this.hasInitialized && this.authStore.isAuthenticated()) {
         this.loadNotifications(1, false);
       }
     });
   }
 
   initialize(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.session.isAuthenticated()) {
+    if (!isPlatformBrowser(this.platformId) || !this.authStore.isAuthenticated()) {
       return;
     }
 
@@ -96,7 +96,7 @@ export class UserNotificationStore {
   }
 
   loadNotifications(pageIndex = 1, append = false): void {
-    if (!isPlatformBrowser(this.platformId) || !this.session.isAuthenticated()) {
+    if (!isPlatformBrowser(this.platformId) || !this.authStore.isAuthenticated()) {
       return;
     }
 
@@ -107,7 +107,7 @@ export class UserNotificationStore {
     this.requests.run({
       loading: append ? this.isLoadingMoreSignal : this.isLoadingSignal,
       request$: this.repository.getNotifications(pageIndex, this.pageSize, this.unreadOnlySignal()),
-      cancel$: merge(this.cancel$, this.session.ended$, this.loadCancel$),
+      cancel$: merge(this.cancel$, this.authStore.ended$, this.loadCancel$),
       fallbackErrorMessage: 'Không thể tải danh sách thông báo',
       toastOnError: false,
       onSuccess: (response) => {
@@ -145,7 +145,7 @@ export class UserNotificationStore {
     this.requests.run({
       loading: dummyLoading,
       request$: this.repository.markAsRead(notification.id),
-      cancel$: merge(this.cancel$, this.session.ended$),
+      cancel$: merge(this.cancel$, this.authStore.ended$),
       fallbackErrorMessage: 'Không thể đánh dấu đã đọc thông báo',
       toastOnError: false,
       onSuccess: (updated) => {
@@ -162,7 +162,7 @@ export class UserNotificationStore {
     this.requests.run({
       loading: this.isMarkingAllSignal,
       request$: this.repository.markAllAsRead(),
-      cancel$: merge(this.cancel$, this.session.ended$),
+      cancel$: merge(this.cancel$, this.authStore.ended$),
       fallbackErrorMessage: 'Không thể đánh dấu tất cả thông báo là đã đọc',
       onSuccess: () => {
         this.applyMarkedAllRead(new Date().toISOString());

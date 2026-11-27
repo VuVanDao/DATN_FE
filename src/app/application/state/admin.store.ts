@@ -16,7 +16,7 @@ import { GetRolesUseCase } from '../admin/get-roles.use-case';
 import { GetUsersUseCase } from '../admin/get-users.use-case';
 import { UpdateUserStatusUseCase } from '../admin/update-user-status.use-case';
 import { UpdateUserUseCase } from '../admin/update-user.use-case';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { NotificationService } from '../shared/notification.service';
 import { StoreRequestRunner } from './store-request.util';
 
@@ -33,7 +33,7 @@ export class AdminStore {
   private readonly update = inject(UpdateUserUseCase);
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
-  private readonly session = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
   private readonly usersCancel$ = new Subject<void>();
   private readonly _users = signal<UserManagement[]>([]);
   private readonly _roles = signal<Role[]>([]);
@@ -66,7 +66,7 @@ export class AdminStore {
   }));
 
   constructor() {
-    this.session.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.clear());
+    this.authStore.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.clear());
   }
 
   loadUsers(): void {
@@ -80,7 +80,7 @@ export class AdminStore {
     };
     this.requests.run({
       loading: this._isLoading,
-      cancel$: merge(this.usersCancel$, this.session.ended$),
+      cancel$: merge(this.usersCancel$, this.authStore.ended$),
       request$: this.getUsers.execute(params).pipe(
         switchMap((result) => {
           const lastPage = Math.max(1, result.totalPages);
@@ -109,7 +109,7 @@ export class AdminStore {
     this.requests.run({
       loading: this._isLoadingRoles,
       request$: this.getRoles.execute(),
-      cancel$: this.session.ended$,
+      cancel$: this.authStore.ended$,
       fallbackErrorMessage: 'Không thể tải danh sách vai trò',
       onSuccess: (roles) => this._roles.set(roles),
     });
@@ -185,7 +185,7 @@ export class AdminStore {
     this.requests.run({
       loading: this._isSubmitting,
       request$,
-      cancel$: this.session.ended$,
+      cancel$: this.authStore.ended$,
       fallbackErrorMessage: 'Có lỗi xảy ra, vui lòng thử lại',
       onSuccess: () => {
         this.notifications.success(message);

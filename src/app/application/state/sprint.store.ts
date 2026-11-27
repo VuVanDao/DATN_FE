@@ -11,7 +11,7 @@ import {
   UpdateSprintRequest,
 } from '../../domain/models/sprint.model';
 import { BoardRealtimeService } from '../../infrastructure/realtime/board-realtime.service';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { CompleteSprintUseCase } from '../sprint/complete-sprint.use-case';
 import { CreateBacklogCardUseCase } from '../sprint/create-backlog-card.use-case';
 import { CreateSprintUseCase } from '../sprint/create-sprint.use-case';
@@ -38,7 +38,7 @@ export class SprintStore {
   private readonly notifications = inject(NotificationService);
   private readonly requests = inject(StoreRequestRunner);
   private readonly boardRealtimeService = inject(BoardRealtimeService);
-  private readonly sessionService = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
 
   private readonly cancel$ = new Subject<void>();
   private readonly currentProjectIdSignal = signal<string>('');
@@ -455,7 +455,7 @@ export class SprintStore {
   }
 
   private isSelf(userId?: string | null): boolean {
-    const me = this.sessionService?.currentUser?.()?.id;
+    const me = this.authStore?.currentUser?.()?.id;
     return !!userId && !!me && userId.toLowerCase() === me.toLowerCase();
   }
 

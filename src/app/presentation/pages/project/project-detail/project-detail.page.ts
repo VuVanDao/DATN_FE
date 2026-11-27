@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest, distinctUntilChanged, map } from 'rxjs';
-import { SessionService } from '../../../../application/auth/session.service';
+import { AuthStore } from '../../../../application/state/auth.store';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { ProjectStore } from '../../../../application/state/project.store';
@@ -50,7 +50,7 @@ export class ProjectDetailPage implements OnInit {
   readonly projectStore = inject(ProjectStore);
   readonly workspaceStore = inject(WorkspaceStore);
   private readonly notifications = inject(NotificationService);
-  private readonly session = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
   private readonly layoutService = inject(LayoutService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -69,11 +69,11 @@ export class ProjectDetailPage implements OnInit {
 
   readonly boards = computed(() => this.projectStore.boards());
   readonly members = computed(() => this.projectStore.members());
-  readonly currentUserId = computed(() => this.session.currentUser()?.id);
+  readonly currentUserId = computed(() => this.authStore.currentUser()?.id);
 
   // Check if current user is ProjectLeader
   readonly isCurrentLeader = computed(() => {
-    const currentUserId = this.session.currentUser()?.id;
+    const currentUserId = this.authStore.currentUser()?.id;
     if (!currentUserId) return false;
     const isMemberLeader = this.members().some(
       (m) =>
@@ -85,7 +85,7 @@ export class ProjectDetailPage implements OnInit {
 
   // Check if current user is WorkspaceOwner
   readonly isWorkspaceOwner = computed(() => {
-    const userId = this.session.currentUser()?.id;
+    const userId = this.authStore.currentUser()?.id;
     const project = this.project();
     if (!userId || !project) return false;
     const currentWorkspace = this.workspaceStore.currentWorkspace();
@@ -98,7 +98,7 @@ export class ProjectDetailPage implements OnInit {
 
   // User has authority to change member roles (WorkspaceOwner or ProjectLeader)
   readonly isCurrentMember = computed(() => {
-    const currentUserId = this.session.currentUser()?.id;
+    const currentUserId = this.authStore.currentUser()?.id;
     if (!currentUserId) return false;
     const inMemberList = this.members().some(
       (m) => m.userId.toLowerCase() === currentUserId.toLowerCase(),
@@ -248,12 +248,12 @@ export class ProjectDetailPage implements OnInit {
   }
 
   isSelf(member: ProjectMember): boolean {
-    return member.userId.toLowerCase() === this.session.currentUser()?.id.toLowerCase();
+    return member.userId.toLowerCase() === this.authStore.currentUser()?.id.toLowerCase();
   }
 
   canRemoveMember(member: ProjectMember): boolean {
     // hàm xác định xem người dùng hiện tại có quyền xóa thành viên dự án hay không
-    const userId = this.session.currentUser()?.id;
+    const userId = this.authStore.currentUser()?.id;
     const project = this.project();
     if (!userId || !project || member.roleName === 'ProjectLeader') return false;
     const currentWorkspace = this.workspaceStore.currentWorkspace();

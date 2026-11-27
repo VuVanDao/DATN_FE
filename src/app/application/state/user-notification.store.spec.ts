@@ -12,7 +12,7 @@ import {
   NotificationRealtimeService,
   NotificationsReadAllMessage,
 } from '../../infrastructure/realtime/notification-realtime.service';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { NotificationService } from '../shared/notification.service';
 import { UserNotificationStore } from './user-notification.store';
 import { WorkspaceStore } from './workspace.store';
@@ -122,7 +122,7 @@ describe('UserNotificationStore', () => {
         { provide: NotificationService, useValue: toast },
         { provide: WorkspaceStore, useValue: workspaceStore },
         {
-          provide: SessionService,
+          provide: AuthStore,
           useValue: {
             isAuthenticated: signal(true),
             ended$: ended$.asObservable(),

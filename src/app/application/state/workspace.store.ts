@@ -10,7 +10,7 @@ import {
   Workspace,
   WorkspaceDetail,
 } from '../../domain/models/workspace.model';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { NotificationService } from '../shared/notification.service';
 import { WorkspaceProjectsSlice } from './workspace/workspace-projects.slice';
 import { WorkspaceDetailSlice } from './workspace/workspace-detail.slice';
@@ -27,7 +27,7 @@ export class WorkspaceStore {
   private readonly _detail = inject(WorkspaceDetailSlice); // thông tin chi tiết workspace đang mở
   private readonly _members = inject(WorkspaceMemberSlice); // danh sách thành viên và vai trò trong workspace
   private readonly _projects = inject(WorkspaceProjectsSlice); // danh sách và thao tác dự án trong workspace
-  private readonly _session = inject(SessionService);
+  private readonly _authStore = inject(AuthStore);
   private readonly _notifications = inject(NotificationService);
   private workspaceId: string | null = null;
   private activeTab: WorkspaceTab = 'projects';
@@ -45,7 +45,7 @@ export class WorkspaceStore {
   }
 
   constructor() {
-    this._session.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.clear());
+    this._authStore.ended$.pipe(takeUntilDestroyed()).subscribe(() => this.clear());
   }
 
   // ===== Danh sách workspace =====
@@ -187,7 +187,7 @@ export class WorkspaceStore {
     onSuccess?: () => void,
     onError?: (errorMsg: string) => void,
   ): void {
-    const isSelf = memberId.toLowerCase() === this._session.currentUser()?.id.toLowerCase();
+    const isSelf = memberId.toLowerCase() === this._authStore.currentUser()?.id.toLowerCase();
     this._members.removeMember(
       workspaceId,
       memberId,

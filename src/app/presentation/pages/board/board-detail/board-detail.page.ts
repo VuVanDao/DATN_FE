@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest } from 'rxjs';
-import { SessionService } from '../../../../application/auth/session.service';
+import { AuthStore } from '../../../../application/state/auth.store';
 import { LayoutService } from '../../../../application/layout/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { BoardStore } from '../../../../application/state/board.store';
@@ -57,7 +57,7 @@ export class BoardDetailPage implements OnInit {
   readonly router = inject(Router);
   readonly destroyRef = inject(DestroyRef);
   readonly notifications = inject(NotificationService);
-  readonly session = inject(SessionService);
+  readonly authStore = inject(AuthStore);
 
   readonly currentBoard = this.boardStore.currentBoard;
   readonly columns = this.boardStore.columns;
@@ -87,7 +87,7 @@ export class BoardDetailPage implements OnInit {
 
   // Kiểm tra người dùng hiện tại có phải WorkspaceOwner không
   readonly isWorkspaceOwner = computed<boolean>(() => {
-    const currentUserId = this.session.currentUser()?.id;
+    const currentUserId = this.authStore.currentUser()?.id;
     if (!currentUserId) return false;
     const currentProject = this.projectStore.currentProject();
     if (currentProject?.currentUserRole === 'WorkspaceOwner') return true;
@@ -110,7 +110,7 @@ export class BoardDetailPage implements OnInit {
 
   // Kiểm tra quyền quản trị Bảng (ProjectLeader hoặc WorkspaceOwner)
   readonly isProjectLeader = computed<boolean>(() => {
-    const currentUserId = this.session.currentUser()?.id;
+    const currentUserId = this.authStore.currentUser()?.id;
     if (!currentUserId) return false;
     const isMemberLeader = this.projectStore
       .members()

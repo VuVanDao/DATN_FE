@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { SessionService } from '../../../../../../application/auth/session.service';
+import { AuthStore } from '../../../../../../application/state/auth.store';
 import { GetCardActivitiesUseCase } from '../../../../../../application/board/get-card-activities.use-case';
 import { NotificationService } from '../../../../../../application/shared/notification.service';
 import { ActivityLog } from '../../../../../../domain/models/activity-log.model';
@@ -57,7 +57,7 @@ export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetail
   templateUrl: './card-detail-modal.component.html',
 })
 export class CardDetailModalComponent implements OnInit {
-  private readonly sessionService = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
   private readonly notificationService = inject(NotificationService);
   private readonly getCardActivitiesUseCase = inject(GetCardActivitiesUseCase);
 
@@ -125,7 +125,7 @@ export class CardDetailModalComponent implements OnInit {
   readonly currentStoryPoints = signal<number | null>(null);
 
   // User
-  readonly currentUser = computed(() => this.sessionService.currentUser());
+  readonly currentUser = computed(() => this.authStore.currentUser());
   readonly currentUserName = computed(() => {
     const u = this.currentUser();
     return u?.userName || 'Tôi';

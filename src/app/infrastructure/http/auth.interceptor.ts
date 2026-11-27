@@ -3,18 +3,18 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { SessionRefreshService } from '../../application/auth/session-refresh.service';
-import { SessionService } from '../../application/auth/session.service';
+import { AuthStore } from '../../application/state/auth.store';
 import { NotificationService } from '../../application/shared/notification.service';
 import { AuthStorageService } from '../storage/auth-storage.service';
+import { TokenRefreshService } from './token-refresh.service';
 
 export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   // Credentials and access tokens belong only to our API.
   if (req.url !== environment.apiUrl && !req.url.startsWith(environment.apiUrl + '/'))
     return next(req);
   const storage = inject(AuthStorageService);
-  const session = inject(SessionService);
-  const refresh = inject(SessionRefreshService);
+  const authStore = inject(AuthStore);
+  const refresh = inject(TokenRefreshService);
   const router = inject(Router);
   const notifications = inject(NotificationService);
   const token = storage.getAccessToken();
@@ -41,18 +41,19 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
       }
       return refresh
         .refresh(() => {
-          session.clear();
+          authStore.clear();
           void router.navigate(['/login']);
           notifications.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         })
         .pipe(
-          switchMap((response) =>
-            next(
+          switchMap((response) => {
+            authStore.updateCurrentUser(response.user);
+            return next(
               authReq.clone({
                 setHeaders: { Authorization: 'Bearer ' + response.tokens.accessToken },
               }),
-            ),
-          ),
+            );
+          }),
         );
     }),
   );

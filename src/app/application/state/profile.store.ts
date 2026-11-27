@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ChangePasswordRequest, UpdateProfileRequest } from '../../domain/models/user.model';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { NotificationService } from '../shared/notification.service';
 import { ChangePasswordUseCase } from '../user/change-password.use-case';
 import { GetCurrentUserUseCase } from '../user/get-current-user.use-case';
@@ -14,7 +14,7 @@ export class ProfileStore {
   private readonly update = inject(UpdateProfileUseCase);
   private readonly change = inject(ChangePasswordUseCase);
   private readonly upload = inject(UploadAvatarUseCase);
-  private readonly session = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
   private readonly loading = signal(false);
@@ -22,7 +22,7 @@ export class ProfileStore {
   private readonly changing = signal(false);
   private readonly uploading = signal(false);
 
-  readonly currentUser = this.session.currentUser;
+  readonly currentUser = this.authStore.currentUser;
   readonly isProfileLoading = this.loading.asReadonly();
   readonly isProfileSaving = this.saving.asReadonly();
   readonly isPasswordChanging = this.changing.asReadonly();
@@ -33,10 +33,10 @@ export class ProfileStore {
     this.requests.run({
       loading: this.loading,
       request$: this.getUser.execute(),
-      cancel$: this.session.ended$,
+      cancel$: this.authStore.ended$,
       fallbackErrorMessage: 'Không thể tải hồ sơ cá nhân',
       onSuccess: (user) => {
-        this.session.updateUser(user);
+        this.authStore.updateUser(user);
         onSuccess?.();
       },
       onError,
@@ -48,10 +48,10 @@ export class ProfileStore {
     this.requests.run({
       loading: this.saving,
       request$: this.update.execute(request),
-      cancel$: this.session.ended$,
+      cancel$: this.authStore.ended$,
       fallbackErrorMessage: 'Cập nhật hồ sơ thất bại',
       onSuccess: (user) => {
-        this.session.updateUser(user);
+        this.authStore.updateUser(user);
         this.notifications.success('Cập nhật thông tin hồ sơ thành công');
         onSuccess?.();
       },
@@ -68,7 +68,7 @@ export class ProfileStore {
     this.requests.run({
       loading: this.changing,
       request$: this.change.execute(request),
-      cancel$: this.session.ended$,
+      cancel$: this.authStore.ended$,
       fallbackErrorMessage: 'Đổi mật khẩu thất bại',
       onSuccess: () => {
         this.notifications.success('Đổi mật khẩu thành công!');
@@ -83,11 +83,11 @@ export class ProfileStore {
     this.requests.run({
       loading: this.uploading,
       request$: this.upload.execute(file),
-      cancel$: this.session.ended$,
+      cancel$: this.authStore.ended$,
       fallbackErrorMessage: 'Cập nhật ảnh đại diện thất bại',
       onSuccess: (avatarUrl) => {
         const user = this.currentUser();
-        if (user) this.session.updateUser({ ...user, avatarUrl });
+        if (user) this.authStore.updateUser({ ...user, avatarUrl });
         this.notifications.success('Cập nhật ảnh đại diện thành công');
       },
     });

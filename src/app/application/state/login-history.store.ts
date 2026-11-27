@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { merge, Subject } from 'rxjs';
 import { LoginHistory } from '../../domain/models/user.model';
-import { SessionService } from '../auth/session.service';
+import { AuthStore } from './auth.store';
 import { GetMyLoginHistoryUseCase } from '../security/get-my-login-history.use-case';
 import { StoreRequestRunner } from './store-request.util';
 
@@ -10,7 +10,7 @@ import { StoreRequestRunner } from './store-request.util';
 export class LoginHistoryStore {
   private readonly getHistory = inject(GetMyLoginHistoryUseCase);
   private readonly requests = inject(StoreRequestRunner);
-  private readonly session = inject(SessionService);
+  private readonly authStore = inject(AuthStore);
   private readonly cancel$ = new Subject<void>();
   private readonly items = signal<LoginHistory[]>([]);
   private readonly loading = signal(false);
@@ -26,7 +26,7 @@ export class LoginHistoryStore {
     this.requests.run({
       loading: this.loading,
       request$: this.getHistory.execute(),
-      cancel$: merge(this.cancel$, this.session.ended$),
+      cancel$: merge(this.cancel$, this.authStore.ended$),
       fallbackErrorMessage: 'Không thể tải lịch sử đăng nhập',
       toastOnError: false,
       onSuccess: (items) => this.items.set(items),
