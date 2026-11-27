@@ -35,17 +35,15 @@ import { AuthStore } from './auth.store';
 import { AddCardCommentUseCase } from '../board/add-card-comment.use-case';
 import { CreateCardUseCase } from '../board/create-card.use-case';
 import { CreateColumnUseCase } from '../board/create-column.use-case';
-import { DeleteBoardUseCase } from '../board/delete-board.use-case';
 import { DeleteCardUseCase } from '../board/delete-card.use-case';
 import { DeleteColumnUseCase } from '../board/delete-column.use-case';
-import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
 import { GetCardDetailUseCase } from '../board/get-card-detail.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
-import { UpdateBoardUseCase } from '../board/update-board.use-case';
 import { UpdateCardUseCase } from '../board/update-card.use-case';
 import { UpdateColumnUseCase } from '../board/update-column.use-case';
 import { NotificationService } from '../shared/notification.service';
+import { BoardDetailSlice } from './board/board-detail.slice';
 import { MyBoardsSlice } from './board/my-boards.slice';
 import { StoreRequestRunner } from './store-request.util';
 
@@ -53,7 +51,6 @@ import { StoreRequestRunner } from './store-request.util';
   providedIn: 'root',
 })
 export class BoardStore {
-  private readonly getBoardDetailUseCase = inject(GetBoardDetailUseCase);
   private readonly getCardDetailUseCase = inject(GetCardDetailUseCase);
   private readonly addCardCommentUseCase = inject(AddCardCommentUseCase);
   private readonly createColumnUseCase = inject(CreateColumnUseCase);
@@ -64,8 +61,7 @@ export class BoardStore {
   private readonly moveCardUseCase = inject(MoveCardUseCase);
   private readonly updateCardUseCase = inject(UpdateCardUseCase);
   private readonly deleteCardUseCase = inject(DeleteCardUseCase);
-  private readonly deleteBoardUseCase = inject(DeleteBoardUseCase);
-  private readonly updateBoardUseCase = inject(UpdateBoardUseCase);
+  private readonly _boardDetail = inject(BoardDetailSlice);
   private readonly _myBoards = inject(MyBoardsSlice);
 
   private readonly requests = inject(StoreRequestRunner);
@@ -76,28 +72,23 @@ export class BoardStore {
   private readonly cancel$ = new Subject<void>();
   private readonly processedCommentIds = new Set<string>();
 
-  private readonly boardSignal = signal<BoardDetail | null>(null);
   private readonly columnsSignal = signal<ColumnSummary[]>([]);
-  private readonly loadingSignal = signal<boolean>(false);
-  private readonly errorSignal = signal<string | null>(null);
   private readonly isAddingColumnSignal = signal<boolean>(false);
   private readonly isAddingCardSignal = signal<boolean>(false);
-  private readonly isUpdatingBoardSignal = signal<boolean>(false);
-  private readonly isDeletingBoardSignal = signal<boolean>(false);
 
   private readonly cardDetailSignal = signal<CardDetail | null>(null);
   private readonly isLoadingCardDetailSignal = signal<boolean>(false);
 
-  readonly currentBoard = this.boardSignal.asReadonly();
+  readonly currentBoard = this._boardDetail.currentBoard;
   readonly columns = this.columnsSignal.asReadonly();
   readonly currentCardDetail = this.cardDetailSignal.asReadonly();
   readonly isLoadingCardDetail = this.isLoadingCardDetailSignal.asReadonly();
-  readonly isLoading = this.loadingSignal.asReadonly();
-  readonly error = this.errorSignal.asReadonly();
+  readonly isLoading = this._boardDetail.isLoading;
+  readonly error = this._boardDetail.error;
   readonly isAddingColumn = this.isAddingColumnSignal.asReadonly();
   readonly isAddingCard = this.isAddingCardSignal.asReadonly();
-  readonly isUpdatingBoard = this.isUpdatingBoardSignal.asReadonly();
-  readonly isDeletingBoard = this.isDeletingBoardSignal.asReadonly();
+  readonly isUpdatingBoard = this._boardDetail.isUpdatingBoard;
+  readonly isDeletingBoard = this._boardDetail.isDeletingBoard;
   readonly myBoards = this._myBoards.myBoards;
   readonly isLoadingMyBoards = this._myBoards.isLoadingMyBoards;
 
@@ -107,23 +98,11 @@ export class BoardStore {
 
   loadBoard(slug: string, projectId: string, onSuccess?: (board: BoardDetail) => void): void {
     this.cancel$.next();
-    this.errorSignal.set(null);
 
-    this.requests.run({
-      loading: this.loadingSignal,
-      request$: this.getBoardDetailUseCase.execute(slug, projectId),
-      cancel$: this.cancel$,
-      fallbackErrorMessage: 'Không thể tải thông tin bảng.',
-      toastOnError: false,
-      onSuccess: (board) => {
-        this.boardSignal.set(board);
-        this.columnsSignal.set(board.columns || []);
-        this.boardRealtimeService?.joinBoard(board.id);
-        onSuccess?.(board);
-      },
-      onError: (err) => {
-        this.errorSignal.set(err);
-      },
+    this._boardDetail.loadBoard(slug, projectId, (board) => {
+      this.columnsSignal.set(board.columns || []);
+      this.boardRealtimeService?.joinBoard(board.id);
+      onSuccess?.(board);
     });
   }
 
@@ -145,7 +124,7 @@ export class BoardStore {
           cards: newColumn.cards || [],
         };
         this.columnsSignal.update((cols) => [...cols, colWithCards]);
-        this.boardSignal.update((b) =>
+        this._boardDetail.updateBoardLocally((b) =>
           b ? { ...b, columns: [...(b.columns || []), colWithCards] } : null,
         );
         this.notifications.success(`Đã thêm danh sách "${colWithCards.title}"`);
@@ -164,7 +143,7 @@ export class BoardStore {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
-    const board = this.boardSignal();
+    const board = this._boardDetail.currentBoard();
     if (!board) return;
 
     const existingCol = this.columnsSignal().find((c) => c.id === columnId);
@@ -185,7 +164,7 @@ export class BoardStore {
         c.id === columnId ? { ...c, title: trimmedTitle, isDoneColumn: finalIsDone } : c,
       ),
     );
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b
         ? {
             ...b,
@@ -230,7 +209,7 @@ export class BoardStore {
               c.id === columnId ? { ...c, title: previousTitle, isDoneColumn: previousIsDone } : c,
             ),
           );
-          this.boardSignal.update((b) =>
+          this._boardDetail.updateBoardLocally((b) =>
             b
               ? {
                   ...b,
@@ -253,7 +232,7 @@ export class BoardStore {
   }
 
   deleteColumn(columnId: string, onSuccess?: () => void, onError?: (error: string) => void): void {
-    const board = this.boardSignal();
+    const board = this._boardDetail.currentBoard();
     if (!board) return;
 
     const existingCol = this.columnsSignal().find((c) => c.id === columnId);
@@ -264,7 +243,7 @@ export class BoardStore {
 
     // Cập nhật giao diện ngay lập tức (optimistic)
     this.columnsSignal.update((cols) => cols.filter((c) => c.id !== columnId));
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b ? { ...b, columns: (b.columns || []).filter((c) => c.id !== columnId) } : null,
     );
 
@@ -276,7 +255,7 @@ export class BoardStore {
       error: (err) => {
         // Rollback nếu thất bại
         this.columnsSignal.set(previousCols);
-        this.boardSignal.update((b) => (b ? { ...b, columns: previousBoardCols } : null));
+        this._boardDetail.updateBoardLocally((b) => (b ? { ...b, columns: previousBoardCols } : null));
         const errorMsg =
           err?.error?.message || err?.message || 'Không thể xoá cột. Vui lòng thử lại.';
         this.notifications.error(errorMsg);
@@ -294,9 +273,9 @@ export class BoardStore {
 
     // Cập nhật vị trí hiển thị ngay lập tức (optimistic)
     this.columnsSignal.set(reordered);
-    this.boardSignal.update((b) => (b ? { ...b, columns: reordered } : null));
+    this._boardDetail.updateBoardLocally((b) => (b ? { ...b, columns: reordered } : null));
 
-    const board = this.boardSignal();
+    const board = this._boardDetail.currentBoard();
     if (!board) return;
 
     const orderedColumnIds = reordered.map((col) => col.id);
@@ -307,7 +286,7 @@ export class BoardStore {
       error: () => {
         // Rollback
         this.columnsSignal.set(previousCols);
-        this.boardSignal.update((b) => (b ? { ...b, columns: previousCols } : null));
+        this._boardDetail.updateBoardLocally((b) => (b ? { ...b, columns: previousCols } : null));
         this.notifications.error('Không thể cập nhật thứ tự cột. Vui lòng thử lại.');
       },
     });
@@ -348,7 +327,7 @@ export class BoardStore {
             col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
           ),
         );
-        this.boardSignal.update((b) => {
+        this._boardDetail.updateBoardLocally((b) => {
           if (!b) return null;
           const updatedSprint =
             b.activeSprint && (!newCard.sprintId || newCard.sprintId === b.activeSprint.id)
@@ -428,7 +407,7 @@ export class BoardStore {
             movedCard.isCompleted = true;
             // Cập nhật thống kê activeSprint trên header nếu thẻ trước đó chưa hoàn thành
             if (!wasCompleted) {
-              this.boardSignal.update((b) => {
+              this._boardDetail.updateBoardLocally((b) => {
                 if (!b?.activeSprint) return b;
                 return {
                   ...b,
@@ -445,7 +424,7 @@ export class BoardStore {
             movedCard.isCompleted = false;
             // Trừ thống kê activeSprint trên header nếu thẻ trước đó đã hoàn thành
             if (wasCompleted) {
-              this.boardSignal.update((b) => {
+              this._boardDetail.updateBoardLocally((b) => {
                 if (!b?.activeSprint) return b;
                 return {
                   ...b,
@@ -493,7 +472,7 @@ export class BoardStore {
       .subscribe({
         next: () => {
           // Success
-          const currentBoard = this.boardSignal();
+          const currentBoard = this._boardDetail.currentBoard();
           if (currentBoard && isSourceDone !== isTargetDone) {
             this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
           }
@@ -561,7 +540,7 @@ export class BoardStore {
               : col,
           ),
         );
-        this.boardSignal.update((b) => {
+        this._boardDetail.updateBoardLocally((b) => {
           if (!b) return null;
           const updatedSprint =
             b.activeSprint && deletedCard
@@ -654,7 +633,7 @@ export class BoardStore {
         cards: (col.cards || []).filter((card) => card.id !== cardId),
       })),
     );
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b
         ? {
             ...b,
@@ -672,7 +651,7 @@ export class BoardStore {
 
   removeColumnLocally(columnId: string): void {
     this.columnsSignal.update((cols) => cols.filter((col) => col.id !== columnId));
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b
         ? {
             ...b,
@@ -707,7 +686,7 @@ export class BoardStore {
 
     const previousCols = this.columnsSignal();
     const previousDetail = this.cardDetailSignal();
-    const previousBoard = this.boardSignal();
+    const previousBoard = this._boardDetail.currentBoard();
 
     const fullRequest: UpdateCardRequest = {
       title: updates.title !== undefined ? updates.title : currentCard.title,
@@ -744,7 +723,7 @@ export class BoardStore {
     const uncompleting = oldIsCompleted && !newIsCompleted;
 
     if (completing || uncompleting || diffPts !== 0) {
-      this.boardSignal.update((b) => {
+      this._boardDetail.updateBoardLocally((b) => {
         if (!b?.activeSprint) return b;
         let compCards = b.activeSprint.completedCards || 0;
         let compPts = b.activeSprint.completedStoryPoints || 0;
@@ -831,7 +810,7 @@ export class BoardStore {
         onSuccess?.(updatedCard);
 
         // NẾU TRẠNG THÁI HOÀN THÀNH THAY ĐỔI -> TẢI LẠI BẢNG NGẦM ĐỂ CẬP NHẬT TRẠNG THÁI BỊ CHẶN (isBlocked) CỦA CÁC THẺ KHÁC!
-        const currentBoard = this.boardSignal();
+        const currentBoard = this._boardDetail.currentBoard();
         if (currentBoard && (completing || uncompleting)) {
           this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
         }
@@ -839,7 +818,7 @@ export class BoardStore {
       error: (err) => {
         this.columnsSignal.set(previousCols);
         this.cardDetailSignal.set(previousDetail);
-        this.boardSignal.set(previousBoard);
+        this._boardDetail.setBoard(previousBoard);
         this.notifications.error('Không thể cập nhật thông tin thẻ.');
         onError?.(err?.message || 'Lỗi cập nhật thẻ');
       },
@@ -892,15 +871,15 @@ export class BoardStore {
     onSuccess?: (isPinned: boolean) => void,
     onError?: (previousPinned: boolean) => void,
   ): void {
-    const targetBoardId = boardId ?? this.boardSignal()?.id;
+    const targetBoardId = boardId ?? this._boardDetail.currentBoard()?.id;
     if (!targetBoardId) return;
 
-    const previousPinned = currentPinned ?? !!this.boardSignal()?.isPinned;
+    const previousPinned = currentPinned ?? !!this._boardDetail.currentBoard()?.isPinned;
     const nextPinned = !previousPinned;
 
     // 1. Cập nhật lạc quan bảng đang mở (nếu trùng ID)
-    if (this.boardSignal()?.id === targetBoardId) {
-      this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
+    if (this._boardDetail.currentBoard()?.id === targetBoardId) {
+      this._boardDetail.updateBoardLocally((b) => (b ? { ...b, isPinned: nextPinned } : null));
     }
 
     // 2. Delegate qua MyBoardsSlice
@@ -908,14 +887,14 @@ export class BoardStore {
       targetBoardId,
       previousPinned,
       (isPinned) => {
-        if (this.boardSignal()?.id === targetBoardId) {
-          this.boardSignal.update((b) => (b ? { ...b, isPinned } : null));
+        if (this._boardDetail.currentBoard()?.id === targetBoardId) {
+          this._boardDetail.updateBoardLocally((b) => (b ? { ...b, isPinned } : null));
         }
         onSuccess?.(isPinned);
       },
       (prevPinned) => {
-        if (this.boardSignal()?.id === targetBoardId) {
-          this.boardSignal.update((b) => (b ? { ...b, isPinned: prevPinned } : null));
+        if (this._boardDetail.currentBoard()?.id === targetBoardId) {
+          this._boardDetail.updateBoardLocally((b) => (b ? { ...b, isPinned: prevPinned } : null));
         }
         onError?.(prevPinned);
       },
@@ -928,48 +907,15 @@ export class BoardStore {
     onSuccess?: (updated: Board) => void,
     onError?: (error: string) => void,
   ): void {
-    this.requests.run({
-      loading: this.isUpdatingBoardSignal,
-      request$: this.updateBoardUseCase.execute(boardId, request),
-      cancel$: this.cancel$,
-      fallbackErrorMessage: 'Cập nhật thông tin bảng thất bại.',
-      onSuccess: (updated) => {
-        this.boardSignal.update((current) => {
-          if (!current || current.id !== boardId) return current;
-          return {
-            ...current,
-            title: updated.title,
-            slug: updated.slug,
-            type: updated.type,
-          };
-        });
-        this.notifications.success('Đã cập nhật thông tin bảng thành công!');
-        onSuccess?.(updated);
-      },
-      onError: (err) => {
-        onError?.(err);
-      },
-    });
+    this._boardDetail.updateBoard(boardId, request, onSuccess, onError);
   }
 
   deleteBoard(boardId: string, onSuccess?: () => void, onError?: (error: string) => void): void {
-    this.requests.run({
-      loading: this.isDeletingBoardSignal,
-      request$: this.deleteBoardUseCase.execute(boardId),
-      cancel$: this.cancel$,
-      fallbackErrorMessage: 'Xoá bảng thất bại.',
-      onSuccess: () => {
-        this.notifications.success('Đã xoá bảng và toàn bộ dữ liệu trực thuộc thành công.');
-        onSuccess?.();
-      },
-      onError: (err) => {
-        onError?.(err);
-      },
-    });
+    this._boardDetail.deleteBoard(boardId, onSuccess, onError);
   }
 
   setBoardPinnedLocally(isPinned: boolean): void {
-    this.boardSignal.update((b) => (b ? { ...b, isPinned } : null));
+    this._boardDetail.setBoardPinnedLocally(isPinned);
   }
 
   loadMyBoards(limit?: number): void {
@@ -977,15 +923,14 @@ export class BoardStore {
   }
 
   clear(): void {
-    const current = this.boardSignal();
+    const current = this._boardDetail.currentBoard();
     if (current) {
       this.boardRealtimeService?.leaveBoard(current.id);
     }
     this.cancel$.next();
     this.processedCommentIds.clear();
-    this.boardSignal.set(null);
+    this._boardDetail.clear();
     this.columnsSignal.set([]);
-    this.errorSignal.set(null);
   }
 
   private setupRealtimeListeners(): void {
@@ -1065,7 +1010,7 @@ export class BoardStore {
 
     this.boardRealtimeService?.reconnected$?.subscribe({
       next: () => {
-        const currentBoard = this.boardSignal();
+        const currentBoard = this._boardDetail.currentBoard();
         if (currentBoard) {
           this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
         }
@@ -1080,7 +1025,7 @@ export class BoardStore {
   }
 
   private handleRemoteColumnCreated(message: ColumnCreatedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1110,12 +1055,12 @@ export class BoardStore {
 
     const nextCols = [...currentCols, newCol].sort((a, b) => a.position - b.position);
     this.columnsSignal.set(nextCols);
-    this.boardSignal.update((b) => (b ? { ...b, columns: nextCols } : null));
+    this._boardDetail.updateBoardLocally((b) => (b ? { ...b, columns: nextCols } : null));
     this.notifications.info(`Cột "${message.title}" vừa được thêm bởi thành viên khác.`);
   }
 
   private handleRemoteColumnUpdated(message: ColumnUpdatedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1142,7 +1087,7 @@ export class BoardStore {
       ),
     );
 
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b
         ? {
             ...b,
@@ -1162,7 +1107,7 @@ export class BoardStore {
   }
 
   private handleRemoteColumnDeleted(message: ColumnDeletedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1184,7 +1129,7 @@ export class BoardStore {
       cols.filter((c) => c.id.toLowerCase() !== message.columnId.toLowerCase()),
     );
 
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b
         ? {
             ...b,
@@ -1201,7 +1146,7 @@ export class BoardStore {
   }
 
   private handleRemoteCardCreated(message: CardCreatedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1260,7 +1205,7 @@ export class BoardStore {
     const pts = newCard.storyPoints || 0;
     const isDone = !!newCard.isCompleted;
 
-    this.boardSignal.update((b) => {
+    this._boardDetail.updateBoardLocally((b) => {
       if (!b) return null;
       const updatedSprint =
         b.activeSprint &&
@@ -1289,7 +1234,7 @@ export class BoardStore {
   }
 
   private handleRemoteCardUpdated(message: CardUpdatedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1364,7 +1309,7 @@ export class BoardStore {
       }),
     );
 
-    this.boardSignal.update((b) => {
+    this._boardDetail.updateBoardLocally((b) => {
       if (!b) return null;
       let updatedSprint = b.activeSprint;
       if (b.activeSprint && (completing || uncompleting || diffPts !== 0)) {
@@ -1415,7 +1360,7 @@ export class BoardStore {
   }
 
   private handleRemoteCardDeleted(message: CardDeletedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1448,7 +1393,7 @@ export class BoardStore {
     const pts = deletedCard?.storyPoints || 0;
     const isDone = !!deletedCard?.isCompleted;
 
-    this.boardSignal.update((b) => {
+    this._boardDetail.updateBoardLocally((b) => {
       if (!b) return null;
       const updatedSprint =
         b.activeSprint && deletedCard
@@ -1481,7 +1426,7 @@ export class BoardStore {
   }
 
   private handleRemoteColumnsReordered(message: ColumnsReorderedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1522,13 +1467,13 @@ export class BoardStore {
     }
 
     this.columnsSignal.set(reordered);
-    this.boardSignal.update((b) => (b ? { ...b, columns: reordered } : null));
+    this._boardDetail.updateBoardLocally((b) => (b ? { ...b, columns: reordered } : null));
 
     this.notifications.warning('Thứ tự các danh sách vừa được cập nhật bởi thành viên khác.');
   }
 
   private handleRemoteCardMoved(message: CardMovedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1627,7 +1572,7 @@ export class BoardStore {
     });
 
     // Đồng bộ lại boardSignal và activeSprint
-    this.boardSignal.update((b) => {
+    this._boardDetail.updateBoardLocally((b) => {
       if (!b) return null;
       let updatedSprint = b.activeSprint;
       if (b.activeSprint && wasCompleted !== isNowCompleted) {
@@ -1676,7 +1621,7 @@ export class BoardStore {
   }
 
   private handleRemoteSprintStarted(message: SprintStartedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1695,7 +1640,7 @@ export class BoardStore {
   }
 
   private handleRemoteSprintUpdated(message: SprintUpdatedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1710,7 +1655,7 @@ export class BoardStore {
     }
 
     if (currentBoard.activeSprint?.id.toLowerCase() === message.sprint.id.toLowerCase()) {
-      this.boardSignal.update((b) =>
+      this._boardDetail.updateBoardLocally((b) =>
         b?.activeSprint?.id.toLowerCase() === message.sprint.id.toLowerCase()
           ? {
               ...b,
@@ -1729,7 +1674,7 @@ export class BoardStore {
   }
 
   private handleRemoteSprintCompleted(message: SprintCompletedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1748,7 +1693,7 @@ export class BoardStore {
   }
 
   private handleRemoteSprintDeleted(message: SprintDeletedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1769,7 +1714,7 @@ export class BoardStore {
   }
 
   private handleRemoteCardSprintChanged(message: CardSprintChangedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1805,7 +1750,7 @@ export class BoardStore {
 
       const pts = message.card.storyPoints || 0;
       const isDone = !!message.card.isCompleted;
-      this.boardSignal.update((b) => {
+      this._boardDetail.updateBoardLocally((b) => {
         if (!b?.activeSprint) return b;
         return {
           ...b,
@@ -1847,7 +1792,7 @@ export class BoardStore {
     blockedCardId: string,
     blockingCardId: string,
   ): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (currentBoard && currentBoard.id.toLowerCase() === boardId.toLowerCase()) {
       this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
     }
@@ -1862,7 +1807,7 @@ export class BoardStore {
   }
 
   private handleRemoteCardCommentAdded(message: CardCommentAddedMessage): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (!currentBoard || currentBoard.id.toLowerCase() !== message.boardId.toLowerCase()) {
       return;
     }
@@ -1932,7 +1877,7 @@ export class BoardStore {
       })),
     );
 
-    this.boardSignal.update((b) =>
+    this._boardDetail.updateBoardLocally((b) =>
       b
         ? {
             ...b,
@@ -1952,21 +1897,15 @@ export class BoardStore {
   }
 
   refreshBoard(): void {
-    const currentBoard = this.boardSignal();
+    const currentBoard = this._boardDetail.currentBoard();
     if (currentBoard) {
       this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
     }
   }
 
   private silentReloadBoard(slug: string, projectId: string): void {
-    this.getBoardDetailUseCase.execute(slug, projectId).subscribe({
-      next: (board) => {
-        this.boardSignal.set(board);
-        this.columnsSignal.set(board.columns || []);
-      },
-      error: (err) => {
-        console.warn('[BoardStore] Silent reload board failed', err);
-      },
+    this._boardDetail.silentReloadBoard(slug, projectId, (board) => {
+      this.columnsSignal.set(board.columns || []);
     });
   }
 }
