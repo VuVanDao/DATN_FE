@@ -28,8 +28,6 @@ import {
 } from '../../domain/models/board-realtime.model';
 import {
   Board,
-  MyBoardItem,
-  MyBoards,
   UpdateBoardRequest,
 } from '../../domain/models/project.model';
 import { BoardRealtimeService } from '../../infrastructure/realtime/board-realtime.service';
@@ -42,14 +40,13 @@ import { DeleteCardUseCase } from '../board/delete-card.use-case';
 import { DeleteColumnUseCase } from '../board/delete-column.use-case';
 import { GetBoardDetailUseCase } from '../board/get-board-detail.use-case';
 import { GetCardDetailUseCase } from '../board/get-card-detail.use-case';
-import { GetMyBoardsUseCase } from '../board/get-my-boards.use-case';
 import { MoveCardUseCase } from '../board/move-card.use-case';
 import { ReorderColumnsUseCase } from '../board/reorder-columns.use-case';
-import { UpdateBoardPreferenceUseCase } from '../board/update-board-preference.use-case';
 import { UpdateBoardUseCase } from '../board/update-board.use-case';
 import { UpdateCardUseCase } from '../board/update-card.use-case';
 import { UpdateColumnUseCase } from '../board/update-column.use-case';
 import { NotificationService } from '../shared/notification.service';
+import { MyBoardsSlice } from './board/my-boards.slice';
 import { StoreRequestRunner } from './store-request.util';
 
 @Injectable({
@@ -68,9 +65,8 @@ export class BoardStore {
   private readonly updateCardUseCase = inject(UpdateCardUseCase);
   private readonly deleteCardUseCase = inject(DeleteCardUseCase);
   private readonly deleteBoardUseCase = inject(DeleteBoardUseCase);
-  private readonly updateBoardPreferenceUseCase = inject(UpdateBoardPreferenceUseCase);
   private readonly updateBoardUseCase = inject(UpdateBoardUseCase);
-  private readonly getMyBoardsUseCase = inject(GetMyBoardsUseCase);
+  private readonly _myBoards = inject(MyBoardsSlice);
 
   private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
@@ -89,9 +85,6 @@ export class BoardStore {
   private readonly isUpdatingBoardSignal = signal<boolean>(false);
   private readonly isDeletingBoardSignal = signal<boolean>(false);
 
-  private readonly myBoardsSignal = signal<MyBoards>({ recentBoards: [], pinnedBoards: [] });
-  private readonly isLoadingMyBoardsSignal = signal<boolean>(false);
-
   private readonly cardDetailSignal = signal<CardDetail | null>(null);
   private readonly isLoadingCardDetailSignal = signal<boolean>(false);
 
@@ -105,8 +98,8 @@ export class BoardStore {
   readonly isAddingCard = this.isAddingCardSignal.asReadonly();
   readonly isUpdatingBoard = this.isUpdatingBoardSignal.asReadonly();
   readonly isDeletingBoard = this.isDeletingBoardSignal.asReadonly();
-  readonly myBoards = this.myBoardsSignal.asReadonly();
-  readonly isLoadingMyBoards = this.isLoadingMyBoardsSignal.asReadonly();
+  readonly myBoards = this._myBoards.myBoards;
+  readonly isLoadingMyBoards = this._myBoards.isLoadingMyBoards;
 
   constructor() {
     this.setupRealtimeListeners();
@@ -910,55 +903,23 @@ export class BoardStore {
       this.boardSignal.update((b) => (b ? { ...b, isPinned: nextPinned } : null));
     }
 
-    // 2. Cập nhật lạc quan trong myBoardsSignal (cho Trang chủ & Sidebar)
-    this.myBoardsSignal.update((state) => {
-      const updateList = (list: MyBoardItem[]) =>
-        list.map((b) => (b.boardId === targetBoardId ? { ...b, isPinned: nextPinned } : b));
-
-      const updatedRecent = updateList(state.recentBoards);
-      let updatedPinned: MyBoardItem[];
-
-      if (nextPinned) {
-        const found = state.recentBoards.find((b) => b.boardId === targetBoardId);
-        if (found) {
-          updatedPinned = [
-            { ...found, isPinned: true },
-            ...state.pinnedBoards.filter((b) => b.boardId !== targetBoardId),
-          ];
-        } else {
-          updatedPinned = updateList(state.pinnedBoards);
-        }
-      } else {
-        updatedPinned = state.pinnedBoards.filter((b) => b.boardId !== targetBoardId);
-      }
-
-      return {
-        recentBoards: updatedRecent,
-        pinnedBoards: updatedPinned,
-      };
-    });
-
-    // 3. Gửi API cập nhật preference
-    this.updateBoardPreferenceUseCase.execute(targetBoardId, { isPinned: nextPinned }).subscribe({
-      next: (pref) => {
+    // 2. Delegate qua MyBoardsSlice
+    this._myBoards.toggleBoardPin(
+      targetBoardId,
+      previousPinned,
+      (isPinned) => {
         if (this.boardSignal()?.id === targetBoardId) {
-          this.boardSignal.update((b) => (b ? { ...b, isPinned: pref.isPinned } : null));
+          this.boardSignal.update((b) => (b ? { ...b, isPinned } : null));
         }
-        this.notifications.success(
-          nextPinned ? 'Đã ghim bảng vào danh sách ưu tiên' : 'Đã bỏ ghim bảng',
-        );
-        this.loadMyBoards();
-        onSuccess?.(pref.isPinned);
+        onSuccess?.(isPinned);
       },
-      error: () => {
+      (prevPinned) => {
         if (this.boardSignal()?.id === targetBoardId) {
-          this.boardSignal.update((b) => (b ? { ...b, isPinned: previousPinned } : null));
+          this.boardSignal.update((b) => (b ? { ...b, isPinned: prevPinned } : null));
         }
-        this.notifications.error('Không thể cập nhật tùy chọn ghim bảng.');
-        this.loadMyBoards();
-        onError?.(previousPinned);
+        onError?.(prevPinned);
       },
-    });
+    );
   }
 
   updateBoard(
@@ -1012,15 +973,7 @@ export class BoardStore {
   }
 
   loadMyBoards(limit?: number): void {
-    this.requests.run({
-      loading: this.isLoadingMyBoardsSignal,
-      request$: this.getMyBoardsUseCase.execute(limit),
-      fallbackErrorMessage: 'Không thể tải danh sách bảng gần đây.',
-      toastOnError: false,
-      onSuccess: (data) => {
-        this.myBoardsSignal.set(data || { recentBoards: [], pinnedBoards: [] });
-      },
-    });
+    this._myBoards.loadMyBoards(limit);
   }
 
   clear(): void {
