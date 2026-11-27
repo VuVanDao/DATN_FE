@@ -3,7 +3,7 @@ import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } fr
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LayoutService } from '../../../../application/layout/layout.service';
+import { LayoutService } from '../../../layouts/layout.service';
 import { AuthStore } from '../../../../application/state/auth.store';
 import { WorkspaceStore } from '../../../../application/state/workspace.store';
 import { UpdateWorkspaceRequest, WorkspaceMember } from '../../../../domain/models/workspace.model';

@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LayoutService } from '../../../../../application/layout/layout.service';
+import { LayoutService } from '../../../layout.service';
 import { AuthStore } from '../../../../../application/state/auth.store';
 import { WorkspaceStore } from '../../../../../application/state/workspace.store';
 import { WorkspaceCreateModalComponent } from '../../../../pages/workspaces/components/workspace-create-modal/workspace-create-modal.component';

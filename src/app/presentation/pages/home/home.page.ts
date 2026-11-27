@@ -3,7 +3,7 @@ import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
-import { LayoutService } from '../../../application/layout/layout.service';
+import { LayoutService } from '../../layouts/layout.service';
 import { AuthStore } from '../../../application/state/auth.store';
 import { BoardStore } from '../../../application/state/board.store';
 import { WorkspaceStore } from '../../../application/state/workspace.store';

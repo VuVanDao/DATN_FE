@@ -2,7 +2,7 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LayoutService } from '../../../../../application/layout/layout.service';
+import { LayoutService } from '../../../layout.service';
 import { AuthStore } from '../../../../../application/state/auth.store';
 
 @Component({

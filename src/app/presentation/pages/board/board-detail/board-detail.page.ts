@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { AuthStore } from '../../../../application/state/auth.store';
-import { LayoutService } from '../../../../application/layout/layout.service';
+import { LayoutService } from '../../../layouts/layout.service';
 import { NotificationService } from '../../../../application/shared/notification.service';
 import { BoardStore } from '../../../../application/state/board.store';
 import { ProjectStore } from '../../../../application/state/project.store';

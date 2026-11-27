@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { LayoutService } from '../../../application/layout/layout.service';
+import { LayoutService } from '../../layouts/layout.service';
 import { ProfileStore } from '../../../application/state/profile.store';
 import { LoginHistoryComponent } from './components/login-history/login-history.component';
 import { ProfileDetailsComponent } from './components/profile-details/profile-details.component';

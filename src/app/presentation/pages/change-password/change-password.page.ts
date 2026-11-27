@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { LayoutService } from '../../../application/layout/layout.service';
+import { LayoutService } from '../../layouts/layout.service';
 import { ProfileStore } from '../../../application/state/profile.store';
 import {
   matchingPasswords,

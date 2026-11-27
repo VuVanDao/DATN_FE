@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { toast } from 'ngx-sonner';
-import { LayoutService } from '../../../../application/layout/layout.service';
+import { LayoutService } from '../../../layouts/layout.service';
 import { AdminStore } from '../../../../application/state/admin.store';
 import { AuthStore } from '../../../../application/state/auth.store';
 import { UserManagement } from '../../../../domain/models/admin.model';

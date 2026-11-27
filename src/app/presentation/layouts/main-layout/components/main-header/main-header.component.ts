@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
-import { LayoutService } from '../../../../../application/layout/layout.service';
+import { LayoutService } from '../../../layout.service';
 import { AuthStore } from '../../../../../application/state/auth.store';
 import { UserNotificationStore } from '../../../../../application/state/user-notification.store';
 import { UserNotification } from '../../../../../domain/models/user-notification.model';

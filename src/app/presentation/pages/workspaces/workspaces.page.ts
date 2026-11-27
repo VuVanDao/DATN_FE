@@ -3,7 +3,7 @@ import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { toast } from 'ngx-sonner';
-import { LayoutService } from '../../../application/layout/layout.service';
+import { LayoutService } from '../../layouts/layout.service';
 import { WorkspaceStore } from '../../../application/state/workspace.store';
 import { Workspace } from '../../../domain/models/workspace.model';
 import { toWorkspaceView } from '../../view-models/workspace.view-model';
