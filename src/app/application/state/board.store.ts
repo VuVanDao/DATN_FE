@@ -1,13 +1,10 @@
-import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import {
   BoardDetail,
   CardComment,
-  CardDetail,
   CardSummary,
   ColumnSummary,
-  CreateCardRequest,
   UpdateCardRequest,
 } from '../../domain/models/board-detail.model';
 import {
@@ -32,53 +29,37 @@ import {
 } from '../../domain/models/project.model';
 import { BoardRealtimeService } from '../../infrastructure/realtime/board-realtime.service';
 import { AuthStore } from './auth.store';
-import { AddCardCommentUseCase } from '../board/add-card-comment.use-case';
-import { CreateCardUseCase } from '../board/create-card.use-case';
-import { DeleteCardUseCase } from '../board/delete-card.use-case';
-import { GetCardDetailUseCase } from '../board/get-card-detail.use-case';
-import { MoveCardUseCase } from '../board/move-card.use-case';
-import { UpdateCardUseCase } from '../board/update-card.use-case';
 import { NotificationService } from '../shared/notification.service';
+import { BoardCardsSlice } from './board/board-cards.slice';
 import { BoardColumnsSlice } from './board/board-columns.slice';
 import { BoardDetailSlice } from './board/board-detail.slice';
+import { CardDetailSlice } from './board/card-detail.slice';
 import { MyBoardsSlice } from './board/my-boards.slice';
-import { StoreRequestRunner } from './store-request.util';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BoardStore {
-  private readonly getCardDetailUseCase = inject(GetCardDetailUseCase);
-  private readonly addCardCommentUseCase = inject(AddCardCommentUseCase);
-  private readonly createCardUseCase = inject(CreateCardUseCase);
-  private readonly moveCardUseCase = inject(MoveCardUseCase);
-  private readonly updateCardUseCase = inject(UpdateCardUseCase);
-  private readonly deleteCardUseCase = inject(DeleteCardUseCase);
   private readonly _boardDetail = inject(BoardDetailSlice);
   private readonly _boardColumns = inject(BoardColumnsSlice);
+  private readonly _boardCards = inject(BoardCardsSlice);
+  private readonly _cardDetail = inject(CardDetailSlice);
   private readonly _myBoards = inject(MyBoardsSlice);
 
-  private readonly requests = inject(StoreRequestRunner);
   private readonly notifications = inject(NotificationService);
   private readonly boardRealtimeService = inject(BoardRealtimeService);
   private readonly authStore = inject(AuthStore);
 
   private readonly cancel$ = new Subject<void>();
-  private readonly processedCommentIds = new Set<string>();
-
-  private readonly isAddingCardSignal = signal<boolean>(false);
-
-  private readonly cardDetailSignal = signal<CardDetail | null>(null);
-  private readonly isLoadingCardDetailSignal = signal<boolean>(false);
 
   readonly currentBoard = this._boardDetail.currentBoard;
   readonly columns = this._boardColumns.columns;
-  readonly currentCardDetail = this.cardDetailSignal.asReadonly();
-  readonly isLoadingCardDetail = this.isLoadingCardDetailSignal.asReadonly();
+  readonly currentCardDetail = this._cardDetail.currentCardDetail;
+  readonly isLoadingCardDetail = this._cardDetail.isLoadingCardDetail;
   readonly isLoading = this._boardDetail.isLoading;
   readonly error = this._boardDetail.error;
   readonly isAddingColumn = this._boardColumns.isAddingColumn;
-  readonly isAddingCard = this.isAddingCardSignal.asReadonly();
+  readonly isAddingCard = this._boardCards.isAddingCard;
   readonly isUpdatingBoard = this._boardDetail.isUpdatingBoard;
   readonly isDeletingBoard = this._boardDetail.isDeletingBoard;
   readonly myBoards = this._myBoards.myBoards;
@@ -128,62 +109,7 @@ export class BoardStore {
     onSuccess?: (card: CardSummary) => void,
     onError?: (error: string) => void,
   ): void {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle || this.isAddingCardSignal()) return;
-
-    const request: CreateCardRequest = {
-      columnId,
-      title: trimmedTitle,
-      description,
-      sprintId: sprintId ?? undefined,
-    };
-
-    this.requests.run({
-      loading: this.isAddingCardSignal,
-      request$: this.createCardUseCase.execute(request),
-      cancel$: this.cancel$,
-      fallbackErrorMessage: 'Tạo thẻ thất bại.',
-      onError: (err) => {
-        onError?.(err);
-      },
-      onSuccess: (newCard) => {
-        const pts = newCard.storyPoints || 0;
-        const isDone = !!newCard.isCompleted;
-
-        this._boardColumns.updateColumnsLocally((cols) =>
-          cols.map((col) =>
-            col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
-          ),
-        );
-        this._boardDetail.updateBoardLocally((b) => {
-          if (!b) return null;
-          const updatedSprint =
-            b.activeSprint && (!newCard.sprintId || newCard.sprintId === b.activeSprint.id)
-              ? {
-                  ...b.activeSprint,
-                  totalCards: (b.activeSprint.totalCards || 0) + 1,
-                  completedCards: isDone
-                    ? (b.activeSprint.completedCards || 0) + 1
-                    : b.activeSprint.completedCards,
-                  totalStoryPoints: (b.activeSprint.totalStoryPoints || 0) + pts,
-                  completedStoryPoints: isDone
-                    ? (b.activeSprint.completedStoryPoints || 0) + pts
-                    : b.activeSprint.completedStoryPoints,
-                }
-              : b.activeSprint;
-
-          return {
-            ...b,
-            activeSprint: updatedSprint,
-            columns: (b.columns || []).map((col) =>
-              col.id === columnId ? { ...col, cards: [...(col.cards || []), newCard] } : col,
-            ),
-          };
-        });
-        this.notifications.success('Đã tạo thẻ mới');
-        onSuccess?.(newCard);
-      },
-    });
+    this._boardCards.createCard(columnId, title, description, sprintId, onSuccess, onError);
   }
 
   moveCard(
@@ -193,288 +119,49 @@ export class BoardStore {
     previousIndex: number,
     currentIndex: number,
   ): void {
-    const currentCols = this._boardColumns.columns();
-    const sourceCol = currentCols.find((c) => c.id === sourceColumnId);
-    const targetCol = currentCols.find((c) => c.id === targetColumnId);
-    const movingCard = sourceCol?.cards?.find((c) => c.id === cardId);
-
-    // Nếu chuyển sang cột Hoàn thành mà thẻ đang bị chặn -> chặn ngay trên UI!
-    if (targetCol?.isDoneColumn && movingCard?.isBlocked) {
-      this.notifications.error(
-        `Không thể chuyển thẻ "${movingCard.title}" vào cột "${targetCol.title}" vì đang bị chặn bởi công việc khác chưa hoàn thành.`,
-      );
-      return;
-    }
-
-    const previousCols = JSON.parse(JSON.stringify(this._boardColumns.columns())) as ColumnSummary[];
-
-    // Thực hiện di chuyển optimistic trên UI
-    this._boardColumns.updateColumnsLocally((cols) => {
-      const nextCols = cols.map((col) => ({
-        ...col,
-        cards: [...col.cards],
-      }));
-
-      const sourceCol = nextCols.find((c) => c.id === sourceColumnId);
-      const targetCol = nextCols.find((c) => c.id === targetColumnId);
-
-      if (!sourceCol || !targetCol) return cols;
-
-      if (sourceColumnId === targetColumnId) {
-        moveItemInArray(sourceCol.cards, previousIndex, currentIndex);
-      } else {
-        transferArrayItem(sourceCol.cards, targetCol.cards, previousIndex, currentIndex);
-        // Cập nhật columnId & tiến độ hoàn thành 2 chiều cho card chuyển sang
-        const movedCard = targetCol.cards[currentIndex];
-        if (movedCard) {
-          movedCard.columnId = targetColumnId;
-          const pts = movedCard.storyPoints ?? 0;
-
-          if (targetCol.isDoneColumn) {
-            const wasCompleted = !!movedCard.isCompleted;
-            movedCard.isCompleted = true;
-            // Cập nhật thống kê activeSprint trên header nếu thẻ trước đó chưa hoàn thành
-            if (!wasCompleted) {
-              this._boardDetail.updateBoardLocally((b) => {
-                if (!b?.activeSprint) return b;
-                return {
-                  ...b,
-                  activeSprint: {
-                    ...b.activeSprint,
-                    completedCards: (b.activeSprint.completedCards || 0) + 1,
-                    completedStoryPoints: (b.activeSprint.completedStoryPoints || 0) + pts,
-                  },
-                };
-              });
-            }
-          } else if (sourceCol.isDoneColumn) {
-            const wasCompleted = !!movedCard.isCompleted;
-            movedCard.isCompleted = false;
-            // Trừ thống kê activeSprint trên header nếu thẻ trước đó đã hoàn thành
-            if (wasCompleted) {
-              this._boardDetail.updateBoardLocally((b) => {
-                if (!b?.activeSprint) return b;
-                return {
-                  ...b,
-                  activeSprint: {
-                    ...b.activeSprint,
-                    completedCards: Math.max(0, (b.activeSprint.completedCards || 0) - 1),
-                    completedStoryPoints: Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts),
-                  },
-                };
-              });
-            }
-          }
+    this._boardCards.moveCard(
+      cardId,
+      sourceColumnId,
+      targetColumnId,
+      previousIndex,
+      currentIndex,
+      (movedId, newColId, isCompleted) => {
+        if (this._cardDetail.currentCardDetail()?.id === movedId) {
+          this._cardDetail.updateActiveCardLocally((d) =>
+            d ? { ...d, columnId: newColId, isCompleted } : null,
+          );
         }
-      }
-
-      return nextCols;
-    });
-
-    if (this.cardDetailSignal()?.id === cardId) {
-      this.cardDetailSignal.update((d) => {
-        if (!d) return null;
-        const targetCol = this._boardColumns.columns().find((c) => c.id === targetColumnId);
-        let newIsCompleted = d.isCompleted;
-        if (targetCol?.isDoneColumn) {
-          newIsCompleted = true;
-        } else if (sourceCol?.isDoneColumn) {
-          newIsCompleted = false;
+      },
+      () => {
+        const currentBoard = this._boardDetail.currentBoard();
+        if (currentBoard) {
+          this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
         }
-        return {
-          ...d,
-          columnId: targetColumnId,
-          isCompleted: newIsCompleted,
-        };
-      });
-    }
-
-    const isSourceDone = sourceCol?.isDoneColumn ?? false;
-    const isTargetDone = targetCol?.isDoneColumn ?? false;
-
-    this.moveCardUseCase
-      .execute(cardId, {
-        targetColumnId,
-        newPosition: currentIndex,
-      })
-      .subscribe({
-        next: () => {
-          // Success
-          const currentBoard = this._boardDetail.currentBoard();
-          if (currentBoard && isSourceDone !== isTargetDone) {
-            this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
-          }
-        },
-        error: (err) => {
-          // Rollback khi lỗi
-          this._boardColumns.setColumns(previousCols);
-          const errorMsg =
-            err?.error?.message ||
-            err?.message ||
-            'Không thể di chuyển thẻ. Đã khôi phục lại vị trí.';
-          this.notifications.error(errorMsg);
-        },
-      });
+      },
+    );
   }
 
   updateCardTitle(cardId: string, columnId: string, title: string): void {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) return;
-
-    const previousCols = this._boardColumns.columns();
-    this._boardColumns.updateColumnsLocally((cols) =>
-      cols.map((col) =>
-        col.id === columnId
-          ? {
-              ...col,
-              cards: col.cards.map((card) =>
-                card.id === cardId ? { ...card, title: trimmedTitle } : card,
-              ),
-            }
-          : col,
-      ),
-    );
-
-    this.updateCardUseCase.execute(cardId, { title: trimmedTitle }).subscribe({
-      next: () => {
-        this.notifications.success('Đã cập nhật tiêu đề thẻ');
-      },
-      error: () => {
-        this._boardColumns.setColumns(previousCols);
-        this.notifications.error('Không thể cập nhật thẻ. Vui lòng thử lại.');
-      },
-    });
+    this._boardCards.updateCardTitle(cardId, columnId, title);
   }
 
   deleteCard(cardId: string, columnId: string): void {
-    let deletedCard: CardSummary | null = null;
-    for (const col of this._boardColumns.columns()) {
-      const found = col.cards.find((c) => c.id === cardId);
-      if (found) {
-        deletedCard = found;
-        break;
-      }
-    }
-
-    this.deleteCardUseCase.execute(cardId).subscribe({
-      next: () => {
-        const pts = deletedCard?.storyPoints || 0;
-        const isDone = !!deletedCard?.isCompleted;
-
-        this._boardColumns.updateColumnsLocally((cols) =>
-          cols.map((col) =>
-            col.id === columnId
-              ? { ...col, cards: col.cards.filter((card) => card.id !== cardId) }
-              : col,
-          ),
-        );
-        this._boardDetail.updateBoardLocally((b) => {
-          if (!b) return null;
-          const updatedSprint =
-            b.activeSprint && deletedCard
-              ? {
-                  ...b.activeSprint,
-                  totalCards: Math.max(0, (b.activeSprint.totalCards || 0) - 1),
-                  completedCards: isDone
-                    ? Math.max(0, (b.activeSprint.completedCards || 0) - 1)
-                    : b.activeSprint.completedCards,
-                  totalStoryPoints: Math.max(0, (b.activeSprint.totalStoryPoints || 0) - pts),
-                  completedStoryPoints: isDone
-                    ? Math.max(0, (b.activeSprint.completedStoryPoints || 0) - pts)
-                    : b.activeSprint.completedStoryPoints,
-                }
-              : b.activeSprint;
-
-          return {
-            ...b,
-            activeSprint: updatedSprint,
-            columns: (b.columns || []).map((col) =>
-              col.id === columnId
-                ? { ...col, cards: (col.cards || []).filter((card) => card.id !== cardId) }
-                : col,
-            ),
-          };
-        });
-        if (this.cardDetailSignal()?.id === cardId) {
-          this.cardDetailSignal.set(null);
-        }
-        this.notifications.success('Đã xoá thẻ thành công');
-      },
-      error: () => {
-        this.notifications.error('Không thể xoá thẻ. Vui lòng thử lại.');
-      },
+    this._boardCards.deleteCard(cardId, columnId, (deletedId) => {
+      this._cardDetail.clearIfActive(deletedId);
     });
   }
 
   loadCardDetail(cardId: string, onError?: (err: string) => void): void {
-    this.isLoadingCardDetailSignal.set(true);
-    this.getCardDetailUseCase.execute(cardId).subscribe({
-      next: (detail) => {
-        this.cardDetailSignal.set(detail);
-        this.isLoadingCardDetailSignal.set(false);
-
-        // Đồng bộ các thuộc tính phụ thuộc (isBlocked, blockedByCount, tiến độ) vào columnsSignal
-        this._boardColumns.updateColumnsLocally((cols) =>
-          cols.map((col) => ({
-            ...col,
-            cards: col.cards.map((c) =>
-              c.id.toLowerCase() === detail.id.toLowerCase()
-                ? {
-                    ...c,
-                    title: detail.title,
-                    description: detail.description,
-                    priority: detail.priority,
-                    type: detail.type,
-                    coverUrl: detail.coverUrl,
-                    storyPoints: detail.storyPoints,
-                    startDate: detail.startDate,
-                    dueDate: detail.dueDate,
-                    isCompleted: detail.isCompleted,
-                    assigneeId: detail.assigneeId,
-                    assigneeName: detail.assigneeName,
-                    assigneeAvatarUrl: detail.assigneeAvatarUrl,
-                    isBlocked: detail.isBlocked,
-                    blockedByCount: detail.blockedByCount,
-                  }
-                : c,
-            ),
-          })),
-        );
-      },
-      error: (err) => {
-        this.isLoadingCardDetailSignal.set(false);
-        this.notifications.error('Không thể tải chi tiết thẻ.');
-        onError?.(err?.message || 'Lỗi tải chi tiết thẻ');
-      },
-    });
+    this._cardDetail.loadCardDetail(cardId, onError);
   }
 
   clearCardDetail(): void {
-    this.cardDetailSignal.set(null);
-    this.isLoadingCardDetailSignal.set(false);
+    this._cardDetail.clearCardDetail();
   }
 
   removeCardLocally(cardId: string): void {
-    this._boardColumns.updateColumnsLocally((cols) =>
-      cols.map((col) => ({
-        ...col,
-        cards: (col.cards || []).filter((card) => card.id !== cardId),
-      })),
-    );
-    this._boardDetail.updateBoardLocally((b) =>
-      b
-        ? {
-            ...b,
-            columns: (b.columns || []).map((col) => ({
-              ...col,
-              cards: (col.cards || []).filter((card) => card.id !== cardId),
-            })),
-          }
-        : null,
-    );
-    if (this.cardDetailSignal()?.id === cardId) {
-      this.clearCardDetail();
-    }
+    this._boardCards.removeCardLocally(cardId);
+    this._cardDetail.clearIfActive(cardId);
   }
 
   removeColumnLocally(columnId: string): void {
@@ -499,158 +186,19 @@ export class BoardStore {
     onError?: (err: string) => void,
     silent = false,
   ): void {
-    let currentCard: CardSummary | null = null;
-    for (const col of this._boardColumns.columns()) {
-      const found = col.cards.find((c) => c.id === cardId);
-      if (found) {
-        currentCard = found;
-        break;
-      }
-    }
-    if (!currentCard) {
-      currentCard = this.cardDetailSignal();
-    }
-    if (!currentCard) return;
-
-    const previousCols = this._boardColumns.columns();
-    const previousDetail = this.cardDetailSignal();
-    const previousBoard = this._boardDetail.currentBoard();
-
-    const fullRequest: UpdateCardRequest = {
-      title: updates.title !== undefined ? updates.title : currentCard.title,
-      description:
-        updates.description !== undefined ? updates.description : currentCard.description,
-      coverUrl: updates.coverUrl !== undefined ? updates.coverUrl : currentCard.coverUrl,
-      coverImage: updates.coverImage !== undefined ? updates.coverImage : null,
-      type: updates.type !== undefined ? updates.type : currentCard.type,
-      priority: updates.priority !== undefined ? updates.priority : currentCard.priority,
-      assigneeId: updates.assigneeId !== undefined ? updates.assigneeId : currentCard.assigneeId,
-      startDate: updates.startDate !== undefined ? updates.startDate : currentCard.startDate,
-      dueDate: updates.dueDate !== undefined ? updates.dueDate : currentCard.dueDate,
-      storyPoints:
-        updates.storyPoints !== undefined ? updates.storyPoints : currentCard.storyPoints,
-      isCompleted:
-        updates.isCompleted !== undefined
-          ? updates.isCompleted
-          : currentCard.isCompleted,
-    };
-
-    // Optimistic update
-    const oldIsCompleted = !!currentCard.isCompleted;
-    const newIsCompleted =
-      updates.isCompleted !== undefined
-        ? !!updates.isCompleted
-        : oldIsCompleted;
-
-    const oldPts = currentCard.storyPoints || 0;
-    const newPts =
-      updates.storyPoints !== undefined ? (updates.storyPoints || 0) : oldPts;
-    const diffPts = newPts - oldPts;
-
-    const completing = !oldIsCompleted && newIsCompleted;
-    const uncompleting = oldIsCompleted && !newIsCompleted;
-
-    if (completing || uncompleting || diffPts !== 0) {
-      this._boardDetail.updateBoardLocally((b) => {
-        if (!b?.activeSprint) return b;
-        let compCards = b.activeSprint.completedCards || 0;
-        let compPts = b.activeSprint.completedStoryPoints || 0;
-        let totPts = b.activeSprint.totalStoryPoints || 0;
-
-        if (completing) {
-          compCards += 1;
-          compPts += newPts;
-        } else if (uncompleting) {
-          compCards = Math.max(0, compCards - 1);
-          compPts = Math.max(0, compPts - oldPts);
-        } else if (diffPts !== 0 && oldIsCompleted) {
-          compPts = Math.max(0, compPts + diffPts);
-        }
-
-        if (diffPts !== 0) {
-          totPts = Math.max(0, totPts + diffPts);
-        }
-
-        return {
-          ...b,
-          activeSprint: {
-            ...b.activeSprint,
-            completedCards: compCards,
-            completedStoryPoints: compPts,
-            totalStoryPoints: totPts,
-          },
-        };
-      });
-    }
-
-    // Optimistic update: nếu thẻ này đang chặn các thẻ khác, cập nhật ngay trạng thái isBlocked của các thẻ đó trên bảng
-    const currentDetail = this.cardDetailSignal();
-    const isTargetingCurrentDetail =
-      currentDetail && currentDetail.id.toLowerCase() === cardId.toLowerCase();
-    const blockingList = isTargetingCurrentDetail ? currentDetail?.blocking || [] : [];
-    const blockingCardIds = new Set(blockingList.map((b) => b.cardId.toLowerCase()));
-
-    this._boardColumns.updateColumnsLocally((cols) =>
-      cols.map((col) => ({
-        ...col,
-        cards: col.cards.map((c) => {
-          if (c.id === cardId) {
-            return { ...c, ...updates };
-          }
-          if (uncompleting && blockingCardIds.has(c.id.toLowerCase())) {
-            return {
-              ...c,
-              isBlocked: true,
-              blockedByCount: Math.max(1, (c.blockedByCount || 0) + 1),
-            };
-          }
-          if (completing && blockingCardIds.has(c.id.toLowerCase())) {
-            const newCount = Math.max(0, (c.blockedByCount || 1) - 1);
-            return {
-              ...c,
-              isBlocked: newCount > 0,
-              blockedByCount: newCount,
-            };
-          }
-          return c;
-        }),
-      })),
-    );
-
-    if (this.cardDetailSignal()?.id === cardId) {
-      this.cardDetailSignal.update((d) => (d ? { ...d, ...updates } : null));
-    }
-
-    this.updateCardUseCase.execute(cardId, fullRequest).subscribe({
-      next: (updatedCard) => {
-        this._boardColumns.updateColumnsLocally((cols) =>
-          cols.map((col) => ({
-            ...col,
-            cards: col.cards.map((c) => (c.id === cardId ? { ...c, ...updatedCard } : c)),
-          })),
-        );
-        if (this.cardDetailSignal()?.id === cardId) {
-          this.cardDetailSignal.update((d) => (d ? { ...d, ...updatedCard } : null));
-        }
-        if (!silent) {
-          this.notifications.success('Đã lưu thông tin thẻ thành công');
-        }
-        onSuccess?.(updatedCard);
-
-        // NẾU TRẠNG THÁI HOÀN THÀNH THAY ĐỔI -> TẢI LẠI BẢNG NGẦM ĐỂ CẬP NHẬT TRẠNG THÁI BỊ CHẶN (isBlocked) CỦA CÁC THẺ KHÁC!
+    this._cardDetail.updateCard(
+      cardId,
+      updates,
+      onSuccess,
+      onError,
+      silent,
+      () => {
         const currentBoard = this._boardDetail.currentBoard();
-        if (currentBoard && (completing || uncompleting)) {
+        if (currentBoard) {
           this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
         }
       },
-      error: (err) => {
-        this._boardColumns.setColumns(previousCols);
-        this.cardDetailSignal.set(previousDetail);
-        this._boardDetail.setBoard(previousBoard);
-        this.notifications.error('Không thể cập nhật thông tin thẻ.');
-        onError?.(err?.message || 'Lỗi cập nhật thẻ');
-      },
-    });
+    );
   }
 
   addCardComment(
@@ -658,39 +206,28 @@ export class BoardStore {
     contentText: string,
     onSuccess?: (comment: CardComment) => void,
   ): void {
-    const trimmed = contentText.trim();
-    if (!trimmed) return;
-
-    this.addCardCommentUseCase.execute(cardId, trimmed).subscribe({
-      next: (newComment) => {
-        this.applyIncomingCardComment(newComment);
-        this.notifications.success('Đã gửi bình luận');
-        onSuccess?.(newComment);
-      },
-      error: () => {
-        this.notifications.error('Không thể gửi bình luận. Vui lòng thử lại.');
-      },
-    });
+    this._cardDetail.addCardComment(cardId, contentText, onSuccess);
   }
 
   moveCardToColumn(cardId: string, targetColumnId: string, onSuccess?: () => void): void {
-    const cols = this._boardColumns.columns();
-    const sourceCol = cols.find((col) => col.cards.some((c) => c.id === cardId));
-    const targetCol = cols.find((col) => col.id === targetColumnId);
-
-    if (!sourceCol || !targetCol || sourceCol.id === targetColumnId) {
-      return;
-    }
-
-    const previousIndex = sourceCol.cards.findIndex((c) => c.id === cardId);
-    const targetIndex = targetCol.cards.length;
-
-    this.moveCard(cardId, sourceCol.id, targetColumnId, previousIndex, targetIndex);
-    if (this.cardDetailSignal()?.id === cardId) {
-      this.cardDetailSignal.update((d) => (d ? { ...d, columnId: targetColumnId } : null));
-    }
-    this.notifications.success(`Đã chuyển thẻ sang cột "${targetCol.title}"`);
-    onSuccess?.();
+    this._boardCards.moveCardToColumn(
+      cardId,
+      targetColumnId,
+      onSuccess,
+      (movedId, newColId, isCompleted) => {
+        if (this._cardDetail.currentCardDetail()?.id === movedId) {
+          this._cardDetail.updateActiveCardLocally((d) =>
+            d ? { ...d, columnId: newColId, isCompleted } : null,
+          );
+        }
+      },
+      () => {
+        const currentBoard = this._boardDetail.currentBoard();
+        if (currentBoard) {
+          this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
+        }
+      },
+    );
   }
 
   toggleBoardPin(
@@ -756,9 +293,10 @@ export class BoardStore {
       this.boardRealtimeService?.leaveBoard(current.id);
     }
     this.cancel$.next();
-    this.processedCommentIds.clear();
+    this._cardDetail.clear();
     this._boardDetail.clear();
     this._boardColumns.clear();
+    this._boardCards.clear();
   }
 
   private setupRealtimeListeners(): void {
@@ -1174,8 +712,8 @@ export class BoardStore {
       };
     });
 
-    if (this.cardDetailSignal()?.id.toLowerCase() === message.card.id.toLowerCase()) {
-      this.cardDetailSignal.update((detail) =>
+    if (this._cardDetail.currentCardDetail()?.id.toLowerCase() === message.card.id.toLowerCase()) {
+      this._cardDetail.updateActiveCardLocally((detail) =>
         detail ? { ...detail, ...message.card } : null,
       );
     }
@@ -1245,7 +783,7 @@ export class BoardStore {
       };
     });
 
-    if (this.cardDetailSignal()?.id.toLowerCase() === message.cardId.toLowerCase()) {
+    if (this._cardDetail.currentCardDetail()?.id.toLowerCase() === message.cardId.toLowerCase()) {
       this.clearCardDetail();
       this.notifications.warning('Thẻ bạn đang xem vừa bị xoá bởi thành viên khác.');
     } else if (deletedCard) {
@@ -1431,7 +969,7 @@ export class BoardStore {
     });
 
     // Nếu modal chi tiết thẻ đang mở thẻ này, cập nhật lại columnId và isCompleted cho modal
-    this.cardDetailSignal.update((detail) =>
+    this._cardDetail.updateActiveCardLocally((detail) =>
       detail && detail.id.toLowerCase() === message.cardId.toLowerCase()
         ? { ...detail, columnId: targetColId, isCompleted: newIsCompleted }
         : detail,
@@ -1597,8 +1135,8 @@ export class BoardStore {
         };
       });
 
-      if (this.cardDetailSignal()?.id.toLowerCase() === message.card.id.toLowerCase()) {
-        this.cardDetailSignal.update((detail) =>
+      if (this._cardDetail.currentCardDetail()?.id.toLowerCase() === message.card.id.toLowerCase()) {
+        this._cardDetail.updateActiveCardLocally((detail) =>
           detail ? { ...detail, sprintId: message.newSprintId } : null,
         );
       }
@@ -1608,8 +1146,8 @@ export class BoardStore {
     }
 
     // TH3: Nếu modal chi tiết đang mở xem thẻ này, cập nhật lại sprintId
-    if (this.cardDetailSignal()?.id.toLowerCase() === message.card.id.toLowerCase()) {
-      this.cardDetailSignal.update((detail) =>
+    if (this._cardDetail.currentCardDetail()?.id.toLowerCase() === message.card.id.toLowerCase()) {
+      this._cardDetail.updateActiveCardLocally((detail) =>
         detail ? { ...detail, sprintId: message.newSprintId } : null,
       );
     }
@@ -1624,7 +1162,7 @@ export class BoardStore {
     if (currentBoard && currentBoard.id.toLowerCase() === boardId.toLowerCase()) {
       this.silentReloadBoard(currentBoard.slug, currentBoard.projectId);
     }
-    const currentDetail = this.cardDetailSignal();
+    const currentDetail = this._cardDetail.currentCardDetail();
     if (
       currentDetail &&
       (currentDetail.id.toLowerCase() === blockedCardId.toLowerCase() ||
@@ -1640,7 +1178,7 @@ export class BoardStore {
       return;
     }
 
-    const applied = this.applyIncomingCardComment(message.comment);
+    const applied = this._cardDetail.applyIncomingCardComment(message.comment);
     if (!applied) {
       return;
     }
@@ -1652,7 +1190,7 @@ export class BoardStore {
       message.changedByUserId.toLowerCase() === currentUserId!.toLowerCase();
 
     const isViewingThisCard =
-      this.cardDetailSignal()?.id.toLowerCase() === message.comment.cardId.toLowerCase();
+      this._cardDetail.currentCardDetail()?.id.toLowerCase() === message.comment.cardId.toLowerCase();
 
     if (!isOwnAction && !isViewingThisCard) {
       let cardTitle = '';
@@ -1668,60 +1206,6 @@ export class BoardStore {
       const cardLabel = cardTitle ? ` trong thẻ "${cardTitle}"` : '';
       this.notifications.info(`${message.comment.username} vừa bình luận${cardLabel}.`);
     }
-  }
-
-  private applyIncomingCardComment(comment: CardComment): boolean {
-    const normalizedCommentId = comment.id.toLowerCase();
-    if (this.processedCommentIds.has(normalizedCommentId)) {
-      return false;
-    }
-    this.processedCommentIds.add(normalizedCommentId);
-
-    const targetCardIdLower = comment.cardId.toLowerCase();
-
-    if (this.cardDetailSignal()?.id.toLowerCase() === targetCardIdLower) {
-      this.cardDetailSignal.update((d) => {
-        if (!d) return null;
-        const exists = (d.comments || []).some(
-          (c) => c.id.toLowerCase() === normalizedCommentId,
-        );
-        if (exists) return d;
-        return {
-          ...d,
-          comments: [comment, ...(d.comments || [])],
-          commentsCount: (d.commentsCount || 0) + 1,
-        };
-      });
-    }
-
-    this._boardColumns.updateColumnsLocally((cols) =>
-      cols.map((col) => ({
-        ...col,
-        cards: col.cards.map((c) =>
-          c.id.toLowerCase() === targetCardIdLower
-            ? { ...c, commentsCount: (c.commentsCount || 0) + 1 }
-            : c,
-        ),
-      })),
-    );
-
-    this._boardDetail.updateBoardLocally((b) =>
-      b
-        ? {
-            ...b,
-            columns: (b.columns || []).map((col) => ({
-              ...col,
-              cards: (col.cards || []).map((c) =>
-                c.id.toLowerCase() === targetCardIdLower
-                  ? { ...c, commentsCount: (c.commentsCount || 0) + 1 }
-                  : c,
-              ),
-            })),
-          }
-        : null,
-    );
-
-    return true;
   }
 
   refreshBoard(): void {
