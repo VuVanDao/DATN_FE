@@ -11,7 +11,6 @@ import { routes } from './app.routes';
 import { NotificationService } from './application/shared/notification.service';
 import { AuthStore } from './application/state/auth.store';
 import { AdminRepository } from './domain/repositories/admin.repository';
-import { AiRepository } from './domain/repositories/ai.repository';
 import { AuthRepository } from './domain/repositories/auth.repository';
 import { BoardRepository } from './domain/repositories/board.repository';
 import { ProjectRepository } from './domain/repositories/project.repository';
@@ -21,7 +20,6 @@ import { UserNotificationRepository } from './domain/repositories/user-notificat
 import { UserRepository } from './domain/repositories/user.repository';
 import { WorkspaceRepository } from './domain/repositories/workspace.repository';
 import { AuthInterceptor } from './infrastructure/http/auth.interceptor';
-import { MockAiAssistantService } from './infrastructure/mocks/mock-ai-assistant.service';
 import { AdminHttpRepository } from './infrastructure/repositories/admin-http.repository';
 import { AuthHttpRepository } from './infrastructure/repositories/auth-http.repository';
 import { BoardHttpRepository } from './infrastructure/repositories/board-http.repository';
@@ -35,7 +33,6 @@ import { ToastNotificationService } from './presentation/services/toast-notifica
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: AiRepository, useClass: MockAiAssistantService },
     { provide: NotificationService, useClass: ToastNotificationService },
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),

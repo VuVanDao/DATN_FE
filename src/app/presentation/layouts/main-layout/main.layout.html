@@ -4,7 +4,7 @@
   <!-- Top Navigation Bar -->
   <app-main-header />
 
-  <!-- Body: Dynamic Left Sidebar + Main Content + Right AI Drawer -->
+  <!-- Body: Dynamic Left Sidebar + Main Content -->
   <div class="flex-1 flex overflow-hidden relative min-h-0">
     <!-- Dynamic Left Sidebar: Chuyển đổi linh hoạt giữa các loại Sidebar -->
     @switch (layoutService.activeSidebar()) {
@@ -50,9 +50,5 @@
       </div>
     </main>
 
-    <!-- Right AI Assistant Drawer -->
-    @if (layoutService.isAiDrawerOpen()) {
-      <app-ai-drawer />
-    }
   </div>
 </div>

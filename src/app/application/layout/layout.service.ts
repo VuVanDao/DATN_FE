@@ -21,9 +21,6 @@ export class LayoutService {
   /** Loại sidebar đang hoạt động: 'main' (mặc định), 'board', 'workspace', 'settings' */
   readonly activeSidebar = signal<SidebarType>('main');
 
-  /** Trạng thái đóng/mở của Drawer Trợ lý AI bên phải */
-  readonly isAiDrawerOpen = signal<boolean>(false);
-
   /** Chế độ full bleed cho trang Board toàn màn hình */
   readonly isFullBleed = signal<boolean>(false);
 
@@ -53,18 +50,6 @@ export class LayoutService {
 
   setFullBleed(enabled: boolean): void {
     this.isFullBleed.set(enabled);
-  }
-
-  toggleAiDrawer(): void {
-    this.isAiDrawerOpen.update((open) => !open);
-  }
-
-  openAiDrawer(): void {
-    this.isAiDrawerOpen.set(true);
-  }
-
-  closeAiDrawer(): void {
-    this.isAiDrawerOpen.set(false);
   }
 
   private saveSidebarCollapsed(collapsed: boolean): void {

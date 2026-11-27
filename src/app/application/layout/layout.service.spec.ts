@@ -17,7 +17,6 @@ describe('LayoutService', () => {
     expect(service.isSidebarCollapsed()).toBe(false);
     expect(service.activeSidebar()).toBe('main');
     expect(service.isFullBleed()).toBe(false);
-    expect(service.isAiDrawerOpen()).toBe(false);
   });
 
   it('should toggle sidebar and persist state to localStorage', () => {
