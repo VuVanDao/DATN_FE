@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { CardDependencyItem } from '../../../../../../../../../../domain/models/board-detail.model';
 import {
-  CardDependencyItem,
   getPriorityClass,
   getTypeColorClass,
   getTypeIcon,
-} from '../../card-dependency.utils';
+} from '../../../../../../../../../../shared/utils/card-ui.util';
 
 @Component({
   selector: 'app-card-dependency-item',

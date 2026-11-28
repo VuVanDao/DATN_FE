@@ -17,6 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthStore } from '../../../../../../../application/state/auth.store';
 import { GetCardActivitiesUseCase } from '../../../../../../../application/board/get-card-activities.use-case';
 import { NotificationService } from '../../../../../../../application/shared/notification.service';
+import { normalizePriority, normalizeWorkType } from '../../../../../../../shared/utils/card-ui.util';
 import { ActivityLog } from '../../../../../../../domain/models/activity-log.model';
 import {
   CardDependencyItem,
@@ -189,8 +190,8 @@ export class CardDetailModalComponent {
     this.currentDescription.set(d.description || '');
     this.currentCoverUrl.set(d.coverUrl || null);
     this.currentColumnId.set(d.columnId || '');
-    this.currentPriority.set(this.normalizePriority(d.priority));
-    this.currentType.set(this.normalizeType(d.type));
+    this.currentPriority.set(normalizePriority(d.priority));
+    this.currentType.set(normalizeWorkType(d.type));
     this.currentStartDate.set(this.formatDateForInput(d.startDate));
     this.currentDueDate.set(this.formatDateForInput(d.dueDate));
     this.currentAssigneeId.set(d.assigneeId || null);
@@ -242,8 +243,8 @@ export class CardDetailModalComponent {
     this.currentColumnId.set(c.columnId || '');
 
     // Map Priority & Type
-    this.currentPriority.set(this.normalizePriority(c.priority));
-    this.currentType.set(this.normalizeType(c.type));
+    this.currentPriority.set(normalizePriority(c.priority));
+    this.currentType.set(normalizeWorkType(c.type));
 
     // Map Dates
     this.currentStartDate.set(this.formatDateForInput(c.startDate));
@@ -380,36 +381,6 @@ export class CardDetailModalComponent {
       isComment,
       commentContent,
     };
-  }
-
-  private normalizePriority(val: number | string | undefined): PriorityType {
-    if (typeof val === 'number') {
-      const map: PriorityType[] = ['Low', 'Medium', 'High', 'Urgent'];
-      return map[val] ?? 'Low';
-    }
-    if (typeof val === 'string') {
-      const lower = val.toLowerCase();
-      if (lower === 'urgent') return 'Urgent';
-      if (lower === 'high') return 'High';
-      if (lower === 'medium') return 'Medium';
-      return 'Low';
-    }
-    return 'Low';
-  }
-
-  private normalizeType(val: number | string | undefined): WorkType {
-    if (typeof val === 'number') {
-      const map: WorkType[] = ['Task', 'Bug', 'Feature', 'Epic'];
-      return map[val] ?? 'Task';
-    }
-    if (typeof val === 'string') {
-      const lower = val.toLowerCase();
-      if (lower === 'bug') return 'Bug';
-      if (lower === 'feature' || lower === 'features' || lower === 'story') return 'Feature';
-      if (lower === 'epic') return 'Epic';
-      return 'Task';
-    }
-    return 'Task';
   }
 
   private formatDateForInput(dateStr: string | null | undefined): string {

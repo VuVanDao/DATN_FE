@@ -11,10 +11,12 @@ import { NotificationService } from '../../../../../../../../../../application/s
 import {
   CardCandidate,
   CardDependencyItem,
+} from '../../../../../../../../../../domain/models/board-detail.model';
+import {
   getPriorityClass,
   getTypeColorClass,
   getTypeIcon,
-} from '../../card-dependency.utils';
+} from '../../../../../../../../../../shared/utils/card-ui.util';
 
 @Component({
   selector: 'app-card-dependency-form',
