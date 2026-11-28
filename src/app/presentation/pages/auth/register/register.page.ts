@@ -2,11 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { AuthStore } from '../../../application/state/auth.store';
+import { AuthStore } from '../../../../application/state/auth.store';
 import {
   accountPasswordValidators,
   matchingPasswords,
-} from '../../../shared/validators/password.validators';
+} from '../../../../shared/validators/password.validators';
 
 @Component({
   selector: 'app-register',

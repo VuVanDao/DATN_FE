@@ -5,11 +5,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toast } from 'ngx-sonner';
-import { AuthStore } from '../../../application/state/auth.store';
+import { AuthStore } from '../../../../application/state/auth.store';
 import {
   matchingPasswords,
   newPasswordValidators,
-} from '../../../shared/validators/password.validators';
+} from '../../../../shared/validators/password.validators';
 
 @Component({
   selector: 'app-reset-password',

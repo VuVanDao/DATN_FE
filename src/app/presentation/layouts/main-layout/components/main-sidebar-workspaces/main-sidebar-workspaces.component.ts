@@ -11,7 +11,7 @@ import { WorkspaceView } from '../../../../view-models/workspace.view-model';
   templateUrl: './main-sidebar-workspaces.component.html',
 })
 export class MainSidebarWorkspacesComponent {
-  // check trạng thái đóng mở của sidebar để hiện chỉ icon recent hoặc cả text + icon
+  // check trạng thái đóng mở của sidebar để hiện chỉ icon workspace hoặc cả text + icon
   readonly collapsed = input(false);
   readonly loading = input(false);
   readonly workspaces = input<WorkspaceView[]>([]);

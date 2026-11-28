@@ -98,24 +98,26 @@ export const routes: Routes = [
       {
         path: 'login',
         loadComponent: () =>
-          import('./presentation/pages/auth/login.page').then((m) => m.LoginPage),
+          import('./presentation/pages/auth/login/login.page').then((m) => m.LoginPage),
       },
       {
         path: 'register',
         loadComponent: () =>
-          import('./presentation/pages/auth/register.page').then((m) => m.RegisterPage),
+          import('./presentation/pages/auth/register/register.page').then((m) => m.RegisterPage),
       },
       {
         path: 'forgot-password',
         loadComponent: () =>
-          import('./presentation/pages/auth/forgot-password.page').then(
+          import('./presentation/pages/auth/forgot-password/forgot-password.page').then(
             (m) => m.ForgotPasswordPage,
           ),
       },
       {
         path: 'reset-password',
         loadComponent: () =>
-          import('./presentation/pages/auth/reset-password.page').then((m) => m.ResetPasswordPage),
+          import('./presentation/pages/auth/reset-password/reset-password.page').then(
+            (m) => m.ResetPasswordPage,
+          ),
       },
     ],
   },

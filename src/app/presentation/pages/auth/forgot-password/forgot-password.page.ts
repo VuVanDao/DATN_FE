@@ -3,7 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
-import { AuthStore } from '../../../application/state/auth.store';
+import { AuthStore } from '../../../../application/state/auth.store';
 
 @Component({
   selector: 'app-forgot-password',
