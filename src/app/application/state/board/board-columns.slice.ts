@@ -89,7 +89,17 @@ export class BoardColumnsSlice {
 
     this.columnsSignal.update((cols) =>
       cols.map((c) =>
-        c.id === columnId ? { ...c, title: trimmedTitle, isDoneColumn: finalIsDone } : c,
+        c.id === columnId
+          ? {
+              ...c,
+              title: trimmedTitle,
+              isDoneColumn: finalIsDone,
+              cards: (c.cards || []).map((card) => ({
+                ...card,
+                isCompleted: finalIsDone,
+              })),
+            }
+          : c,
       ),
     );
     this.boardDetail.updateBoardLocally((b) =>
@@ -97,7 +107,17 @@ export class BoardColumnsSlice {
         ? {
             ...b,
             columns: (b.columns || []).map((c) =>
-              c.id === columnId ? { ...c, title: trimmedTitle, isDoneColumn: finalIsDone } : c,
+              c.id === columnId
+                ? {
+                    ...c,
+                    title: trimmedTitle,
+                    isDoneColumn: finalIsDone,
+                    cards: (c.cards || []).map((card) => ({
+                      ...card,
+                      isCompleted: finalIsDone,
+                    })),
+                  }
+                : c,
             ),
           }
         : null,
@@ -117,9 +137,33 @@ export class BoardColumnsSlice {
                     ...c,
                     title: updatedCol.title,
                     isDoneColumn: updatedCol.isDoneColumn,
+                    cards: (c.cards || []).map((card) => ({
+                      ...card,
+                      isCompleted: updatedCol.isDoneColumn,
+                    })),
                   }
                 : c,
             ),
+          );
+          this.boardDetail.updateBoardLocally((b) =>
+            b
+              ? {
+                  ...b,
+                  columns: (b.columns || []).map((c) =>
+                    c.id === columnId
+                      ? {
+                          ...c,
+                          title: updatedCol.title,
+                          isDoneColumn: updatedCol.isDoneColumn,
+                          cards: (c.cards || []).map((card) => ({
+                            ...card,
+                            isCompleted: updatedCol.isDoneColumn,
+                          })),
+                        }
+                      : c,
+                  ),
+                }
+              : null,
           );
           if (finalIsDone !== previousIsDone) {
             this.notifications.success(
@@ -134,7 +178,17 @@ export class BoardColumnsSlice {
           // Rollback khi lỗi
           this.columnsSignal.update((cols) =>
             cols.map((c) =>
-              c.id === columnId ? { ...c, title: previousTitle, isDoneColumn: previousIsDone } : c,
+              c.id === columnId
+                ? {
+                    ...c,
+                    title: previousTitle,
+                    isDoneColumn: previousIsDone,
+                    cards: (c.cards || []).map((card) => ({
+                      ...card,
+                      isCompleted: previousIsDone,
+                    })),
+                  }
+                : c,
             ),
           );
           this.boardDetail.updateBoardLocally((b) =>
@@ -143,7 +197,15 @@ export class BoardColumnsSlice {
                   ...b,
                   columns: (b.columns || []).map((c) =>
                     c.id === columnId
-                      ? { ...c, title: previousTitle, isDoneColumn: previousIsDone }
+                      ? {
+                          ...c,
+                          title: previousTitle,
+                          isDoneColumn: previousIsDone,
+                          cards: (c.cards || []).map((card) => ({
+                            ...card,
+                            isCompleted: previousIsDone,
+                          })),
+                        }
                       : c,
                   ),
                 }

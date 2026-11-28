@@ -248,6 +248,10 @@ export class BoardRealtimeSlice {
               title: message.title,
               isDoneColumn: message.isDoneColumn,
               position: message.position,
+              cards: (col.cards || []).map((card) => ({
+                ...card,
+                isCompleted: message.isDoneColumn,
+              })),
             }
           : col,
       ),
@@ -264,6 +268,10 @@ export class BoardRealtimeSlice {
                     title: message.title,
                     isDoneColumn: message.isDoneColumn,
                     position: message.position,
+                    cards: (col.cards || []).map((card) => ({
+                      ...card,
+                      isCompleted: message.isDoneColumn,
+                    })),
                   }
                 : col,
             ),
