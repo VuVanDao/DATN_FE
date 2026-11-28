@@ -95,6 +95,8 @@ export interface BoardDetail {
   projectKey?: string | null;
   workspaceId?: string | null;
   isPinned: boolean;
+  isWorkspaceOwner?: boolean;
+  currentUserRole?: string | null;
   activeSprint?: SprintSummary | null;
   columns: ColumnSummary[];
 }

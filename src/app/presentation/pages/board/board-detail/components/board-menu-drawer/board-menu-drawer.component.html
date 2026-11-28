@@ -1,5 +1,4 @@
 @if (isOpen) {
-  <!-- Backdrop Blur Overlay -->
   <div
     class="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs transition-opacity duration-200"
     (click)="onClose()"
@@ -56,8 +55,8 @@
         ></mat-icon>
       </button>
 
-      <!-- Item 2: Xoá board (Chỉ cho ProjectLeader thao tác) -->
-      @if (isProjectLeader) {
+      <!-- Item 2: Xoá board (Chỉ cho ProjectLeader và WorkspaceOwner thao tác) -->
+      @if (HavePermissionToDeleteBoard) {
         <button
           type="button"
           (click)="onOpenDeleteBoard()"
@@ -96,14 +95,9 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1.5">
               <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">Xóa bảng</span>
-              <span
-                class="text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-500/20"
-              >
-                Trưởng dự án
-              </span>
             </div>
             <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-              Chỉ Trưởng dự án mới có quyền xoá bảng này
+              Chỉ Trưởng dự án hoặc Chủ Không gian làm việc mới có quyền xoá bảng này
             </p>
           </div>
         </div>

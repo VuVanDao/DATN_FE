@@ -89,8 +89,15 @@ export class BoardDetailPage implements OnInit {
   readonly isWorkspaceOwner = computed<boolean>(() => {
     const currentUserId = this.authStore.currentUser()?.id;
     if (!currentUserId) return false;
+    const currentBoard = this.currentBoard();
+    if (currentBoard?.isWorkspaceOwner) return true;
+    if (currentBoard?.currentUserRole === 'WorkspaceOwner') return true;
+
+    // check dự phòng
     const currentProject = this.projectStore.currentProject();
     if (currentProject?.currentUserRole === 'WorkspaceOwner') return true;
+
+    // check dự phòng
     const currentWorkspace = this.workspaceStore.currentWorkspace();
     if (
       currentWorkspace &&
@@ -98,9 +105,11 @@ export class BoardDetailPage implements OnInit {
     ) {
       return true;
     }
-    const projectWorkspaceId = currentProject?.workspaceId;
-    if (projectWorkspaceId) {
-      const ws = this.workspaceStore.workspaces().find((w) => w.id === projectWorkspaceId);
+
+    // check dự phòng
+    const workspaceId = currentBoard?.workspaceId || currentProject?.workspaceId;
+    if (workspaceId) {
+      const ws = this.workspaceStore.workspaces().find((w) => w.id === workspaceId);
       if (ws && ws.ownerId.toLowerCase() === currentUserId.toLowerCase()) {
         return true;
       }
@@ -112,14 +121,19 @@ export class BoardDetailPage implements OnInit {
   readonly isProjectLeader = computed<boolean>(() => {
     const currentUserId = this.authStore.currentUser()?.id;
     if (!currentUserId) return false;
-    const isMemberLeader = this.projectStore
+
+    if (this.isWorkspaceOwner()) return true;
+
+    if (this.currentBoard()?.currentUserRole === 'ProjectLeader') return true;
+
+    const whetherMemberIsProjectLeader = this.projectStore
       .members()
       .some(
         (m) =>
           m.userId.toLowerCase() === currentUserId.toLowerCase() && m.roleName === 'ProjectLeader',
       );
     const isRoleLeader = this.projectStore.currentProject()?.currentUserRole === 'ProjectLeader';
-    return isMemberLeader || isRoleLeader || this.isWorkspaceOwner();
+    return whetherMemberIsProjectLeader || isRoleLeader;
   });
 
   // Thêm nhanh Thẻ (ID cột đang mở form nhập thẻ)

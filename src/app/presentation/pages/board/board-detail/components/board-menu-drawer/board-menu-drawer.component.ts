@@ -12,7 +12,7 @@ import { BoardDetail } from '../../../../../../domain/models/board-detail.model'
 export class BoardMenuDrawerComponent {
   @Input() isOpen = false;
   @Input() board: BoardDetail | null = null;
-  @Input() isProjectLeader = false;
+  @Input() HavePermissionToDeleteBoard = false;
 
   @Output() closed = new EventEmitter<void>();
   @Output() openEditBoard = new EventEmitter<void>();

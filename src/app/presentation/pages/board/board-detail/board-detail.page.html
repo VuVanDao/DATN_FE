@@ -1,9 +1,7 @@
-<!-- Board Detail Canvas (Modern SaaS Project Theme) -->
 <div
   class="flex-1 h-full w-full flex flex-col bg-slate-100/90 dark:bg-slate-950 text-slate-900 dark:text-white relative overflow-hidden select-none min-h-0 transition-colors duration-200"
   style="display: flex; flex-direction: column; flex: 1; height: 100%; min-height: 0"
 >
-  <!-- Atmospheric Ambient Glows (Matches Workspace / Project Brand Theme) -->
   <div
     class="pointer-events-none absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-600/10 rounded-full blur-3xl"
   ></div>
@@ -11,21 +9,22 @@
     class="pointer-events-none absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/10 dark:bg-purple-600/10 rounded-full blur-3xl"
   ></div>
 
-  <!-- 1. Top Board Header Sub-Component -->
+  <!-- phần header của board-->
   <app-board-header
     [board]="currentBoard()"
     (togglePin)="onToggleBoardPin()"
     (openMenu)="openBoardMenu()"
   />
 
-  <!-- 1.5 Active Sprint Banner (Scrum Board Context) -->
+  <!-- nếu board là scrum -->
+  <!-- case 1: có active sprint -->
   @if (isScrumBoard() && activeSprint(); as sprint) {
     <section
       aria-label="Active Sprint Context"
       class="px-4 py-2 bg-linear-to-r from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/40 dark:via-emerald-950/20 dark:to-transparent border-b border-emerald-500/20 dark:border-emerald-500/30 shrink-0 select-none transition-colors"
     >
       <div class="flex items-center justify-between gap-3 flex-wrap">
-        <!-- Left: Status pill + Sprint Name + Dates / Countdown + Goal -->
+        <!-- Left: trạng thái sprint, tên, thời hạn sprint-->
         <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap min-w-0">
           <span
             class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500 text-white shadow-xs"
@@ -40,9 +39,11 @@
 
           @if (sprint.startDate && sprint.endDate) {
             <span
-              class="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium"
+              class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium"
             >
-              <span>{{ formatDate(sprint.startDate) }} – {{ formatDate(sprint.endDate) }}</span>
+              <span class="mt-0.5"
+                >{{ formatDate(sprint.startDate) }} – {{ formatDate(sprint.endDate) }}</span
+              >
               @if (calculateRemainingDays(sprint.endDate); as remaining) {
                 <span
                   class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60"
@@ -63,9 +64,8 @@
           }
         </div>
 
-        <!-- Right: Story Points + Progress bar + Link to Backlog -->
+        <!-- Right: Điểm story point-->
         <div class="flex items-center gap-3 shrink-0 ml-auto sm:ml-0">
-          <!-- Story Points Pill -->
           <div
             class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs border border-emerald-300/60 dark:border-emerald-800/60"
           >
@@ -78,7 +78,6 @@
             </span>
           </div>
 
-          <!-- Go to Backlog Button -->
           <button
             type="button"
             (click)="goToBacklog()"
@@ -195,7 +194,7 @@
     }
   </main>
 
-  <!-- 3. Board Footer Bar ("cái chân board") -->
+  <!-- Chân Board -->
   <div
     class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800/90 rounded-xl px-1.5 py-1 shadow-lg dark:shadow-2xl flex items-center gap-1"
   >
@@ -208,7 +207,7 @@
       <span class="leading-none inline-block">Board</span>
     </button>
 
-    <!-- Item 2: Switch boards (Opens Modal as requested) -->
+    <!-- Item 2: Switch boards (modal chuyển board) -->
     <button
       type="button"
       (click)="openSwitchBoardModal()"
@@ -243,11 +242,11 @@
     />
   }
 
-  <!-- Board Menu Drawer (Right-side Panel) -->
+  <!-- Board Menu Drawer -->
   <app-board-menu-drawer
     [isOpen]="showBoardMenu()"
     [board]="currentBoard()"
-    [isProjectLeader]="isProjectLeader()"
+    [HavePermissionToDeleteBoard]="isProjectLeader() || isWorkspaceOwner()"
     (closed)="closeBoardMenu()"
     (openEditBoard)="openEditBoardModal()"
     (openDeleteBoard)="openDeleteBoardModal()"
@@ -262,7 +261,7 @@
     (saved)="onBoardUpdated($event)"
   />
 
-  <!-- Board Delete Modal (Xóa bảng - Chỉ cho ProjectLeader) -->
+  <!-- Board Delete Modal (Xóa bảng - Chỉ cho ProjectLeader và WorkspaceOwner) -->
   <app-board-delete-modal
     [isOpen]="showDeleteBoardModal()"
     [board]="currentBoard()"
