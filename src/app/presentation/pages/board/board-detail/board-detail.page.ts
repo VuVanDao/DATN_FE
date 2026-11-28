@@ -25,6 +25,7 @@ import { BoardHeaderComponent } from './components/board-header/board-header.com
 import { BoardMenuDrawerComponent } from './components/board-menu-drawer/board-menu-drawer.component';
 import { BoardSettingsModalComponent } from './components/board-settings-modal/board-settings-modal.component';
 import { CardDetailModalComponent } from './components/board-card/card-detail-modal/card-detail-modal.component';
+import { formatDisplayDate } from '../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-board-detail-page',
@@ -303,16 +304,7 @@ export class BoardDetailPage implements OnInit {
     });
   }
 
-  formatDate(dateStr?: string | null): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(date);
-  }
+  readonly formatDate = formatDisplayDate;
 
   calculateRemainingDays(endDateStr?: string | null): string | null {
     if (!endDateStr) return null;

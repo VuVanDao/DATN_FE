@@ -18,6 +18,7 @@ import {
   computeDueDateStatus,
   DueDateStatus,
 } from '../../../../../../../../shared/utils/due-date.util';
+import { formatDisplayDate } from '../../../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-sprint-item',
@@ -133,13 +134,5 @@ export class SprintItemComponent {
     this.completeSprint.emit(this.sprint);
   }
 
-  formatDate(dateStr?: string | null): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  }
+  readonly formatDate = formatDisplayDate;
 }

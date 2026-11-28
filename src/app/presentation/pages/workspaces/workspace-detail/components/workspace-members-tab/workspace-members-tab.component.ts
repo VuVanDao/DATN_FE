@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { WorkspaceDetail, WorkspaceMember } from '../../../../../../domain/models/workspace.model';
+import { formatRelativeTime } from '../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-workspace-members-tab',
@@ -35,13 +36,7 @@ export class WorkspaceMembersTabComponent {
   }
 
   formatActivityDate(dateString?: string | null): string {
-    if (!dateString) return 'Đang hoạt động';
-    const date = new Date(dateString);
-    const days = Math.floor((Date.now() - date.getTime()) / 86400000);
-    if (days === 0) return 'Đang hoạt động';
-    if (days === 1) return 'Hôm qua';
-    if (days < 7) return `${days} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
+    return formatRelativeTime(dateString, 'Đang hoạt động');
   }
 
   canRemove(member: WorkspaceMember): boolean {

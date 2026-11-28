@@ -9,6 +9,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { SprintStore } from '../../../../../../application/state/sprint.store';
 import { SprintSummary } from '../../../../../../domain/models/sprint.model';
+import { formatDisplayDate } from '../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-start-sprint-modal',
@@ -50,13 +51,7 @@ export class StartSprintModalComponent {
   }
 
   formatDate(dateStr?: string | null): string {
-    if (!dateStr) return 'Chưa thiết lập';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    return formatDisplayDate(dateStr, 'Chưa thiết lập');
   }
 
   calculateDurationDays(): number | null {

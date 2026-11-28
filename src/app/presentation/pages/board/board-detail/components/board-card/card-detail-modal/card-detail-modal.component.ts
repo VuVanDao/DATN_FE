@@ -18,6 +18,10 @@ import { AuthStore } from '../../../../../../../application/state/auth.store';
 import { GetCardActivitiesUseCase } from '../../../../../../../application/board/get-card-activities.use-case';
 import { NotificationService } from '../../../../../../../application/shared/notification.service';
 import { normalizePriority, normalizeWorkType } from '../../../../../../../shared/utils/card-ui.util';
+import {
+  formatDateForInput,
+  formatDisplayDateTime,
+} from '../../../../../../../shared/utils/date.util';
 import { ActivityLog } from '../../../../../../../domain/models/activity-log.model';
 import {
   CardDependencyItem,
@@ -192,8 +196,8 @@ export class CardDetailModalComponent {
     this.currentColumnId.set(d.columnId || '');
     this.currentPriority.set(normalizePriority(d.priority));
     this.currentType.set(normalizeWorkType(d.type));
-    this.currentStartDate.set(this.formatDateForInput(d.startDate));
-    this.currentDueDate.set(this.formatDateForInput(d.dueDate));
+    this.currentStartDate.set(formatDateForInput(d.startDate));
+    this.currentDueDate.set(formatDateForInput(d.dueDate));
     this.currentAssigneeId.set(d.assigneeId || null);
     if (d.assigneeId) {
       const member = this.members().find((m) => m.userId === d.assigneeId);
@@ -214,23 +218,6 @@ export class CardDetailModalComponent {
     this.blocking.set(d.blocking || []);
   }
 
-  private formatDisplayDate(dateStr: string): string {
-    if (!dateStr) return '';
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleString('vi-VN', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
-
   private initCardData(): void {
     const c = this.card();
     if (!c) return;
@@ -247,8 +234,8 @@ export class CardDetailModalComponent {
     this.currentType.set(normalizeWorkType(c.type));
 
     // Map Dates
-    this.currentStartDate.set(this.formatDateForInput(c.startDate));
-    this.currentDueDate.set(this.formatDateForInput(c.dueDate));
+    this.currentStartDate.set(formatDateForInput(c.startDate));
+    this.currentDueDate.set(formatDateForInput(c.dueDate));
 
     // Map Assignee & Reporter
     this.currentAssigneeId.set(c.assigneeId || null);
@@ -377,21 +364,10 @@ export class CardDetailModalComponent {
       authorName: log.username || 'Thành viên',
       authorAvatarUrl: log.userAvatarUrl,
       actionText,
-      createdAt: this.formatDisplayDate(log.createdAt),
+      createdAt: formatDisplayDateTime(log.createdAt),
       isComment,
       commentContent,
     };
-  }
-
-  private formatDateForInput(dateStr: string | null | undefined): string {
-    if (!dateStr) return '';
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return d.toISOString().split('T')[0];
-    } catch {
-      return '';
-    }
   }
 
   // Keyboard shortcut for closing (Esc)

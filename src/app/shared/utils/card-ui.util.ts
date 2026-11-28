@@ -150,7 +150,8 @@ export function normalizeWorkType(val: number | string | null | undefined): Work
   if (typeof val === 'string') {
     const lower = val.toLowerCase();
     if (lower === 'bug' || lower === '1') return 'Bug';
-    if (lower === 'feature' || lower === 'features' || lower === 'story' || lower === '2') return 'Feature';
+    if (lower === 'feature' || lower === 'features' || lower === 'story' || lower === '2')
+      return 'Feature';
     if (lower === 'epic' || lower === '3') return 'Epic';
     return 'Task';
   }

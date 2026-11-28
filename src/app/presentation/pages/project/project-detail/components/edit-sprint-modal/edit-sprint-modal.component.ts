@@ -12,6 +12,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatIconModule } from '@angular/material/icon';
 import { SprintStore } from '../../../../../../application/state/sprint.store';
 import { SprintSummary } from '../../../../../../domain/models/sprint.model';
+import { formatDateForInput } from '../../../../../../shared/utils/date.util';
 
 @Component({
   selector: 'app-edit-sprint-modal',
@@ -62,8 +63,8 @@ export class EditSprintModalComponent implements OnChanges {
       name: this.sprint.name,
       goal: this.sprint.goal || '',
       duration: durationWeeks,
-      startDate: this.formatDateForInput(start),
-      endDate: this.formatDateForInput(end),
+      startDate: formatDateForInput(start),
+      endDate: formatDateForInput(end),
     });
   }
 
@@ -75,7 +76,7 @@ export class EditSprintModalComponent implements OnChanges {
     if (weeks > 0) {
       const end = new Date(start);
       end.setDate(start.getDate() + weeks * 7);
-      this.form.controls.endDate.setValue(this.formatDateForInput(end));
+      this.form.controls.endDate.setValue(formatDateForInput(end));
     }
   }
 
@@ -113,12 +114,5 @@ export class EditSprintModalComponent implements OnChanges {
 
   close(): void {
     this.closed.emit();
-  }
-
-  private formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 }
