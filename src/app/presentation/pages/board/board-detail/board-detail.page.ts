@@ -437,8 +437,11 @@ export class BoardDetailPage implements OnInit {
     cardId: string;
     columnId: string;
     columnTitle: string;
+    onSuccess?: () => void;
   }): void {
-    this.boardStore.moveCardToColumn(event.cardId, event.columnId);
+    this.boardStore.moveCardToColumn(event.cardId, event.columnId, () => {
+      event.onSuccess?.();
+    });
   }
 
   onCardDetailTitleChanged(event: { cardId: string; title: string }): void {
@@ -469,8 +472,14 @@ export class BoardDetailPage implements OnInit {
     );
   }
 
-  onCardDetailCommentAdded(event: { cardId: string; content: string }): void {
-    this.boardStore.addCardComment(event.cardId, event.content);
+  onCardDetailCommentAdded(event: {
+    cardId: string;
+    content: string;
+    onSuccess?: () => void;
+  }): void {
+    this.boardStore.addCardComment(event.cardId, event.content, () => {
+      event.onSuccess?.();
+    });
   }
 
   onCardDetailPriorityChanged(event: { cardId: string; priority: string }): void {

@@ -7,7 +7,6 @@ import {
   HostListener,
   inject,
   input,
-  OnInit,
   output,
   signal,
   untracked,
@@ -56,10 +55,12 @@ export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetail
   ],
   templateUrl: './card-detail-modal.component.html',
 })
-export class CardDetailModalComponent implements OnInit {
+export class CardDetailModalComponent {
   private readonly authStore = inject(AuthStore);
   private readonly notificationService = inject(NotificationService);
   private readonly getCardActivitiesUseCase = inject(GetCardActivitiesUseCase);
+
+  private lastCardId: string | null = null;
 
   // Inputs
   readonly isOpen = input<boolean>(false);
@@ -72,11 +73,20 @@ export class CardDetailModalComponent implements OnInit {
 
   // Outputs (All action events for logging / future API integration)
   readonly closed = output<void>();
-  readonly columnChanged = output<{ cardId: string; columnId: string; columnTitle: string }>();
+  readonly columnChanged = output<{
+    cardId: string;
+    columnId: string;
+    columnTitle: string;
+    onSuccess?: () => void;
+  }>();
   readonly titleChanged = output<{ cardId: string; title: string }>();
   readonly descriptionChanged = output<{ cardId: string; description: string }>();
   readonly coverChanged = output<{ cardId: string; coverUrl: string | null; file?: File | null }>();
-  readonly commentAdded = output<{ cardId: string; content: string }>();
+  readonly commentAdded = output<{
+    cardId: string;
+    content: string;
+    onSuccess?: () => void;
+  }>();
   readonly priorityChanged = output<{ cardId: string; priority: PriorityType }>();
   readonly typeChanged = output<{ cardId: string; type: WorkType }>();
   readonly datesChanged = output<{
@@ -154,7 +164,8 @@ export class CardDetailModalComponent implements OnInit {
   constructor() {
     effect(() => {
       const c = this.card();
-      if (c) {
+      if (c && c.id !== this.lastCardId) {
+        this.lastCardId = c.id;
         untracked(() => {
           this.initCardData();
         });
@@ -169,10 +180,6 @@ export class CardDetailModalComponent implements OnInit {
         });
       }
     });
-  }
-
-  ngOnInit(): void {
-    this.initCardData();
   }
 
   private syncWithDetail(d: CardDetail): void {
@@ -204,9 +211,6 @@ export class CardDetailModalComponent implements OnInit {
     // Sync Dependencies
     this.blockedBy.set(d.blockedBy || []);
     this.blocking.set(d.blocking || []);
-
-    // Load actual Activity Logs from backend API
-    this.loadActivities(d.id);
   }
 
   private formatDisplayDate(dateStr: string): string {
@@ -454,11 +458,10 @@ export class CardDetailModalComponent implements OnInit {
       cardId: this.card().id,
       columnId: column.id,
       columnTitle: column.title,
+      onSuccess: () => {
+        this.loadActivities(this.card().id);
+      },
     });
-
-    setTimeout(() => {
-      this.loadActivities(this.card().id);
-    }, 800);
   }
 
   // Title Editing
@@ -619,29 +622,13 @@ export class CardDetailModalComponent implements OnInit {
 
   // Add Comment & Activity
   onCommentAdded(text: string): void {
-    const userName = this.currentUserName();
-    const userAvatar = this.currentUserAvatar();
-
-    const newActivity: CardDetailActivity = {
-      id: `temp-${Date.now()}`,
-      authorName: userName,
-      authorAvatarUrl: userAvatar,
-      actionText: 'đã bình luận',
-      commentContent: text,
-      createdAt: 'Vừa xong',
-      isComment: true,
-    };
-
-    this.activities.update((items) => [newActivity, ...items]);
-
     this.commentAdded.emit({
       cardId: this.card().id,
       content: text,
+      onSuccess: () => {
+        this.loadActivities(this.card().id);
+      },
     });
-
-    setTimeout(() => {
-      this.loadActivities(this.card().id);
-    }, 800);
   }
 
   onDeleteCardFromModal(): void {
