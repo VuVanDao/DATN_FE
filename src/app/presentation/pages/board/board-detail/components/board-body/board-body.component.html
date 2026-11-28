@@ -34,14 +34,14 @@
     </div>
   </div>
 } @else {
-  <div class="flex items-start gap-3.5 h-full">
+  <div class="flex items-start gap-3.5 h-full min-h-0">
     <!-- Columns List -->
     <div
       cdkDropList
       cdkDropListOrientation="horizontal"
       [cdkDropListData]="columns()"
       (cdkDropListDropped)="onColumnDrop($event)"
-      class="flex items-start gap-3.5 h-full"
+      class="flex items-start gap-3.5 h-full min-h-0"
     >
       @for (column of columns(); track column.id) {
         <app-board-column

@@ -1,5 +1,5 @@
 <div
-  class="w-full shrink-0 max-h-full flex flex-col justify-between rounded-2xl bg-slate-200/60 dark:bg-[#111827]/90 border border-slate-300/70 dark:border-slate-800/80 shadow-sm dark:shadow-xl backdrop-blur-xs overflow-hidden text-slate-800 dark:text-slate-100"
+  class="w-full max-h-full flex flex-col rounded-2xl bg-slate-200/60 dark:bg-[#111827]/90 border border-slate-300/70 dark:border-slate-800/80 shadow-sm dark:shadow-xl backdrop-blur-xs overflow-hidden text-slate-800 dark:text-slate-100 min-h-0"
   [class.min-h-[92px]]="column().cards.length === 0"
 >
   <div
@@ -67,7 +67,7 @@
     [cdkDropListData]="column().cards || []"
     [cdkDropListConnectedTo]="connectedDropLists()"
     (cdkDropListDropped)="onCardDropped($event)"
-    class="flex-1 overflow-y-auto px-2.5 no-scrollbar transition-all"
+    class="flex-1 min-h-0 overflow-y-auto px-2.5 slim-scrollbar transition-all"
     [class.py-1]="(column().cards || []).length > 0"
     [class.space-y-2.5]="(column().cards || []).length > 0"
     [class.min-h-8]="(column().cards || []).length > 0"

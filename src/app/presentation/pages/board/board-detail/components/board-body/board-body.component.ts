@@ -15,6 +15,9 @@ import { BoardColumnComponent } from '../board-column/board-column.component';
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule, BoardColumnComponent, CdkDrag, CdkDropList],
   templateUrl: './board-body.component.html',
+  host: {
+    class: 'h-full flex items-start shrink-0 min-h-0',
+  },
 })
 export class BoardBodyComponent {
   readonly columns = input.required<ColumnSummary[]>();

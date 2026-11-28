@@ -22,7 +22,7 @@ import { BoardColumnMenuComponent } from './board-column-menu/board-column-menu.
   ],
   templateUrl: './board-column.component.html',
   host: {
-    class: 'w-72 shrink-0 max-h-full flex flex-col',
+    class: 'w-72 shrink-0 max-h-full flex flex-col min-h-0',
   },
 })
 export class BoardColumnComponent {

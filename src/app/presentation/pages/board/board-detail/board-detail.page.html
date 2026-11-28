@@ -94,7 +94,7 @@
   }
 
   <!-- 2. Main Kanban Board Canvas (Columns & Cards Body) -->
-  <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 pb-20 flex items-start gap-3.5 min-h-0">
+  <main class="flex-1 overflow-x-auto overflow-y-hidden p-4 pb-16 flex items-start gap-3.5 min-h-0">
     @if (error()) {
       <!-- Error State: Căn giữa màn hình hoàn hảo cả chiều dọc và chiều ngang -->
       <div class="flex-1 w-full h-full self-stretch flex items-center justify-center p-4">
@@ -169,7 +169,7 @@
       </div>
     } @else {
       <app-board-body
-        class="h-full flex items-start"
+        class="h-full flex items-start min-h-0"
         [columns]="columns()"
         [isLoading]="isLoading()"
         [error]="error()"
