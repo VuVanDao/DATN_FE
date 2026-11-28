@@ -12,7 +12,7 @@
       />
     } @else {
       <div
-        class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-3xl sm:text-4xl shadow-lg ring-4 ring-slate-100 dark:ring-slate-800"
+        class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-3xl sm:text-4xl shadow-lg ring-4 ring-slate-100 dark:ring-slate-800"
       >
         {{ (profileStore.currentUser()?.userName || 'U').charAt(0).toUpperCase() }}
       </div>

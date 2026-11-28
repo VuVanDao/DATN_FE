@@ -44,15 +44,15 @@
         >
           <div>
             <div class="flex items-start justify-between gap-2">
-              <div
-                [class]="project.color"
-                class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-xs shrink-0"
+              <h3
+                class="text-[15px] font-semibold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition flex-1 min-w-0"
+                [title]="project.name"
               >
-                {{ project.initial }}
-              </div>
+                {{ project.name }}
+              </h3>
               @if (!isOwner && !project.isMember) {
                 <span
-                  class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20"
+                  class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20 shrink-0"
                   title="Bạn chưa tham gia dự án này"
                 >
                   <mat-icon fontIcon="lock" class="icon-xxs !w-3 !h-3"></mat-icon>
@@ -60,13 +60,7 @@
                 </span>
               }
             </div>
-            <h3
-              class="text-[15px] font-semibold text-slate-900 dark:text-white mt-3 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition"
-              [title]="project.name"
-            >
-              {{ project.name }}
-            </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 min-h-8">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-2 min-h-8">
               {{ project.description || 'Chưa có mô tả cho dự án này.' }}
             </p>
           </div>

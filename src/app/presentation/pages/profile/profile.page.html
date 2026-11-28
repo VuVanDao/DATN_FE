@@ -13,33 +13,26 @@
 
   @if (profileStore.isProfileLoading() || !profileStore.currentUser()) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch animate-pulse">
-      <!-- CỘT TRÁI SKELETON (4/12 - Căn giữa, không còn chân ID) -->
       <div
-        class="lg:col-span-4 h-full min-h-[380px] flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm"
+        class="lg:col-span-4 h-full min-h-95 flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm"
       >
-        <!-- Avatar Skeleton (To hơn & Bo góc) -->
         <div
           class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-slate-200 dark:bg-slate-800 mb-4 shadow-inner"
         ></div>
 
-        <!-- Tên Skeleton -->
         <div class="h-6 w-44 bg-slate-200 dark:bg-slate-800 rounded-lg mb-2"></div>
 
-        <!-- Email Skeleton -->
         <div class="h-4 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-lg mb-4"></div>
 
-        <!-- Badges Skeleton -->
         <div class="flex items-center justify-center gap-2">
           <div class="h-6 w-24 rounded-full bg-slate-200 dark:bg-slate-800"></div>
           <div class="h-6 w-24 rounded-full bg-slate-100 dark:bg-slate-800/60"></div>
         </div>
       </div>
 
-      <!-- CỘT PHẢI SKELETON (8/12) -->
       <div
-        class="lg:col-span-8 h-full min-h-[380px] flex flex-col justify-between bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+        class="lg:col-span-8 h-full min-h-95 flex flex-col justify-between bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
       >
-        <!-- Card Header Skeleton -->
         <div
           class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between shrink-0"
         >
@@ -47,13 +40,10 @@
             <div class="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-lg"></div>
             <div class="h-3.5 w-60 bg-slate-100 dark:bg-slate-800/60 rounded-lg"></div>
           </div>
-          <!-- Button Chỉnh sửa Skeleton -->
           <div class="h-8 w-24 bg-slate-100 dark:bg-slate-800/70 rounded-xl"></div>
         </div>
 
-        <!-- Content Body Skeleton -->
         <div class="p-5 flex-1 flex flex-col justify-between space-y-3.5">
-          <!-- Grid 4 ô chi tiết -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div
               class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-2"
@@ -86,8 +76,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Ô Giới thiệu bản thân Skeleton -->
           <div
             class="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3.5 flex-1 flex flex-col justify-center space-y-2"
           >
