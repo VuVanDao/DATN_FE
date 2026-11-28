@@ -1,0 +1,95 @@
+<div
+  (click)="onCardClick()"
+  class="flex items-center justify-between gap-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#22272b] border border-slate-200/90 dark:border-[#38414a] transition group cursor-pointer"
+  [class.hover:border-rose-400]="direction() === 'BlockedBy'"
+  [class.dark:hover:border-rose-600]="direction() === 'BlockedBy'"
+  [class.hover:border-amber-400]="direction() === 'Blocking'"
+  [class.dark:hover:border-amber-600]="direction() === 'Blocking'"
+>
+  <!-- Left: Completion status icon + Type icon + Title -->
+  <div class="flex items-center gap-2 min-w-0 flex-1">
+    @if (item().isDone) {
+      <span
+        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 shrink-0"
+        title="Công việc này đã hoàn thành, không còn chặn nữa"
+      >
+        <mat-icon fontIcon="check_circle" class="text-[11px]! w-3! h-3!"></mat-icon>
+        <span>Đã xong</span>
+      </span>
+    } @else if (direction() === 'BlockedBy') {
+      <span
+        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 shrink-0"
+        title="Công việc chưa hoàn thành, thẻ này vẫn đang bị chặn"
+      >
+        <mat-icon fontIcon="hourglass_top" class="text-[11px]! w-3! h-3!"></mat-icon>
+        <span>Đang chặn</span>
+      </span>
+    } @else {
+      <span
+        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0"
+      >
+        <mat-icon fontIcon="pause_circle" class="text-[11px]! w-3! h-3!"></mat-icon>
+        <span>Chờ thẻ này</span>
+      </span>
+    }
+
+    <mat-icon
+      [fontIcon]="getTypeIcon(item().type)"
+      class="text-xs! w-3.5! h-3.5! shrink-0"
+      [ngClass]="getTypeColorClass(item().type)"
+    ></mat-icon>
+
+    <span
+      class="text-xs font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+      [class.line-through]="item().isDone"
+      [class.opacity-60]="item().isDone"
+    >
+      {{ item().title }}
+    </span>
+
+    @if (item().columnTitle) {
+      <span class="text-[10px] text-slate-400 dark:text-slate-500 shrink-0 hidden sm:inline">
+        • {{ item().columnTitle }}
+      </span>
+    }
+  </div>
+
+  <!-- Right: Priority, Assignee & Unlink button -->
+  <div class="flex items-center gap-1.5 shrink-0" (click)="$event.stopPropagation()">
+    <span
+      class="px-1.5 py-0.2 rounded text-[10px] font-semibold border"
+      [ngClass]="getPriorityClass(item().priority)"
+    >
+      {{ item().priority }}
+    </span>
+
+    @if (item().assigneeName) {
+      <div class="flex items-center gap-1" [title]="item().assigneeName">
+        @if (item().assigneeAvatarUrl) {
+          <img
+            [src]="item().assigneeAvatarUrl"
+            [alt]="item().assigneeName"
+            class="w-4 h-4 rounded-full object-cover"
+          />
+        } @else {
+          <span
+            class="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 text-[9px] font-bold flex items-center justify-center uppercase"
+          >
+            {{ item().assigneeName?.charAt(0) }}
+          </span>
+        }
+      </div>
+    }
+
+    <!-- Nút gỡ liên kết -->
+    <button
+      type="button"
+      (click)="onRemove($event)"
+      [disabled]="isRemoving()"
+      class="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+      title="Gỡ bỏ liên kết phụ thuộc"
+    >
+      <mat-icon fontIcon="link_off" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+    </button>
+  </div>
+</div>
