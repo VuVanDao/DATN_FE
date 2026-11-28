@@ -7,8 +7,8 @@ import { AuthStore } from '../../../../../application/state/auth.store';
 import { WorkspaceStore } from '../../../../../application/state/workspace.store';
 import { WorkspaceCreateModalComponent } from '../../../../pages/workspaces/components/workspace-create-modal/workspace-create-modal.component';
 import { toWorkspaceView } from '../../../../view-models/workspace.view-model';
-import { SidebarRecentComponent } from '../sidebar-recent/sidebar-recent.component';
-import { SidebarWorkspacesComponent } from '../sidebar-workspaces/sidebar-workspaces.component';
+import { MainSidebarRecentComponent } from '../main-sidebar-recent/main-sidebar-recent.component';
+import { MainSidebarWorkspacesComponent } from '../main-sidebar-workspaces/main-sidebar-workspaces.component';
 
 @Component({
   selector: 'app-main-sidebar',
@@ -19,8 +19,8 @@ import { SidebarWorkspacesComponent } from '../sidebar-workspaces/sidebar-worksp
     MatIconModule,
     MatTooltipModule,
     WorkspaceCreateModalComponent,
-    SidebarRecentComponent,
-    SidebarWorkspacesComponent,
+    MainSidebarRecentComponent,
+    MainSidebarWorkspacesComponent,
   ],
   templateUrl: './main-sidebar.component.html',
 })

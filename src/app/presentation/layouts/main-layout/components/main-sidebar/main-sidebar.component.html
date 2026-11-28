@@ -4,7 +4,6 @@
   [class.w-60]="!layoutService.isSidebarCollapsed()"
   [class.w-18]="layoutService.isSidebarCollapsed()"
 >
-  <!-- Top Section: Menu Navigation & Workspaces -->
   <div class="p-3 space-y-4 overflow-y-auto overflow-x-hidden flex-1 slim-scrollbar pr-1.5">
     <!-- 1. Primary Navigation Links -->
     <nav class="space-y-1">
@@ -24,16 +23,13 @@
         }
       </a>
 
-      <app-sidebar-recent
-        [collapsed]="layoutService.isSidebarCollapsed()"
-        [workspaces]="workspaces()"
-      />
+      <app-main-sidebar-recent [collapsed]="layoutService.isSidebarCollapsed()" />
     </nav>
 
     <!-- Divider -->
     <div class="border-t border-slate-200 dark:border-slate-800 my-2"></div>
 
-    <app-sidebar-workspaces
+    <app-main-sidebar-workspaces
       [collapsed]="layoutService.isSidebarCollapsed()"
       [loading]="workspaceStore.isLoading()"
       [workspaces]="displayedWorkspaces()"
@@ -41,7 +37,6 @@
       (create)="openCreateModal()"
     />
   </div>
-
 </aside>
 
 <!-- Modal Tạo Không gian làm việc mới -->

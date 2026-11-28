@@ -3,15 +3,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { BoardStore } from '../../../../../application/state/board.store';
-import { WorkspaceView } from '../../../../view-models/workspace.view-model';
-
-export interface RecentWorkspaceItem {
-  id: string;
-  name: string;
-  initial: string;
-  color: string;
-  isPinned: boolean;
-}
 
 const BOARD_COLORS = [
   'bg-indigo-500',
@@ -25,21 +16,20 @@ const BOARD_COLORS = [
 ];
 
 @Component({
-  selector: 'app-sidebar-recent',
+  selector: 'app-main-sidebar-recent',
   standalone: true,
   imports: [RouterLink, MatIconModule, MatTooltipModule],
-  templateUrl: './sidebar-recent.component.html',
+  templateUrl: './main-sidebar-recent.component.html',
 })
-export class SidebarRecentComponent implements OnInit {
+export class MainSidebarRecentComponent implements OnInit {
   private readonly boardStore = inject(BoardStore);
 
+  // check trạng thái đóng mở của sidebar để hiện chỉ icon recent hoặc cả text + icon
   readonly collapsed = input(false);
-  readonly workspaces = input<WorkspaceView[]>([]);
 
-  // ===== RECENT SECTION STATE (Bảng & Workspace gần đây/đã ghim) =====
+  // ===== RECENT BOARDS SECTION STATE =====
   readonly isRecentOpen = signal<boolean>(false);
   readonly isRecentBoardsOpen = signal<boolean>(true);
-  readonly isRecentWorkspacesOpen = signal<boolean>(true);
 
   readonly recentBoardsList = computed(() => this.boardStore.myBoards().recentBoards);
   readonly pinnedBoardsList = computed(() => this.boardStore.myBoards().pinnedBoards);
@@ -59,30 +49,6 @@ export class SidebarRecentComponent implements OnInit {
     return BOARD_COLORS[index];
   }
 
-  readonly recentWorkspacesList = computed<RecentWorkspaceItem[]>(() =>
-    this.workspaces()
-      .slice(0, 2)
-      .map((ws) => ({
-        id: ws.id,
-        name: ws.name,
-        initial: ws.initial,
-        color: ws.color,
-        isPinned: false,
-      })),
-  );
-
-  readonly pinnedWorkspacesList = computed<RecentWorkspaceItem[]>(() =>
-    this.workspaces()
-      .slice(2, 3)
-      .map((ws) => ({
-        id: ws.id,
-        name: ws.name,
-        initial: ws.initial,
-        color: ws.color,
-        isPinned: true,
-      })),
-  );
-
   toggleRecent(): void {
     const next = !this.isRecentOpen();
     this.isRecentOpen.set(next);
@@ -93,9 +59,5 @@ export class SidebarRecentComponent implements OnInit {
 
   toggleRecentBoards(): void {
     this.isRecentBoardsOpen.update((v) => !v);
-  }
-
-  toggleRecentWorkspaces(): void {
-    this.isRecentWorkspacesOpen.update((v) => !v);
   }
 }
