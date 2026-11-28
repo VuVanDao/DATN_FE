@@ -2,9 +2,10 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
+import { AuthLeftComponent } from './components/auth-left/auth-left.component';
 
 @Component({
-  imports: [RouterOutlet, MatIconModule],
+  imports: [RouterOutlet, MatIconModule, AuthLeftComponent],
   selector: 'app-auth-layout',
   standalone: true,
   templateUrl: './auth.layout.html',

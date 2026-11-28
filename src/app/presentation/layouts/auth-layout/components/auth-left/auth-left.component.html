@@ -1,0 +1,153 @@
+<div
+  class="relative w-full h-full min-h-screen overflow-hidden bg-[#0b1022] flex flex-col justify-between p-12"
+>
+  <div
+    class="absolute inset-0 pointer-events-none"
+    style="
+      background:
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.35), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.28), transparent 45%),
+        linear-gradient(160deg, #0b1022 0%, #131a35 60%, #191033 100%);
+    "
+  ></div>
+
+  <!--  container -->
+  <div class="relative z-10 flex flex-col justify-between h-full w-full">
+    <!-- Logo -->
+    <div class="flex items-center gap-2">
+      <div
+        class="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-indigo-400 to-purple-400 shadow-lg shadow-indigo-500/30"
+      >
+        <mat-icon
+          fontIcon="bolt"
+          class="icon-xs text-white flex items-center justify-center"
+        ></mat-icon>
+      </div>
+      <span class="font-semibold tracking-tight text-white">TaskFlow AI</span>
+    </div>
+
+    @if (isRecoveryMode()) {
+      <!--dành cho màn (Quên mật khẩu / Đặt lại mật khẩu) -->
+      <div class="flex-1 flex items-center justify-center py-10">
+        <div class="relative flex items-center justify-center">
+          <div
+            class="w-80 h-80 rounded-full border border-indigo-500/15 flex items-center justify-center absolute"
+          ></div>
+          <div
+            class="w-64 h-64 rounded-full border border-indigo-500/25 flex items-center justify-center absolute"
+          ></div>
+          <div
+            class="w-48 h-48 rounded-full border border-indigo-500/35 flex items-center justify-center absolute"
+          ></div>
+          <div
+            class="absolute -top-14 left-12 w-2 h-2 rounded-full bg-indigo-400 shadow-[0_0_10px_#818cf8]"
+          ></div>
+          <div
+            class="absolute bottom-6 -right-6 w-1.5 h-1.5 rounded-full bg-indigo-300 shadow-[0_0_8px_#818cf8]"
+          ></div>
+          <div
+            class="absolute top-1/2 -right-16 w-1.5 h-1.5 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]"
+          ></div>
+          <div
+            class="absolute -bottom-10 -left-6 w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_#818cf8]"
+          ></div>
+          <div
+            class="w-20 h-20 rounded-2xl flex items-center justify-center relative z-10 backdrop-blur-md bg-slate-800/75 border border-indigo-400/40 shadow-[0_0_40px_rgba(99,102,241,0.3)]"
+          >
+            <mat-icon
+              fontIcon="lock"
+              class="icon-2xl text-indigo-300 flex items-center justify-center"
+            ></mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-md">
+        <h1 class="text-3xl font-bold text-white leading-tight tracking-tight">
+          Quên mật khẩu không sao,<br />vài bước là quay lại làm việc.
+        </h1>
+        <p class="mt-3 text-sm leading-relaxed text-indigo-200/65">
+          Chúng tôi sẽ gửi một liên kết bảo mật đến email của bạn để đặt lại mật khẩu một cách an
+          toàn.
+        </p>
+      </div>
+    } @else {
+      <!-- dành cho màn (Login / Register) -->
+      <div class="flex-1 flex items-center justify-center py-10">
+        <div class="relative w-full max-w-md h-80">
+          <!-- 3 cái thẻ giao diện cho vui-->
+          <!-- Card 1 -->
+          <div
+            class="absolute left-0 top-2 w-44 rounded-xl p-3 backdrop-blur-md bg-white/[0.08] border border-white/[0.12] shadow-2xl shadow-black/40"
+          >
+            <p class="text-xs text-indigo-300 font-semibold mb-2">Cần làm · 4</p>
+            <div class="space-y-2 mb-3">
+              <div class="h-2.5 rounded bg-white/20"></div>
+              <div class="h-2.5 rounded w-3/4 bg-white/12"></div>
+            </div>
+            <div
+              class="h-10 rounded-lg flex items-center px-2 gap-2 bg-white/[0.07] border border-white/8"
+            >
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-red-500/80 text-white">
+                Bug
+              </span>
+              <div class="h-2 rounded flex-1 bg-white/18"></div>
+            </div>
+          </div>
+
+          <!-- Card 2: Đang làm -->
+          <div
+            class="absolute right-2 top-24 w-48 rounded-xl p-3 backdrop-blur-md bg-white/[0.08] border border-white/[0.12] shadow-2xl shadow-black/40"
+          >
+            <p class="text-xs text-indigo-300 font-semibold mb-2">Đang làm · 3</p>
+            <div
+              class="h-10 rounded-lg flex items-center px-2 gap-2 mb-2 bg-white/[0.07] border border-white/[0.08]"
+            >
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-500/80 text-white">
+                Task
+              </span>
+              <div class="h-2 rounded flex-1 bg-white/[0.18]"></div>
+            </div>
+            <div
+              class="h-10 rounded-lg flex items-center px-2 gap-2 bg-white/[0.07] border border-white/[0.08]"
+            >
+              <span
+                class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/80 text-white"
+              >
+                Story
+              </span>
+              <div class="h-2 rounded flex-1 bg-white/[0.18]"></div>
+            </div>
+          </div>
+
+          <!-- Card 3: Hoàn thành -->
+          <div
+            class="absolute left-10 bottom-0 w-44 rounded-xl p-3 backdrop-blur-md bg-white/[0.08] border border-white/[0.12] shadow-2xl shadow-black/40"
+          >
+            <p class="text-xs text-indigo-300 font-semibold mb-2">Hoàn thành · 8</p>
+            <div
+              class="h-10 rounded-lg flex items-center px-2 gap-2 bg-white/[0.07] border border-white/[0.08]"
+            >
+              <span
+                class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-purple-500/80 text-white"
+              >
+                Epic
+              </span>
+              <div class="h-2 rounded flex-1 bg-white/[0.18]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- footer?-->
+      <div class="max-w-md">
+        <h1 class="text-3xl font-bold text-white leading-tight tracking-tight">
+          Điều phối cả đội,<br />không cần đoán việc kế tiếp.
+        </h1>
+        <p class="mt-3 text-sm leading-relaxed text-indigo-200/65">
+          Kanban kéo thả, Sprint kiểu Scrum, phụ thuộc task rõ ràng.
+        </p>
+      </div>
+    }
+  </div>
+</div>
