@@ -168,7 +168,7 @@
         </div>
       </div>
     } @else {
-      <app-board-canvas
+      <app-board-body
         class="h-full flex items-start"
         [columns]="columns()"
         [isLoading]="isLoading()"
@@ -189,7 +189,7 @@
         (deleteCard)="onDeleteCard($event)"
         (updateCardTitle)="onUpdateCardTitle($event)"
         (updateCardCover)="onUpdateCardCover($event)"
-        (updateCardDatesFromBoardCanvas)="onUpdateCardDates($event)"
+        (updateCardDatesFromBoardBody)="onUpdateCardDates($event)"
       />
     }
   </main>

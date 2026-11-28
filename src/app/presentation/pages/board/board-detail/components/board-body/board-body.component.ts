@@ -11,12 +11,12 @@ import {
 import { BoardColumnComponent } from '../board-column/board-column.component';
 
 @Component({
-  selector: 'app-board-canvas',
+  selector: 'app-board-body',
   standalone: true,
   imports: [CommonModule, FormsModule, MatIconModule, BoardColumnComponent, CdkDrag, CdkDropList],
-  templateUrl: './board-canvas.component.html',
+  templateUrl: './board-body.component.html',
 })
-export class BoardCanvasComponent {
+export class BoardBodyComponent {
   readonly columns = input.required<ColumnSummary[]>();
   readonly isLoading = input<boolean>(false);
   readonly error = input<string | null>(null);
@@ -42,7 +42,7 @@ export class BoardCanvasComponent {
     coverUrl: string | null;
     file?: File | null;
   }>();
-  readonly updateCardDatesFromBoardCanvas = output<{
+  readonly updateCardDatesFromBoardBody = output<{
     cardId: string;
     columnId: string;
     startDate: string | null;

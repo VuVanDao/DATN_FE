@@ -19,7 +19,7 @@ import {
 import { Board, ProjectMember } from '../../../../domain/models/project.model';
 import { SprintSummary } from '../../../../domain/models/sprint.model';
 import { SwitchBoardModalComponent } from '../switch-board-modal/switch-board-modal.component';
-import { BoardCanvasComponent } from './components/board-canvas/board-canvas.component';
+import { BoardBodyComponent } from './components/board-body/board-body.component';
 import { BoardDeleteModalComponent } from './components/board-delete-modal/board-delete-modal.component';
 import { BoardHeaderComponent } from './components/board-header/board-header.component';
 import { BoardMenuDrawerComponent } from './components/board-menu-drawer/board-menu-drawer.component';
@@ -34,7 +34,7 @@ import { CardDetailModalComponent } from './components/card-detail-modal/card-de
     MatIconModule,
     RouterModule,
     BoardHeaderComponent,
-    BoardCanvasComponent,
+    BoardBodyComponent,
     BoardMenuDrawerComponent,
     BoardSettingsModalComponent,
     BoardDeleteModalComponent,
