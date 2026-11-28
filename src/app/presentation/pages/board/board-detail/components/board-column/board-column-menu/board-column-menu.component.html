@@ -1,0 +1,104 @@
+<!-- Options Menu Trigger Button -->
+<button
+  type="button"
+  #menuTrigger="cdkOverlayOrigin"
+  cdkOverlayOrigin
+  (click)="toggleMenu()"
+  class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-700 dark:text-[#9fadbc] dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#333c43] transition cursor-pointer"
+  title="Danh sách thao tác"
+  aria-label="Danh sách thao tác"
+>
+  <mat-icon fontIcon="more_horiz" class="text-xs! w-4! h-4!"></mat-icon>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="menuTrigger"
+  [cdkConnectedOverlayOpen]="isMenuOpen()"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPositions]="overlayPositions"
+  (backdropClick)="closeMenu()"
+>
+  <div
+    class="w-72 bg-white dark:bg-[#282e33] border border-slate-200 dark:border-[#38414a] rounded-xl shadow-2xl overflow-hidden py-1.5 text-slate-700 dark:text-[#b6c2cf] animate-in fade-in zoom-in-95 duration-100 select-none z-50"
+  >
+    <!-- Menu Header: Centered title and close button -->
+    <div
+      class="relative px-4 py-2 border-b border-slate-200/80 dark:border-[#38414a] flex items-center justify-center"
+    >
+      <h3 class="text-xs sm:text-sm font-semibold text-slate-700 dark:text-[#9fadbc]">
+        Danh sách hành động
+      </h3>
+      <button
+        type="button"
+        (click)="closeMenu()"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 transition cursor-pointer"
+        title="Đóng menu"
+        aria-label="Đóng menu"
+      >
+        <mat-icon fontIcon="close" class="text-xs! w-3.5! h-3.5!"></mat-icon>
+      </button>
+    </div>
+
+    <!-- Menu Action Items -->
+    <div class="p-2 space-y-0.5">
+      <!-- 1. Thêm thẻ mới -->
+      <button
+        type="button"
+        (click)="onAddCard()"
+        class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white transition flex items-center justify-between cursor-pointer"
+      >
+        <span>Thêm thẻ mới</span>
+      </button>
+
+      <!-- 2. Toggle Done Column (Đánh dấu là đã xong) -->
+      <button
+        type="button"
+        (click)="onToggleDone()"
+        class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm transition flex items-center justify-between cursor-pointer group"
+        [class]="
+          column().isDoneColumn
+            ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+            : 'text-slate-700 dark:text-[#b6c2cf] hover:bg-slate-100 dark:hover:bg-[#333c43] hover:text-slate-900 dark:hover:text-white'
+        "
+      >
+        <span class="flex items-center gap-2">
+          @if (column().isDoneColumn) {
+            <mat-icon
+              fontIcon="check_circle"
+              class="icon-xxs text-emerald-500 shrink-0"
+            ></mat-icon>
+            <span class="translate-y-px">Cột đã xong (Bỏ đánh dấu)</span>
+          } @else {
+            <mat-icon
+              fontIcon="radio_button_unchecked"
+              class="icon-xxs text-slate-400 group-hover:text-emerald-500 shrink-0 transition-colors translate-y-px"
+            ></mat-icon>
+            <span>Đánh dấu là đã xong</span>
+          }
+        </span>
+        @if (column().isDoneColumn) {
+          <span
+            class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300"
+          >
+            Done
+          </span>
+        }
+      </button>
+
+      <!-- 3. Xoá cột này -->
+      <button
+        type="button"
+        (click)="onDelete()"
+        class="w-full text-left px-3 py-1.5 rounded-lg text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-300 transition flex items-center gap-2 cursor-pointer group"
+      >
+        <mat-icon
+          fontIcon="delete_outline"
+          class="icon-xxs text-red-500 shrink-0 translate-y-px"
+        ></mat-icon>
+        <span>Xoá cột này</span>
+      </button>
+    </div>
+  </div>
+</ng-template>
