@@ -35,15 +35,7 @@ import { CardActivityFeedComponent } from './card-activity-feed/card-activity-fe
 import { CardDependenciesComponent } from './card-dependencies/card-dependencies.component';
 import { CardDescriptionComponent } from './card-description/card-description.component';
 import { CardDetailHeaderComponent } from './card-detail-header/card-detail-header.component';
-import {
-  CardDetailActivity,
-  PriorityOption,
-  PriorityType,
-  WorkType,
-  WorkTypeOption,
-} from './card-detail.types';
-
-export type { PriorityType, WorkType, PriorityOption, WorkTypeOption, CardDetailActivity };
+import { CardDetailActivity, PriorityType, WorkType } from './card-detail.types';
 
 @Component({
   selector: 'app-card-detail-modal',
