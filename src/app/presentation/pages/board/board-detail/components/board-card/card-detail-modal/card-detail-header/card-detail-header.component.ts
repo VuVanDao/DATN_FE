@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { NotificationService } from '../../../../../../../application/shared/notification.service';
-import { CardSummary, ColumnSummary } from '../../../../../../../domain/models/board-detail.model';
-import { computeDueDateStatus } from '../../../../../../../shared/utils/due-date.util';
+import { NotificationService } from '../../../../../../../../application/shared/notification.service';
+import { CardSummary, ColumnSummary } from '../../../../../../../../domain/models/board-detail.model';
+import { computeDueDateStatus } from '../../../../../../../../shared/utils/due-date.util';
 
 @Component({
   selector: 'app-card-detail-header',

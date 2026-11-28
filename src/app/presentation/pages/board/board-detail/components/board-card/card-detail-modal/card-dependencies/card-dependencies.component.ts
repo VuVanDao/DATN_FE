@@ -12,14 +12,14 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { AddCardDependencyUseCase } from '../../../../../../../application/board/add-card-dependency.use-case';
-import { RemoveCardDependencyUseCase } from '../../../../../../../application/board/remove-card-dependency.use-case';
-import { SearchCardCandidatesUseCase } from '../../../../../../../application/board/search-card-candidates.use-case';
-import { NotificationService } from '../../../../../../../application/shared/notification.service';
+import { AddCardDependencyUseCase } from '../../../../../../../../application/board/add-card-dependency.use-case';
+import { RemoveCardDependencyUseCase } from '../../../../../../../../application/board/remove-card-dependency.use-case';
+import { SearchCardCandidatesUseCase } from '../../../../../../../../application/board/search-card-candidates.use-case';
+import { NotificationService } from '../../../../../../../../application/shared/notification.service';
 import {
   CardCandidate,
   CardDependencyItem,
-} from '../../../../../../../domain/models/board-detail.model';
+} from '../../../../../../../../domain/models/board-detail.model';
 
 @Component({
   selector: 'app-card-dependencies',

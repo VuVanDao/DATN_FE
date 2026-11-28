@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, HostListener, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { ProjectMember } from '../../../../../../../domain/models/project.model';
-import { computeDueDateStatus } from '../../../../../../../shared/utils/due-date.util';
-import { CardDueDatePickerComponent } from '../../board-card/card-due-date-picker/card-due-date-picker.component';
+import { ProjectMember } from '../../../../../../../../domain/models/project.model';
+import { computeDueDateStatus } from '../../../../../../../../shared/utils/due-date.util';
+import { CardDueDatePickerComponent } from '../../card-due-date-picker/card-due-date-picker.component';
 import {
   DEFAULT_PRIORITY_OPTIONS,
   DEFAULT_WORK_TYPE_OPTIONS,

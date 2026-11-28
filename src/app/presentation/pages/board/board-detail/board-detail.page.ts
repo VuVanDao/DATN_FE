@@ -24,7 +24,7 @@ import { BoardDeleteModalComponent } from './components/board-delete-modal/board
 import { BoardHeaderComponent } from './components/board-header/board-header.component';
 import { BoardMenuDrawerComponent } from './components/board-menu-drawer/board-menu-drawer.component';
 import { BoardSettingsModalComponent } from './components/board-settings-modal/board-settings-modal.component';
-import { CardDetailModalComponent } from './components/card-detail-modal/card-detail-modal.component';
+import { CardDetailModalComponent } from './components/board-card/card-detail-modal/card-detail-modal.component';
 
 @Component({
   selector: 'app-board-detail-page',

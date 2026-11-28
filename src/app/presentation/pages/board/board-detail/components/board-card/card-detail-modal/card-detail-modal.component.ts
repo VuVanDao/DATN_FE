@@ -15,17 +15,17 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { AuthStore } from '../../../../../../application/state/auth.store';
-import { GetCardActivitiesUseCase } from '../../../../../../application/board/get-card-activities.use-case';
-import { NotificationService } from '../../../../../../application/shared/notification.service';
-import { ActivityLog } from '../../../../../../domain/models/activity-log.model';
+import { AuthStore } from '../../../../../../../application/state/auth.store';
+import { GetCardActivitiesUseCase } from '../../../../../../../application/board/get-card-activities.use-case';
+import { NotificationService } from '../../../../../../../application/shared/notification.service';
+import { ActivityLog } from '../../../../../../../domain/models/activity-log.model';
 import {
   CardDependencyItem,
   CardDetail,
   CardSummary,
   ColumnSummary,
-} from '../../../../../../domain/models/board-detail.model';
-import { ProjectMember } from '../../../../../../domain/models/project.model';
+} from '../../../../../../../domain/models/board-detail.model';
+import { ProjectMember } from '../../../../../../../domain/models/project.model';
 import { CardActionChipsComponent } from './card-action-chips/card-action-chips.component';
 import { CardActivityFeedComponent } from './card-activity-feed/card-activity-feed.component';
 import { CardDependenciesComponent } from './card-dependencies/card-dependencies.component';
