@@ -36,27 +36,20 @@
       <span
         class="hidden md:inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-md border"
         [class]="
-          ss.isOverdue
+          ss.state === 'overdue'
             ? 'bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 animate-pulse'
-            : ss.diffDays <= 1
+            : ss.state === 'due-today' || ss.state === 'due-soon'
               ? 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
               : 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800'
         "
-        [title]="'Sprint: ' + ss.name + ' - Hạn kết thúc: ' + (ss.endDate | date: 'dd/MM/yyyy')"
+        [title]="'Sprint: ' + ss.name + ' - ' + ss.tooltipLabel"
       >
         <mat-icon
-          [fontIcon]="ss.isOverdue ? 'warning' : 'flag'"
+          [fontIcon]="ss.state === 'overdue' ? 'warning' : 'flag'"
           class="text-xs! w-3! h-3!"
         ></mat-icon>
         <span>
-          {{ ss.name }}:
-          @if (ss.isOverdue) {
-            Quá hạn {{ ss.overdueDays > 0 ? ss.overdueDays + ' ngày' : '' }}
-          } @else if (ss.diffDays === 0) {
-            Hôm nay kết thúc
-          } @else {
-            Còn {{ ss.diffDays }} ngày
-          }
+          {{ ss.name }}: {{ ss.badgeLabel }}
         </span>
       </span>
     }
