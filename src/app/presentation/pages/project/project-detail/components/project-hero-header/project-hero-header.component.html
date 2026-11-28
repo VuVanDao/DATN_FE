@@ -143,7 +143,34 @@
       </div>
     </div>
 
-    <!-- Card 2: Thành viên -->
+    <!-- Card 2: Sprint -->
+    <div
+      (click)="selectTab.emit('backlog')"
+      class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-purple-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group cursor-pointer"
+    >
+      <div
+        class="w-13 h-13 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20 transition"
+      >
+        <mat-icon fontIcon="rocket_launch" class="text-2xl"></mat-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <span
+          class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
+        >
+          Chu kỳ Sprint
+        </span>
+        <div class="flex items-baseline gap-2 mt-0.5">
+          <span class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            {{ project().sprintCount }}
+          </span>
+          <span class="text-xs text-purple-600 dark:text-purple-400 font-medium"
+            >Đang triển khai</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Thành viên -->
     <div
       (click)="selectTab.emit('members')"
       class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-sky-500/50 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group cursor-pointer"
@@ -165,32 +192,6 @@
             {{ project().membersCount }}
           </span>
           <span class="text-xs text-sky-600 dark:text-sky-400 font-medium">Đang cộng tác</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Card 3: Sprint -->
-    <div
-      class="bg-white dark:bg-[#111827]/80 backdrop-blur-xs border border-slate-200 dark:border-slate-800/90 hover:border-purple-500/40 rounded-2xl p-4.5 flex items-center gap-4 transition duration-200 shadow-xs hover:shadow-md dark:shadow-md group"
-    >
-      <div
-        class="w-13 h-13 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20 transition"
-      >
-        <mat-icon fontIcon="rocket_launch" class="text-2xl"></mat-icon>
-      </div>
-      <div class="min-w-0 flex-1">
-        <span
-          class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block"
-        >
-          Chu kỳ Sprint
-        </span>
-        <div class="flex items-baseline gap-2 mt-0.5">
-          <span class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-            {{ project().sprintCount }}
-          </span>
-          <span class="text-xs text-purple-600 dark:text-purple-400 font-medium"
-            >Đang triển khai</span
-          >
         </div>
       </div>
     </div>
